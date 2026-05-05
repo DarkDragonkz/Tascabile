@@ -40,6 +40,11 @@ jobs:
           BRANCH_NAME="${GITHUB_REF_NAME}"
           echo "name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
 
+      - name: Prepare bundle directory
+        shell: bash
+        run: |
+          mkdir -p bundles/${{ steps.branch.outputs.name }}
+
       - name: Build Paperback bundle
         run: npm run bundle -- --folder=${{ steps.branch.outputs.name }}
 
