@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -58,32 +62,10 @@ jobs:
           fi
 
       - name: Publish to gh-pages
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git fetch origin gh-pages || true
-
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git worktree add gh-pages-worktree origin/gh-pages
-          else
-            git worktree add --detach gh-pages-worktree
-            cd gh-pages-worktree
-            git checkout --orphan gh-pages
-            git rm -rf . || true
-            cd ..
-          fi
-
-          rsync -av --delete bundles/ gh-pages-worktree/
-
-          cd gh-pages-worktree
-          git add .
-
-          if git diff --cached --quiet; then
-            echo "No changes to publish."
-            exit 0
-          fi
-
-          git commit -m "Publish Paperback bundle for ${{ steps.branch.outputs.name }}"
-          git push origin HEAD:gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./bundles
+          force_orphan: true
+          full_commit_message: "Publish Paperback bundle for ${{ steps.branch.outputs.name }}"
