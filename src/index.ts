@@ -1,9 +1,6 @@
-/**
- * Entry point delle source Paperback/Tascabile.
- *
- * In questa fase iniziale la repository non esporta ancora source reali.
- * Le source verranno migrate una alla volta dal progetto originale,
- * partendo da MangaDex IT.
- */
+import type { CheerioAPI } from 'cheerio'
+import { MangaWorld } from './MangaWorld/MangaWorld'
 
-export {}
+declare const cheerio: CheerioAPI
+
+export const MangaWorldSource = new MangaWorld(cheerio)
