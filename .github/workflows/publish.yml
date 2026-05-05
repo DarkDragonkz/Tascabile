@@ -65,13 +65,20 @@ jobs:
             cp index.html bundles/index.html
           fi
 
-          REPO_URL="${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}"
-          REPO_URL_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}', safe=''))")
+          REPO_BASE_URL="${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}"
+          REPO_JSON_URL="${REPO_BASE_URL}/versioning.json"
+
+          REPO_BASE_URL_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}', safe=''))")
+          REPO_JSON_URL_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}/versioning.json', safe=''))")
 
           if [ -f "bundles/${{ steps.branch.outputs.name }}/index.html" ]; then
-            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2Ftascabile%2F${{ steps.branch.outputs.name }}#${REPO_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https://darkdragonkz.github.io/tascabile/${{ steps.branch.outputs.name }}#${REPO_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
             sed -i "s#displayName=undefined#displayName=Tascabile#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
+
+            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2Ftascabile%2F${{ steps.branch.outputs.name }}#${REPO_JSON_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
+            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2FTascabile%2F${{ steps.branch.outputs.name }}#${REPO_JSON_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
+
+            sed -i "s#https://darkdragonkz.github.io/tascabile/${{ steps.branch.outputs.name }}#${REPO_JSON_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
+            sed -i "s#https://darkdragonkz.github.io/Tascabile/${{ steps.branch.outputs.name }}#${REPO_JSON_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
           fi
 
       - name: Publish to gh-pages
