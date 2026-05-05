@@ -16,7 +16,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PUBLISH_BASE_URL: https://darkdragonkz.github.io/Tascabile
+  PAPERBACK_FOLDER: "0.8"
 
 jobs:
   publish:
@@ -41,20 +41,13 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Get branch name
-        id: branch
-        shell: bash
-        run: |
-          BRANCH_NAME="${GITHUB_REF_NAME}"
-          echo "name=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
-
       - name: Prepare bundle directory
         shell: bash
         run: |
-          mkdir -p bundles/${{ steps.branch.outputs.name }}
+          mkdir -p bundles/${PAPERBACK_FOLDER}
 
       - name: Build Paperback bundle
-        run: npm run bundle -- --folder=${{ steps.branch.outputs.name }}
+        run: npm run bundle -- --folder=${PAPERBACK_FOLDER}
 
       - name: Prepare GitHub Pages files
         shell: bash
@@ -65,23 +58,6 @@ jobs:
             cp index.html bundles/index.html
           fi
 
-          REPO_BASE_URL="${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}"
-          REPO_BASE_URL_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PUBLISH_BASE_URL}/${{ steps.branch.outputs.name }}', safe=''))")
-
-          if [ -f "bundles/${{ steps.branch.outputs.name }}/index.html" ]; then
-            sed -i "s#displayName=undefined#displayName=Tascabile#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-
-            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2Ftascabile%2F${{ steps.branch.outputs.name }}%2Fversioning.json%2Fversioning.json#${REPO_BASE_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2FTascabile%2F${{ steps.branch.outputs.name }}%2Fversioning.json%2Fversioning.json#${REPO_BASE_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2Ftascabile%2F${{ steps.branch.outputs.name }}#${REPO_BASE_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https%3A%2F%2Fdarkdragonkz.github.io%2FTascabile%2F${{ steps.branch.outputs.name }}#${REPO_BASE_URL_ENCODED}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-
-            sed -i "s#https://darkdragonkz.github.io/tascabile/${{ steps.branch.outputs.name }}/versioning.json/versioning.json#${REPO_BASE_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https://darkdragonkz.github.io/Tascabile/${{ steps.branch.outputs.name }}/versioning.json/versioning.json#${REPO_BASE_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https://darkdragonkz.github.io/tascabile/${{ steps.branch.outputs.name }}#${REPO_BASE_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-            sed -i "s#https://darkdragonkz.github.io/Tascabile/${{ steps.branch.outputs.name }}#${REPO_BASE_URL}#g" "bundles/${{ steps.branch.outputs.name }}/index.html"
-          fi
-
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -89,4 +65,4 @@ jobs:
           publish_branch: gh-pages
           publish_dir: ./bundles
           force_orphan: true
-          full_commit_message: "Publish Paperback bundle for ${{ steps.branch.outputs.name }}"
+          full_commit_message: "Publish Paperback bundle"
