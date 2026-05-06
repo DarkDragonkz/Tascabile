@@ -21,6 +21,7 @@ import {
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
 import { buildUrl } from '../../lib/core/url'
+import { MANGA_WORLD_DOMAIN, MANGA_WORLD_PLACEHOLDER_IMAGE } from '../../lib/sources/MangaWorld/constants'
 import {
     MangaWorldChapter,
     MangaWorldMangaDetails,
@@ -28,9 +29,6 @@ import {
     MangaWorldSourceManga,
     MangaWorldTag
 } from '../../lib/sources/MangaWorld/MangaWorldParser'
-
-const MANGA_WORLD_DOMAIN = 'https://www.mangaworld.mx'
-const PLACEHOLDER_IMAGE = 'https://www.mangaworld.mx/public/assets/images/MangaWorldSquareLogo.png'
 
 const SECTION_IDS = {
     TRENDING: 'trending',
@@ -40,7 +38,7 @@ const SECTION_IDS = {
 } as const
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.1',
+    version: '0.2.2',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -146,7 +144,7 @@ export class MangaWorld
     }
 
     async supportsSearchOperators(): Promise<boolean> {
-        return true
+        return false
     }
 
     async supportsTagExclusion(): Promise<boolean> {
@@ -194,37 +192,43 @@ export class MangaWorld
             .parseHomeSectionItems($, '.comics-grid .entry')
             .slice(0, 12)
 
-        const trendingSection = App.createHomeSection({
-            id: SECTION_IDS.TRENDING,
-            title: 'In tendenza',
-            type: 'singleRowLarge',
-            containsMoreItems: true,
-            items: trendingItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-        })
-
-        sectionCallback(trendingSection)
+        if (trendingItems.length > 0) {
+            sectionCallback(App.createHomeSection({
+                id: SECTION_IDS.TRENDING,
+                title: 'In tendenza',
+                type: 'singleRowLarge',
+                containsMoreItems: true,
+                items: trendingItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+            }))
+        }
 
         if (monthlyItems.length > 0) {
-            const monthlySection = App.createHomeSection({
+            sectionCallback(App.createHomeSection({
                 id: SECTION_IDS.MONTHLY,
                 title: 'Manga del mese',
                 type: 'singleRowNormal',
                 containsMoreItems: false,
                 items: monthlyItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-            })
-
-            sectionCallback(monthlySection)
+            }))
         }
 
-        const newestSection = App.createHomeSection({
-            id: SECTION_IDS.NEWEST,
-            title: 'Ultime aggiunte',
+        if (newestItems.length > 0) {
+            sectionCallback(App.createHomeSection({
+                id: SECTION_IDS.NEWEST,
+                title: 'Ultime aggiunte',
+                type: 'singleRowNormal',
+                containsMoreItems: true,
+                items: newestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+            }))
+        }
+
+        sectionCallback(App.createHomeSection({
+            id: SECTION_IDS.MOST_READ,
+            title: 'Più letti',
             type: 'singleRowNormal',
             containsMoreItems: true,
-            items: newestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-        })
-
-        sectionCallback(newestSection)
+            items: []
+        }))
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
@@ -274,7 +278,7 @@ export class MangaWorld
         return App.createSourceManga({
             id: details.id,
             mangaInfo: App.createMangaInfo({
-                image: details.image ?? PLACEHOLDER_IMAGE,
+                image: details.image ?? MANGA_WORLD_PLACEHOLDER_IMAGE,
                 titles,
                 desc: details.description ?? '',
                 status: this.mapStatus(details.status),
@@ -298,7 +302,7 @@ export class MangaWorld
         return App.createPartialSourceManga({
             mangaId: manga.mangaId,
             title: manga.title,
-            image: manga.image ?? PLACEHOLDER_IMAGE,
+            image: manga.image ?? MANGA_WORLD_PLACEHOLDER_IMAGE,
             subtitle: manga.subtitle
         })
     }
