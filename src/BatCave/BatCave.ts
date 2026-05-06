@@ -38,8 +38,13 @@ const SECTION_IDS = {
 
 const FALLBACK_SEARCH_PAGE_SIZE = 10
 
+interface BatCaveSearchPage {
+    results: BatCaveSourceComic[]
+    hasMore: boolean
+}
+
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.11',
+    version: '0.1.12',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -172,20 +177,22 @@ export class BatCave
             })
         }
 
-        const liveResults = await this.getLiveSearchResults(searchTerms, page)
+        const livePage = await this.getLiveSearchResults(searchTerms, page)
 
-        if (liveResults.length > 0) {
+        if (livePage.results.length > 0) {
             return App.createPagedResults({
-                results: liveResults.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-                metadata: { page: page + 1 }
+                results: livePage.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+                metadata: livePage.hasMore
+                    ? { page: page + 1 }
+                    : undefined
             })
         }
 
-        const fallbackResults = this.getFallbackSearchResultsPage(searchTerms, page)
+        const fallbackPage = this.getFallbackSearchResultsPage(searchTerms, page)
 
         return App.createPagedResults({
-            results: fallbackResults.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-            metadata: fallbackResults.hasMore
+            results: fallbackPage.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+            metadata: fallbackPage.hasMore
                 ? { page: page + 1 }
                 : undefined
         })
@@ -279,26 +286,47 @@ export class BatCave
         return this.cheerio.load(data)
     }
 
-    private async getLiveSearchResults(searchTerms: string, page: number): Promise<BatCaveSourceComic[]> {
+    private async getLiveSearchResults(searchTerms: string, page: number): Promise<BatCaveSearchPage> {
         const primaryUrl = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodeURIComponent(searchTerms)}&search_start=${page}`
         const fallbackUrl = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
-        const primaryResults = await this.getSearchResultsFromUrl(primaryUrl)
+        const primaryPage = await this.getSearchResultsFromUrl(primaryUrl)
 
-        if (primaryResults.length > 0 || page > 1) {
-            return primaryResults
+        if (primaryPage.results.length > 0 || page > 1) {
+            return primaryPage
         }
 
         return this.getSearchResultsFromUrl(fallbackUrl)
     }
 
-    private async getSearchResultsFromUrl(url: string): Promise<BatCaveSourceComic[]> {
+    private async getSearchResultsFromUrl(url: string): Promise<BatCaveSearchPage> {
         try {
             const $ = await this.getCheerio(url)
+            const results = this.parser.parseSearchResults($)
 
-            return this.parser.parseSearchResults($)
+            return {
+                results,
+                hasMore: this.hasMoreSearchResults($, results)
+            }
         } catch {
-            return []
+            return {
+                results: [],
+                hasMore: false
+            }
         }
+    }
+
+    private hasMoreSearchResults($: CheerioAPI, results: BatCaveSourceComic[]): boolean {
+        const text = this.cleanText($.root().text())
+        const rangeMatch = text.match(/Your query found\s+(\d+)\s+answers?\s*\(\s*Query results\s+(\d+)\s*-\s*(\d+)\s*\)/i)
+
+        if (rangeMatch) {
+            const total = Number.parseInt(rangeMatch[1], 10)
+            const end = Number.parseInt(rangeMatch[3], 10)
+
+            return Number.isFinite(total) && Number.isFinite(end) && end < total
+        }
+
+        return results.length >= FALLBACK_SEARCH_PAGE_SIZE
     }
 
     private createSourceManga(details: BatCaveComicDetails): SourceManga {
@@ -523,5 +551,9 @@ export class BatCave
         return typeof page === 'number' && Number.isFinite(page)
             ? page
             : 1
+    }
+
+    private cleanText(value: string): string {
+        return value.replace(/\s+/g, ' ').trim()
     }
 }
