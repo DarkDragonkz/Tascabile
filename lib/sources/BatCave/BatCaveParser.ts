@@ -79,11 +79,12 @@ interface BatCaveReaderData {
 }
 
 export class BatCaveParser {
-    parseHomeItems($: CheerioAPI, selector = '.poster.grid-item.has-overlay'): BatCaveSourceComic[] {
-        const domItems = this.parsePosterItems($, selector)
+    parseHomeItems($: CheerioAPI, selector = 'a.poster.grid-item.has-overlay, a.poster, a.popular'): BatCaveSourceComic[] {
+        const domItems = this.parseHomeAnchors($, selector)
+        const rawItems = this.parseHomeItemsFromRawHtml($)
         const jsonLdItems = this.parseHomeItemsFromJsonLd($)
 
-        return this.dedupeSourceComics([...domItems, ...jsonLdItems])
+        return this.dedupeSourceComics([...domItems, ...rawItems, ...jsonLdItems])
     }
 
     parseSearchResults($: CheerioAPI): BatCaveSourceComic[] {
@@ -125,7 +126,7 @@ export class BatCaveParser {
         const publishers = new Map<string, BatCaveTag>()
         const years = new Map<string, BatCaveTag>()
 
-        $('.poster.grid-item.has-overlay, .readed.d-flex.short').each((_: number, element: any) => {
+        $('a.poster, a.popular, .readed.d-flex.short').each((_: number, element: any) => {
             const metaItems = $(element)
                 .find('.poster__subtitle li, .readed__meta-item')
                 .map((__: number, item: any) => this.cleanText($(item).text()))
@@ -242,31 +243,30 @@ export class BatCaveParser {
         }
     }
 
-    private parsePosterItems($: CheerioAPI, selector: string): BatCaveSourceComic[] {
+    private parseHomeAnchors($: CheerioAPI, selector: string): BatCaveSourceComic[] {
         const results: BatCaveSourceComic[] = []
         const seen = new Set<string>()
 
         $(selector).each((_: number, element: any) => {
-            const link = $(element).is('a')
+            const anchor = $(element).is('a')
                 ? $(element)
                 : $(element).find('a[href$=".html"]').first()
-            const comicId = this.extractComicId(link.attr('href'))
-            const title = this.cleanText($(element).find('.poster__title').first().text())
-                || this.cleanText($(element).find('img').first().attr('alt'))
-                || this.cleanText(link.text())
+            const comicId = this.extractComicId(anchor.attr('href'))
+            const imageElement = anchor.find('img').first()
+            const title = this.cleanText(anchor.find('.poster__title, .popular__title').first().text())
+                || this.cleanText(imageElement.attr('alt'))
+                || this.cleanText(anchor.text())
 
             if (!comicId || !title || seen.has(comicId)) {
                 return
             }
 
-            const subtitle = $(element)
+            const subtitle = anchor
                 .find('.poster__subtitle li')
                 .map((__: number, item: any) => this.cleanText($(item).text()))
                 .get()
                 .filter(Boolean)
                 .join(' • ')
-
-            const imageElement = $(element).find('img').first()
 
             seen.add(comicId)
             results.push({
@@ -276,6 +276,37 @@ export class BatCaveParser {
                 subtitle: subtitle || undefined
             })
         })
+
+        return results
+    }
+
+    private parseHomeItemsFromRawHtml($: CheerioAPI): BatCaveSourceComic[] {
+        const html = $.root().html() ?? ''
+        const results: BatCaveSourceComic[] = []
+        const seen = new Set<string>()
+        const anchorRegex = /<a\b[^>]*class=["'][^"']*\b(?:poster|popular)\b[^"']*["'][^>]*href=["']([^"']+\.html)["'][^>]*>([\s\S]*?)<\/a>/gi
+        let match: RegExpExecArray | null
+
+        while ((match = anchorRegex.exec(html)) !== null) {
+            const href = match[1]
+            const block = match[2]
+            const comicId = this.extractComicId(href)
+            const title = this.extractRawTitle(block)
+            const image = this.extractRawImage(block)
+            const subtitle = this.extractRawSubtitle(block)
+
+            if (!comicId || !title || seen.has(comicId)) {
+                continue
+            }
+
+            seen.add(comicId)
+            results.push({
+                comicId,
+                title,
+                image,
+                subtitle
+            })
+        }
 
         return results
     }
@@ -512,6 +543,45 @@ export class BatCaveParser {
         return undefined
     }
 
+    private extractRawTitle(block: string): string | undefined {
+        const titleMatch = block.match(/<(?:p|div)\b[^>]*class=["'][^"']*(?:poster__title|popular__title)[^"']*["'][^>]*>([\s\S]*?)<\/(?:p|div)>/i)
+        const altMatch = block.match(/<img\b[^>]*alt=["']([^"']+)["']/i)
+        const title = this.cleanText(this.stripHtml(titleMatch?.[1]) || altMatch?.[1])
+
+        return title || undefined
+    }
+
+    private extractRawImage(block: string): string | undefined {
+        const dataSrcMatch = block.match(/<img\b[^>]*data-src=["']([^"']+)["']/i)
+        const srcMatch = block.match(/<img\b[^>]*src=["']([^"']+)["']/i)
+        const image = this.absoluteUrl(dataSrcMatch?.[1]) || this.absoluteUrl(srcMatch?.[1])
+
+        return image && this.isUsableImageUrl(image) ? image : undefined
+    }
+
+    private extractRawSubtitle(block: string): string | undefined {
+        const subtitles: string[] = []
+        const subtitleBlockMatch = block.match(/<ul\b[^>]*class=["'][^"']*poster__subtitle[^"']*["'][^>]*>([\s\S]*?)<\/ul>/i)
+        const subtitleBlock = subtitleBlockMatch?.[1]
+
+        if (!subtitleBlock) {
+            return undefined
+        }
+
+        const liRegex = /<li\b[^>]*>([\s\S]*?)<\/li>/gi
+        let match: RegExpExecArray | null
+
+        while ((match = liRegex.exec(subtitleBlock)) !== null) {
+            const value = this.cleanText(this.stripHtml(match[1]))
+
+            if (value) {
+                subtitles.push(value)
+            }
+        }
+
+        return subtitles.length > 0 ? subtitles.join(' • ') : undefined
+    }
+
     private isUsableImageUrl(url: string): boolean {
         return !url.startsWith('data:image/') && /\.(jpg|jpeg|png|webp)(?:\?|$)/i.test(url)
     }
@@ -554,6 +624,10 @@ export class BatCaveParser {
         }
 
         return results
+    }
+
+    private stripHtml(value?: string): string {
+        return (value ?? '').replace(/<[^>]+>/g, ' ')
     }
 
     private cleanText(value?: string): string {
