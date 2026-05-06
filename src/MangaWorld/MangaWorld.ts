@@ -38,7 +38,7 @@ const SECTION_IDS = {
 } as const
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.1.2',
+    version: '0.1.3',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
