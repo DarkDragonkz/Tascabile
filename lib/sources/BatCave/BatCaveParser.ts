@@ -237,26 +237,27 @@ export class BatCaveParser {
 
     private parseChaptersFromSeries(series: JsonLdNode | undefined, comicId: string): BatCaveChapter[] {
         const elements = series?.hasPart?.itemListElement ?? []
+        const chapters: BatCaveChapter[] = []
 
-        return elements
-            .map((element) => {
-                const item = element.item
-                const parsed = this.extractReaderIds(item?.url)
-                const name = this.cleanText(item?.name)
+        for (const element of elements) {
+            const item = element.item
+            const parsed = this.extractReaderIds(item?.url)
+            const name = this.cleanText(item?.name)
 
-                if (!item || !parsed || !name) {
-                    return undefined
-                }
+            if (!item || !parsed || !name) {
+                continue
+            }
 
-                return {
-                    id: parsed.chapterId,
-                    comicId,
-                    name,
-                    chapNum: this.parseChapterNumber(name),
-                    time: this.parseDate(item.datePublished)
-                }
+            chapters.push({
+                id: parsed.chapterId,
+                comicId,
+                name,
+                chapNum: this.parseChapterNumber(name),
+                time: this.parseDate(item.datePublished)
             })
-            .filter((chapter): chapter is BatCaveChapter => chapter !== undefined)
+        }
+
+        return chapters
     }
 
     private parseReaderData($: CheerioAPI): BatCaveReaderData {
