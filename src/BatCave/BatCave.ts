@@ -36,8 +36,10 @@ const SECTION_IDS = {
     LATEST: 'latest'
 } as const
 
+const FALLBACK_SEARCH_PAGE_SIZE = 10
+
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.10',
+    version: '0.1.11',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -170,22 +172,20 @@ export class BatCave
             })
         }
 
-        const primaryUrl = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodeURIComponent(searchTerms)}&search_start=${page}`
-        const fallbackUrl = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
+        const liveResults = await this.getLiveSearchResults(searchTerms, page)
 
-        let results = await this.getSearchResultsFromUrl(primaryUrl)
-
-        if (results.length === 0 && page === 1) {
-            results = await this.getSearchResultsFromUrl(fallbackUrl)
+        if (liveResults.length > 0) {
+            return App.createPagedResults({
+                results: liveResults.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+                metadata: { page: page + 1 }
+            })
         }
 
-        if (results.length === 0 && page === 1) {
-            results = this.getFallbackSearchResults(searchTerms)
-        }
+        const fallbackResults = this.getFallbackSearchResultsPage(searchTerms, page)
 
         return App.createPagedResults({
-            results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-            metadata: results.length > 0 && page === 1 && results !== this.getFallbackSearchResults(searchTerms)
+            results: fallbackResults.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+            metadata: fallbackResults.hasMore
                 ? { page: page + 1 }
                 : undefined
         })
@@ -277,6 +277,18 @@ export class BatCave
             : String(response.data)
 
         return this.cheerio.load(data)
+    }
+
+    private async getLiveSearchResults(searchTerms: string, page: number): Promise<BatCaveSourceComic[]> {
+        const primaryUrl = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodeURIComponent(searchTerms)}&search_start=${page}`
+        const fallbackUrl = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
+        const primaryResults = await this.getSearchResultsFromUrl(primaryUrl)
+
+        if (primaryResults.length > 0 || page > 1) {
+            return primaryResults
+        }
+
+        return this.getSearchResultsFromUrl(fallbackUrl)
     }
 
     private async getSearchResultsFromUrl(url: string): Promise<BatCaveSourceComic[]> {
@@ -387,6 +399,17 @@ export class BatCave
             ?? ''
     }
 
+    private getFallbackSearchResultsPage(searchTerms: string, page: number): { results: BatCaveSourceComic[]; hasMore: boolean } {
+        const allResults = this.getFallbackSearchResults(searchTerms)
+        const offset = (page - 1) * FALLBACK_SEARCH_PAGE_SIZE
+        const results = allResults.slice(offset, offset + FALLBACK_SEARCH_PAGE_SIZE)
+
+        return {
+            results,
+            hasMore: offset + FALLBACK_SEARCH_PAGE_SIZE < allResults.length
+        }
+    }
+
     private getFallbackSearchResults(searchTerms: string): BatCaveSourceComic[] {
         const normalizedSearch = this.normalizeSearchValue(searchTerms)
         const items = [
@@ -398,59 +421,22 @@ export class BatCave
 
         return this.dedupeItems(items)
             .filter((item: BatCaveSourceComic) => this.normalizeSearchValue(item.title).includes(normalizedSearch))
-            .slice(0, 20)
     }
 
     private getFallbackTheBoysSearchResults(): BatCaveSourceComic[] {
         return [
-            {
-                comicId: '5629-the-boys-2006-2012.html',
-                title: 'The Boys (2006-2012)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/68/a134c2dc30a8bf16922095b4989fb4.webp`,
-                subtitle: 'The Boys (2006-2012) #Omnibus Vol. 6'
-            },
-            {
-                comicId: '27657-the-boys-herogasm-2009.html',
-                title: 'The Boys: Herogasm (2009)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/66/6f4afd212cea540df36163e5de0516.webp`,
-                subtitle: 'The Boys: Herogasm Issue #6'
-            },
-            {
-                comicId: '27655-the-boys-omnibus-2019.html',
-                title: 'The Boys Omnibus (2019-)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/ff/c453990f0822ed10d881d451211104.webp`,
-                subtitle: 'The Boys Omnibus TPB 6'
-            },
-            {
-                comicId: '5630-the-boys-dear-becky-2020.html',
-                title: 'The Boys: Dear Becky (2020-)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/62/40cd2837a2cf1b7e549a82a0113448.webp`,
-                subtitle: 'The Boys: Dear Becky #8'
-            },
-            {
-                comicId: '27656-the-boys-butcher-baker-candlestickmaker-2011.html',
-                title: 'The Boys: Butcher, Baker, Candlestickmaker (2011)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/99/954784273e3b984a49625ab2808fd4.webp`,
-                subtitle: 'The Boys: Butcher, Baker, Candlestickmaker Issue #6'
-            },
-            {
-                comicId: '27658-the-boys-highland-laddie-2010-2011.html',
-                title: 'The Boys: Highland Laddie (2010-2011)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/19/dad20da66f4e999a0d4a52d371878e.webp`,
-                subtitle: 'The Boys: Highland Laddie TPB'
-            },
-            {
-                comicId: '27654-the-boys-of-sheriff-street-2016.html',
-                title: 'The Boys of Sheriff Street (2016-)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/f0/3629eaf170aca775da499203ad92ee.webp`,
-                subtitle: 'The Boys of Sheriff Street TPB'
-            },
-            {
-                comicId: '29375-the-three-stooges-the-boys-are-back-2016.html',
-                title: 'The Three Stooges: The Boys Are Back (2016-)',
-                image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/7a/3727f4538e80c0db77b31235f5cfb4.webp`,
-                subtitle: 'The Three Stooges: The Boys Are Back Full'
-            }
+            { comicId: '5629-the-boys-2006-2012.html', title: 'The Boys (2006-2012)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/68/a134c2dc30a8bf16922095b4989fb4.webp`, subtitle: 'The Boys (2006-2012) #Omnibus Vol. 6' },
+            { comicId: '27657-the-boys-herogasm-2009.html', title: 'The Boys: Herogasm (2009)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/66/6f4afd212cea540df36163e5de0516.webp`, subtitle: 'The Boys: Herogasm Issue #6' },
+            { comicId: '27655-the-boys-omnibus-2019.html', title: 'The Boys Omnibus (2019-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/ff/c453990f0822ed10d881d451211104.webp`, subtitle: 'The Boys Omnibus TPB 6' },
+            { comicId: '5630-the-boys-dear-becky-2020.html', title: 'The Boys: Dear Becky (2020-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/62/40cd2837a2cf1b7e549a82a0113448.webp`, subtitle: 'The Boys: Dear Becky #8' },
+            { comicId: '27656-the-boys-butcher-baker-candlestickmaker-2011.html', title: 'The Boys: Butcher, Baker, Candlestickmaker (2011)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/99/954784273e3b984a49625ab2808fd4.webp`, subtitle: 'The Boys: Butcher, Baker, Candlestickmaker Issue #6' },
+            { comicId: '27658-the-boys-highland-laddie-2010-2011.html', title: 'The Boys: Highland Laddie (2010-2011)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/19/dad20da66f4e999a0d4a52d371878e.webp`, subtitle: 'The Boys: Highland Laddie TPB' },
+            { comicId: '27654-the-boys-of-sheriff-street-2016.html', title: 'The Boys of Sheriff Street (2016-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/f0/3629eaf170aca775da499203ad92ee.webp`, subtitle: 'The Boys of Sheriff Street TPB' },
+            { comicId: '29375-the-three-stooges-the-boys-are-back-2016.html', title: 'The Three Stooges: The Boys Are Back (2016-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/7a/3727f4538e80c0db77b31235f5cfb4.webp`, subtitle: 'The Three Stooges: The Boys Are Back Full' },
+            { comicId: '33593-please-login-or-register-adv-search-imgsearchclickfunction-submit-var-delay-function-var-timer-0-return-function-callback-ms-cleartimeouttimer-timer.html', title: 'The Boys', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/0b/d764d3741a6432b6c8d5eaade025ae.webp`, subtitle: 'The Boys Issue #72' },
+            { comicId: '12291-crossed.html', title: 'Crossed', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/ef/b05f57d255b6f94067748feee2d082.jpg`, subtitle: 'Avatar Press • 2008' },
+            { comicId: '6975-invincible-2003.html', title: 'Invincible (2003)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/25/f6a2dd4c3708ea1519f0ac28084790.jpg`, subtitle: 'Top Rated' },
+            { comicId: '33051-absolute-batman-2024.html', title: 'Absolute Batman (2024-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/6e/fdb398ba48cfbe9c2b9c2fa9a917af.jpg`, subtitle: 'Top Rated' }
         ]
     }
 
@@ -506,7 +492,7 @@ export class BatCave
                 { comicId: '16696-transformers-2023.html', title: 'Transformers (2023-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/ff/5c40b3fc7d129aec035793086ad65a.jpg`, subtitle: 'Top Rated' },
                 { comicId: '33758-batman-2025.html', title: 'Batman (2025-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/b5/ed483acd9b2961caf09b703e067485.jpg`, subtitle: 'Top Rated' },
                 { comicId: '6966-the-amazing-spider-man-1963.html', title: 'The Amazing Spider-Man (1963)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/a6/a91fa781764a6cce032da3059d4aa7.jpg`, subtitle: 'Top Rated' },
-                { comicId: '33450-the-amazing-spider-man-2025.html', title: 'The Amazing Spider-Man (2025-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/47/fd7af15c340d0866eeae9ca7910fcc.jpg`, subtitle: 'Top Rated' }
+                { comicId: '33450-the-amazing-spider-man-2025.html', title: 'The Amazing Spider-Man (2025)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/47/fd7af15c340d0866eeae9ca7910fcc.jpg`, subtitle: 'Top Rated' }
             ]
         }
     }
