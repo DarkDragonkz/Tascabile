@@ -78,6 +78,53 @@ export class MangaWorldParser {
         return results
     }
 
+    parseHomeSectionItemsByHeading($: CheerioAPI, headings: string[]): MangaWorldSourceManga[] {
+        const normalizedHeadings = headings.map((heading: string) => this.normalizeTextForMatch(heading))
+        const results: MangaWorldSourceManga[] = []
+        const seen = new Set<string>()
+
+        $('h1, h2, h3, h4, .s-title').each((_: number, headingElement: any) => {
+            const headingText = this.normalizeTextForMatch($(headingElement).text())
+
+            if (!normalizedHeadings.some((heading: string) => headingText.includes(heading))) {
+                return
+            }
+
+            const sectionTitle = $(headingElement).closest('.s-title')
+            const candidateContainers = [
+                sectionTitle.next(),
+                sectionTitle.nextAll('.comics-grid, .comics-flex, .row, .swiper, .carousel').first(),
+                sectionTitle.parent(),
+                sectionTitle.parent().next(),
+                sectionTitle.closest('section'),
+                sectionTitle.closest('.col-12, .col-sm-12, .col-md-8, .col-xl-9'),
+                $(headingElement).parent().next(),
+                $(headingElement).parent()
+            ]
+
+            for (const container of candidateContainers) {
+                container.find('.entry, .entry.vertical').each((__: number, itemElement: any) => {
+                    const item = this.parseSourceMangaFromEntry($, itemElement)
+
+                    if (!item || seen.has(item.mangaId)) {
+                        return
+                    }
+
+                    seen.add(item.mangaId)
+                    results.push(item)
+                })
+
+                if (results.length > 0) {
+                    return false
+                }
+            }
+
+            return undefined
+        })
+
+        return results
+    }
+
     parseMangaDetails($: CheerioAPI, mangaId: string): MangaWorldMangaDetails {
         const title = this.cleanText($('.single-comic .name.bigger').first().text())
             || this.cleanText($('h1.name.bigger').first().text())
@@ -394,6 +441,13 @@ export class MangaWorldParser {
         }
 
         return url
+    }
+
+    private normalizeTextForMatch(value?: string): string {
+        return this.cleanText(value)
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
     }
 
     private cleanText(value?: string): string {
