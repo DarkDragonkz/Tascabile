@@ -19,7 +19,6 @@ import {
     SourceManga
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
-import { buildUrl } from '../../lib/core/url'
 import {
     ReadComicsOnlineChapter,
     ReadComicsOnlineComicDetails,
@@ -35,7 +34,7 @@ const SECTION_IDS = {
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.3',
+    version: '0.1.4',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -114,28 +113,21 @@ export class ReadComicsOnline
 
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const keyword = query.title ?? ''
-        const urls = [
-            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/Search/Comic', { keyword, page }),
-            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/ComicList', { keyword, page }),
-            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/Search', { keyword, page })
-        ]
+        const keyword = (query.title ?? '').trim()
 
-        for (const url of urls) {
-            const $ = await this.getCheerio(url)
-            const results = this.parser.parseSearchResults($)
-
-            if (results.length > 0) {
-                return App.createPagedResults({
-                    results: results.map((result: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(result)),
-                    metadata: { page: page + 1 }
-                })
-            }
+        if (keyword.length < 2) {
+            return App.createPagedResults({
+                results: [],
+                metadata: undefined
+            })
         }
 
+        const $ = await this.postSearchCheerio(keyword)
+        const results = this.parser.parseSearchResults($)
+
         return App.createPagedResults({
-            results: [],
-            metadata: undefined
+            results: results.map((result: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(result)),
+            metadata: results.length > 0 && page === 1 ? { page: page + 1 } : undefined
         })
     }
 
@@ -168,6 +160,24 @@ export class ReadComicsOnline
             url,
             method: 'GET'
         })
+
+        const response = await this.requestManager.schedule(request, 1)
+        const data = typeof response.data === 'string'
+            ? response.data
+            : String(response.data)
+
+        return this.cheerio.load(data)
+    }
+
+    private async postSearchCheerio(keyword: string): Promise<CheerioAPI> {
+        const request = App.createRequest({
+            url: `${READ_COMICS_ONLINE_DOMAIN}/Search/Comic`,
+            method: 'POST',
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            data: `keyword=${encodeURIComponent(keyword)}`
+        } as any)
 
         const response = await this.requestManager.schedule(request, 1)
         const data = typeof response.data === 'string'
