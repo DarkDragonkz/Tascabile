@@ -62,6 +62,40 @@ describe('MangaWorldParser', () => {
         assert.equal(latestChapter?.volumeName, 'Volume 39')
     })
 
+    it('normalizes padded chapter numbers without truncating them incorrectly', () => {
+        const $ = loadHtml(`
+            <div class="volume-element">
+                <div class="volume-name">Volume 01</div>
+                <div class="chapter">
+                    <a class="chap" href="/manga/1848/blue-lock/read/chapter-001/1">Capitolo 001</a>
+                    <span class="date">12 maggio 2024</span>
+                </div>
+                <div class="chapter">
+                    <a class="chap" href="/manga/1848/blue-lock/read/chapter-010/1">Capitolo 010</a>
+                    <span class="date">oggi</span>
+                </div>
+                <div class="chapter">
+                    <a class="chap" href="/manga/1848/blue-lock/read/chapter-100/1">Capitolo 100</a>
+                    <span class="date">ieri</span>
+                </div>
+            </div>
+        `)
+
+        const chapters = parser.parseChapters($, '1848/blue-lock')
+
+        assert.equal(chapters[0].name, 'Capitolo 01')
+        assert.equal(chapters[0].chapNum, 1)
+        assert.equal(chapters[0].time?.getFullYear(), 2024)
+        assert.equal(chapters[0].time?.getMonth(), 4)
+        assert.equal(chapters[0].time?.getDate(), 12)
+
+        assert.equal(chapters[1].name, 'Capitolo 10')
+        assert.equal(chapters[1].chapNum, 10)
+
+        assert.equal(chapters[2].name, 'Capitolo 100')
+        assert.equal(chapters[2].chapNum, 100)
+    })
+
     it('parses all chapter pages from list reader fixture', () => {
         const $ = loadFixture('chapter-list.html')
         const details = parser.parseChapterDetails(
@@ -75,6 +109,24 @@ describe('MangaWorldParser', () => {
         assert.equal(details.pages.length, 76)
         assert.ok(details.pages[0].endsWith('/1.png'))
         assert.ok(details.pages[75].endsWith('/76.png'))
+    })
+
+    it('parses lazy loaded chapter pages from data attributes and srcset', () => {
+        const $ = loadHtml(`
+            <div id="page">
+                <img class="page-image" data-src="/chapters/blue-lock/1.jpg">
+                <img class="img-fluid" srcset="https://cdn.mangaworld.mx/chapters/blue-lock/2.webp 1x, https://cdn.mangaworld.mx/chapters/blue-lock/2-large.webp 2x">
+                <img class="page-image" src="https://cdn.mangaworld.mx/covers/blue-lock.jpg">
+                <img class="page-image" data-src="/chapters/blue-lock/1.jpg">
+            </div>
+        `)
+
+        const details = parser.parseChapterDetails($, '1848/blue-lock', 'chapter-001')
+
+        assert.deepEqual(details.pages, [
+            'https://www.mangaworld.mx/chapters/blue-lock/1.jpg',
+            'https://cdn.mangaworld.mx/chapters/blue-lock/2.webp'
+        ])
     })
 
     it('parses search results from archive search fixture', () => {
@@ -102,6 +154,32 @@ describe('MangaWorldParser', () => {
         assert.ok(results.length > 0)
         assert.ok(results.some((result: MangaWorldSourceManga) => result.title.length > 0))
         assert.ok(results.every((result: MangaWorldSourceManga) => result.mangaId.includes('/')))
+    })
+
+    it('returns an empty list when a homepage section has no matching items', () => {
+        const $ = loadHtml('<main><h3>Nessun elemento</h3></main>')
+        const results = parser.parseHomeSectionItems($, '#chapters-slide .entry.vertical')
+
+        assert.deepEqual(results, [])
+    })
+
+    it('parses entry subtitles consistently', () => {
+        const $ = loadHtml(`
+            <div class="entry">
+                <a class="manga-title" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">Blue Lock</a>
+                <a class="xanh">Capitolo 341</a>
+            </div>
+            <div class="entry">
+                <a class="manga-title" href="https://www.mangaworld.mx/manga/1708/one-piece/" title="One Piece">One Piece</a>
+                <span class="genre">Tipo: Manga</span>
+                <span class="status">Stato: In corso</span>
+            </div>
+        `)
+
+        const results = parser.parseSearchResults($)
+
+        assert.equal(results[0].subtitle, 'Ultimo: Capitolo 341')
+        assert.equal(results[1].subtitle, 'Manga • In corso')
     })
 
     it('parses monthly section items by heading', () => {
