@@ -75,19 +75,27 @@ export class ReadComicsOnlineParser {
     }
 
     parseComicDetails($: CheerioAPI, comicId: string): ReadComicsOnlineComicDetails {
-        const title = this.cleanText($('a.bigChar').first().text()) || this.extractTitleFromPageTitle($) || comicId
-        const publication = this.extractInfoValue($, 'Publication date')
+        const title =
+            this.cleanText($('a.bigChar').first().text()) ||
+            this.extractTitleFromPageTitle($) ||
+            this.titleFromSlug(comicId)
+
+        const publication = this.extractInfoValue($, 'Publication date') || this.extractInfoValue($, 'Released')
         const year = publication ? Number.parseInt(publication, 10) : undefined
 
         return {
             id: comicId,
             title,
-            image: this.absoluteUrl($('link[rel="image_src"]').first().attr('href') || $('.barContent img').first().attr('src')),
+            image: this.absoluteUrl(
+                $('link[rel="image_src"]').first().attr('href') ||
+                $('meta[property="og:image"]').first().attr('content') ||
+                $('.barContent img, .cover img, img[src*="Uploads"]').first().attr('src')
+            ),
             description: this.extractSummary($),
-            genres: this.extractAnchorTexts($, '.barContent a[href^="/Genre/"]'),
-            publisher: this.extractAnchorTexts($, '.barContent a[href^="/Publisher/"]')[0],
-            writers: this.extractAnchorTexts($, '.barContent a[href^="/Writer/"]'),
-            artists: this.extractAnchorTexts($, '.barContent a[href^="/Artist/"]'),
+            genres: this.extractAnchorTexts($, '.barContent a[href^="/Genre/"], a[href^="/Genre/"]'),
+            publisher: this.extractAnchorTexts($, '.barContent a[href^="/Publisher/"], a[href^="/Publisher/"]')[0],
+            writers: this.extractAnchorTexts($, '.barContent a[href^="/Writer/"], a[href^="/Writer/"]'),
+            artists: this.extractAnchorTexts($, '.barContent a[href^="/Artist/"], a[href^="/Artist/"]'),
             status: this.extractInfoValue($, 'Status'),
             year: year !== undefined && Number.isFinite(year) ? year : undefined
         }
@@ -98,15 +106,40 @@ export class ReadComicsOnlineParser {
         const seen = new Set<string>()
 
         $('table.listing tr').each((_: number, rowElement: any) => {
-            const link = $(rowElement).find('a[href*="/Comic/"]').first()
+            const link = $(rowElement).find(`a[href*="/Comic/${comicId}/"]`).first()
             const id = this.extractChapterId(comicId, link.attr('href'))
 
             if (!id || seen.has(id)) {
                 return
             }
 
-            const name = this.normalizeChapterName(this.cleanText(link.text()))
+            const name = this.getChapterNameFromLink($, link, id)
             const dateText = this.cleanText($(rowElement).find('td').last().text())
+
+            seen.add(id)
+            chapters.push({
+                id,
+                comicId,
+                name,
+                chapNum: this.parseChapterNumber(name),
+                time: this.parseDate(dateText)
+            })
+        })
+
+        if (chapters.length > 0) {
+            return chapters
+        }
+
+        $(`a[href*="/Comic/${comicId}/"]`).each((_: number, linkElement: any) => {
+            const link = $(linkElement)
+            const id = this.extractChapterId(comicId, link.attr('href'))
+
+            if (!id || seen.has(id)) {
+                return
+            }
+
+            const name = this.getChapterNameFromLink($, link, id)
+            const dateText = this.extractNearbyDateText($, linkElement)
 
             seen.add(id)
             chapters.push({
@@ -174,7 +207,7 @@ export class ReadComicsOnlineParser {
                 return
             }
 
-            const title = this.extractComicTitleFromLink($, linkElement)
+            const title = this.extractComicTitleFromLink($, linkElement) || this.titleFromSlug(comicId)
 
             if (!title) {
                 return
@@ -203,7 +236,7 @@ export class ReadComicsOnlineParser {
         const comicId = this.extractComicId(link.attr('href'))
         const tooltipHtml = $(element).attr('title')
         const tooltipTitle = tooltipHtml ? this.extractTooltipTitle(tooltipHtml) : undefined
-        const title = tooltipTitle || this.cleanText($(element).find('span.title').first().text()) || this.cleanText(link.text())
+        const title = tooltipTitle || this.cleanText($(element).find('span.title').first().text()) || this.cleanText(link.text()) || this.titleFromSlug(comicId ?? '')
 
         if (!comicId || !title) {
             return undefined
@@ -215,6 +248,30 @@ export class ReadComicsOnlineParser {
             image: this.absoluteUrl($(element).find('img').first().attr('src')),
             subtitle: tooltipHtml ? this.extractTooltipValue(tooltipHtml, 'Status') : undefined
         }
+    }
+
+    private getChapterNameFromLink($: CheerioAPI, link: any, id: string): string {
+        return this.normalizeChapterName(this.cleanText(link.text()) || this.chapterNameFromId(id))
+    }
+
+    private chapterNameFromId(id: string): string {
+        return decodeURIComponent(id.split('?')[0]).replace(/-/g, ' ')
+    }
+
+    private titleFromSlug(slug: string): string {
+        const spaced = decodeURIComponent(slug)
+            .replace(/-s(?=-|$)/g, "'s")
+            .replace(/-/g, ' ')
+
+        return spaced
+            .split(' ')
+            .filter(Boolean)
+            .map(word => /^(and|or|the|in|of|a|an)$/i.test(word)
+                ? word.toLowerCase()
+                : word.charAt(0).toUpperCase() + word.slice(1)
+            )
+            .join(' ')
+            .replace(/^./, first => first.toUpperCase())
     }
 
     private extractComicTitleFromLink($: CheerioAPI, linkElement: any): string {
@@ -246,10 +303,18 @@ export class ReadComicsOnlineParser {
         return undefined
     }
 
+    private extractNearbyDateText($: CheerioAPI, linkElement: any): string {
+        const container = $(linkElement).closest('tr, li, .item, .row, div')
+        const text = this.cleanText(container.text())
+        const dateMatch = text.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/)
+
+        return dateMatch?.[0] ?? ''
+    }
+
     private extractSummary($: CheerioAPI): string | undefined {
         let summary = ''
 
-        $('.barContent span.info').each((_: number, infoElement: any) => {
+        $('.barContent span.info, span.info').each((_: number, infoElement: any) => {
             const label = this.cleanText($(infoElement).text()).replace(':', '').toLowerCase()
 
             if (label !== 'summary') {
@@ -265,8 +330,12 @@ export class ReadComicsOnlineParser {
     private extractInfoValue($: CheerioAPI, label: string): string | undefined {
         let value: string | undefined
 
-        $('.barContent p').each((_: number, paragraphElement: any) => {
-            const text = this.cleanText($(paragraphElement).text())
+        $('.barContent p, .barContent div, p, li').each((_: number, element: any) => {
+            if (value) {
+                return
+            }
+
+            const text = this.cleanText($(element).text())
             const prefix = `${label}:`
 
             if (!text.startsWith(prefix)) {
