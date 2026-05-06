@@ -32,13 +32,13 @@ const PLACEHOLDER_IMAGE = 'https://www.mangaworld.mx/public/assets/images/MangaW
 
 const SECTION_IDS = {
     TRENDING: 'trending',
-    LATEST: 'latest',
+    MONTHLY: 'monthly',
     NEWEST: 'newest',
     MOST_READ: 'most_read'
 } as const
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.2',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -154,8 +154,12 @@ export class MangaWorld
             .parseHomeSectionItems($, '#chapters-slide .entry.vertical')
             .slice(0, 10)
 
-        const latestItems = this.parser
-            .parseHomeSectionItems($, '.comics-grid .entry')
+        const monthlyItems = this.parser
+            .parseHomeSectionItemsByHeading($, [
+                'Manga del mese',
+                'Manga del Mese',
+                'Del mese'
+            ])
             .slice(0, 12)
 
         const newestItems = this.parser
@@ -170,13 +174,19 @@ export class MangaWorld
             items: trendingItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
         })
 
-        const latestSection = App.createHomeSection({
-            id: SECTION_IDS.LATEST,
-            title: 'Aggiornati di recente',
-            type: 'singleRowNormal',
-            containsMoreItems: true,
-            items: latestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-        })
+        sectionCallback(trendingSection)
+
+        if (monthlyItems.length > 0) {
+            const monthlySection = App.createHomeSection({
+                id: SECTION_IDS.MONTHLY,
+                title: 'Manga del mese',
+                type: 'singleRowNormal',
+                containsMoreItems: false,
+                items: monthlyItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+            })
+
+            sectionCallback(monthlySection)
+        }
 
         const newestSection = App.createHomeSection({
             id: SECTION_IDS.NEWEST,
@@ -186,12 +196,17 @@ export class MangaWorld
             items: newestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
         })
 
-        sectionCallback(trendingSection)
-        sectionCallback(latestSection)
         sectionCallback(newestSection)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
+        if (homepageSectionId === SECTION_IDS.MONTHLY) {
+            return App.createPagedResults({
+                results: [],
+                metadata: undefined
+            })
+        }
+
         const page = this.getPageFromMetadata(metadata)
         const sort = this.getSortForSection(homepageSectionId)
 
@@ -273,8 +288,6 @@ export class MangaWorld
         switch (homepageSectionId) {
             case SECTION_IDS.TRENDING:
                 return 'most_read'
-            case SECTION_IDS.LATEST:
-                return 'newest'
             case SECTION_IDS.NEWEST:
                 return 'newest'
             case SECTION_IDS.MOST_READ:
