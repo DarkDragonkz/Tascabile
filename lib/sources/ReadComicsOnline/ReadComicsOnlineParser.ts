@@ -212,7 +212,7 @@ export class ReadComicsOnlineParser {
 
     private extractKeywordPublisher($: any): string | undefined {
         const keywords = $('meta[name="keywords"]').attr('content') ?? ''
-        const parts = keywords.split(',').map(part => part.trim()).filter(Boolean)
+        const parts = keywords.split(',').map((part: string) => part.trim()).filter((part: string) => Boolean(part))
 
         return parts.length > 2 ? parts[2] : undefined
     }
