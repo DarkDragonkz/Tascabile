@@ -152,11 +152,15 @@ export class MangaWorld
 
         const trendingItems = this.parser
             .parseHomeSectionItems($, '#chapters-slide .entry.vertical')
-            .slice(0, 12)
+            .slice(0, 10)
 
         const latestItems = this.parser
             .parseHomeSectionItems($, '.comics-grid .entry')
-            .slice(0, 18)
+            .slice(0, 12)
+
+        const newestItems = this.parser
+            .parseHomeSectionItems($, '.comics-grid .entry')
+            .slice(0, 12)
 
         const trendingSection = App.createHomeSection({
             id: SECTION_IDS.TRENDING,
@@ -169,18 +173,26 @@ export class MangaWorld
         const latestSection = App.createHomeSection({
             id: SECTION_IDS.LATEST,
             title: 'Aggiornati di recente',
-            type: 'doubleRow',
+            type: 'singleRowNormal',
             containsMoreItems: true,
             items: latestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
         })
 
+        const newestSection = App.createHomeSection({
+            id: SECTION_IDS.NEWEST,
+            title: 'Ultime aggiunte',
+            type: 'singleRowNormal',
+            containsMoreItems: true,
+            items: newestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+        })
+
         sectionCallback(trendingSection)
         sectionCallback(latestSection)
+        sectionCallback(newestSection)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-
         const sort = this.getSortForSection(homepageSectionId)
 
         const url = buildUrl(MANGA_WORLD_DOMAIN, '/archive', {
