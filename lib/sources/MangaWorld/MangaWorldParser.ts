@@ -90,29 +90,26 @@ export class MangaWorldParser {
                 return
             }
 
-            const sectionTitle = $(headingElement).closest('.s-title')
+            const titleContainer = $(headingElement).closest('.s-title')
+            const root = titleContainer.length > 0
+                ? titleContainer
+                : $(headingElement)
+
             const candidateContainers = [
-                sectionTitle.next(),
-                sectionTitle.nextAll('.comics-grid, .comics-flex, .row, .swiper, .carousel').first(),
-                sectionTitle.parent(),
-                sectionTitle.parent().next(),
-                sectionTitle.closest('section'),
-                sectionTitle.closest('.col-12, .col-sm-12, .col-md-8, .col-xl-9'),
+                root.next(),
+                root.nextAll('.comics-grid, .comics-flex, .row, .swiper, .carousel, section').first(),
+                root.parent(),
+                root.parent().next(),
+                root.closest('section'),
+                root.closest('.container'),
+                root.closest('.col-12, .col-sm-12, .col-md-8, .col-xl-9'),
+                root.parent().find('.comics-grid, .comics-flex, .entry, .entry.vertical').first().parent(),
                 $(headingElement).parent().next(),
                 $(headingElement).parent()
             ]
 
             for (const container of candidateContainers) {
-                container.find('.entry, .entry.vertical').each((__: number, itemElement: any) => {
-                    const item = this.parseSourceMangaFromEntry($, itemElement)
-
-                    if (!item || seen.has(item.mangaId)) {
-                        return
-                    }
-
-                    seen.add(item.mangaId)
-                    results.push(item)
-                })
+                this.collectSourceMangaFromContainer($, container, results, seen)
 
                 if (results.length > 0) {
                     return false
@@ -258,6 +255,37 @@ export class MangaWorldParser {
         })
 
         return tags
+    }
+
+    private collectSourceMangaFromContainer(
+        $: CheerioAPI,
+        container: any,
+        results: MangaWorldSourceManga[],
+        seen: Set<string>
+    ): void {
+        container.find('.entry, .entry.vertical').each((_: number, itemElement: any) => {
+            const item = this.parseSourceMangaFromEntry($, itemElement)
+
+            if (!item || seen.has(item.mangaId)) {
+                return
+            }
+
+            seen.add(item.mangaId)
+            results.push(item)
+        })
+
+        if (results.length > 0) {
+            return
+        }
+
+        const directItem = this.parseSourceMangaFromEntry($, container)
+
+        if (!directItem || seen.has(directItem.mangaId)) {
+            return
+        }
+
+        seen.add(directItem.mangaId)
+        results.push(directItem)
     }
 
     private parseSourceMangaFromEntry($: CheerioAPI, element: any): MangaWorldSourceManga | undefined {
