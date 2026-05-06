@@ -20,8 +20,7 @@ La migrazione avverrà una source alla volta. Ogni source dovrà avere:
 
 | Source | Stato |
 |---|---|
+| MangaWorld | In corso |
 | MangaDex IT | Da migrare |
 | MangaDex | Da migrare |
-| MangaWorld | Da migrare |
-| ReadComicsOnline | Da migrare |
 | Altre source | Da analizzare dopo |
