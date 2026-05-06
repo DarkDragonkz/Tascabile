@@ -1,516 +1,218 @@
-import type { CheerioAPI } from 'cheerio'
-
-const READ_COMICS_ONLINE_DOMAIN = 'https://readcomiconline.li'
-
+import {
+   Chapter,
+   ChapterDetails,
+   PartialSourceManga,
+   SourceManga
+} from '@paperback/types'
 export interface ReadComicsOnlineSourceComic {
-    comicId: string
-    title: string
-    image?: string
-    subtitle?: string
+   comicId: string
+   title: string
+   image?: string
+   subtitle?: string
 }
-
 export interface ReadComicsOnlineComicDetails {
-    id: string
-    title: string
-    image?: string
-    description?: string
-    genres: string[]
-    publisher?: string
-    writers: string[]
-    artists: string[]
-    status?: string
-    year?: number
+   id: string
+   title: string
+   image?: string
+   description?: string
+   status?: string
+   artists: string[]
+   writers: string[]
+   genres: string[]
+   publisher?: string
+   year?: number
 }
-
 export interface ReadComicsOnlineChapter {
-    id: string
-    comicId: string
-    name: string
-    chapNum?: number
-    time?: Date
+   id: string
+   comicId: string
+   name: string
+   chapNum?: number
+   time?: Date
 }
-
-export interface ReadComicsOnlineChapterDetails {
-    id: string
-    comicId: string
-    pages: string[]
-}
-
+const READ_COMICS_ONLINE_DOMAIN = 'https://readcomiconline.li'
 export class ReadComicsOnlineParser {
-    parseSearchResults($: CheerioAPI): ReadComicsOnlineSourceComic[] {
-        const results: ReadComicsOnlineSourceComic[] = []
-        const seen = new Set<string>()
-
-        $('div.item, li, tr, .comic, .row, .update').each((_: number, element: any) => {
-            const item = this.parseComicListItem($, element)
-
-            if (!item || seen.has(item.comicId)) {
-                return
-            }
-
-            seen.add(item.comicId)
-            results.push(item)
-        })
-
-        if (results.length > 0) {
-            return results
-        }
-
-        this.parseComicLinksFromContainer($, $('body'), results, seen)
-
-        return results
-    }
-
-    parseHomeLatestUpdates($: CheerioAPI): ReadComicsOnlineSourceComic[] {
-        const results: ReadComicsOnlineSourceComic[] = []
-        const seen = new Set<string>()
-
-        const latestContainers = this.findLatestContainers($)
-
-        for (const container of latestContainers) {
-            this.parseComicLinksFromContainer($, container, results, seen)
-        }
-
-        if (results.length > 0) {
-            return results
-        }
-
-        this.parseComicLinksFromContainer($, $('body'), results, seen)
-
-        return results
-    }
-
-    parseComicDetails($: CheerioAPI, comicId: string): ReadComicsOnlineComicDetails {
-        const title =
-            this.cleanText($('a.bigChar').first().text()) ||
-            this.extractTitleFromPageTitle($) ||
-            this.titleFromSlug(comicId)
-
-        const publication = this.extractInfoValue($, 'Publication date') || this.extractInfoValue($, 'Released')
-        const year = publication ? Number.parseInt(publication, 10) : undefined
-
-        return {
-            id: comicId,
-            title,
-            image: this.absoluteUrl(
-                $('link[rel="image_src"]').first().attr('href') ||
-                $('meta[property="og:image"]').first().attr('content') ||
-                $('.barContent img, .cover img, img[src*="Uploads"]').first().attr('src')
-            ),
-            description: this.extractSummary($),
-            genres: this.extractAnchorTexts($, '.barContent a[href^="/Genre/"], a[href^="/Genre/"]'),
-            publisher: this.extractAnchorTexts($, '.barContent a[href^="/Publisher/"], a[href^="/Publisher/"]')[0],
-            writers: this.extractAnchorTexts($, '.barContent a[href^="/Writer/"], a[href^="/Writer/"]'),
-            artists: this.extractAnchorTexts($, '.barContent a[href^="/Artist/"], a[href^="/Artist/"]'),
-            status: this.extractInfoValue($, 'Status'),
-            year: year !== undefined && Number.isFinite(year) ? year : undefined
-        }
-    }
-
-    parseChapters($: CheerioAPI, comicId: string): ReadComicsOnlineChapter[] {
-        const chapters: ReadComicsOnlineChapter[] = []
-        const seen = new Set<string>()
-
-        $('table.listing tr').each((_: number, rowElement: any) => {
-            const link = $(rowElement).find(`a[href*="/Comic/${comicId}/"]`).first()
-            const id = this.extractChapterId(comicId, link.attr('href'))
-
-            if (!id || seen.has(id)) {
-                return
-            }
-
-            const name = this.getChapterNameFromLink($, link, id)
-            const dateText = this.cleanText($(rowElement).find('td').last().text())
-
-            seen.add(id)
-            chapters.push({
-                id,
-                comicId,
-                name,
-                chapNum: this.parseChapterNumber(name),
-                time: this.parseDate(dateText)
-            })
-        })
-
-        if (chapters.length > 0) {
-            return chapters
-        }
-
-        $(`a[href*="/Comic/${comicId}/"]`).each((_: number, linkElement: any) => {
-            const link = $(linkElement)
-            const id = this.extractChapterId(comicId, link.attr('href'))
-
-            if (!id || seen.has(id)) {
-                return
-            }
-
-            const name = this.getChapterNameFromLink($, link, id)
-            const dateText = this.extractNearbyDateText($, linkElement)
-
-            seen.add(id)
-            chapters.push({
-                id,
-                comicId,
-                name,
-                chapNum: this.parseChapterNumber(name),
-                time: this.parseDate(dateText)
-            })
-        })
-
-        return chapters
-    }
-
-    parseChapterDetails($: CheerioAPI, comicId: string, chapterId: string): ReadComicsOnlineChapterDetails {
-        const html = $.root().html() ?? ''
-
-        return {
-            id: chapterId,
-            comicId,
-            pages: this.extractPageImages($, html)
-        }
-    }
-
-    private findLatestContainers($: CheerioAPI): any[] {
-        const containers: any[] = []
-
-        $('.barTitle, .heading, .box-title, h1, h2, h3, h4').each((_: number, titleElement: any) => {
-            const text = this.cleanText($(titleElement).text()).toLowerCase()
-
-            if (!text.includes('latest')) {
-                return
-            }
-
-            const nextContent = $(titleElement).next('.barContent, .box-content, .content, ul, table, div')
-
-            if (nextContent.length > 0) {
-                containers.push(nextContent)
-            }
-
-            const parent = $(titleElement).parent()
-
-            if (parent.length > 0) {
-                containers.push(parent)
-            }
-        })
-
-        $('.barContent, .box-content, .content').each((_: number, containerElement: any) => {
-            const text = this.cleanText($(containerElement).prev().text()).toLowerCase()
-
-            if (text.includes('latest')) {
-                containers.push($(containerElement))
-            }
-        })
-
-        return containers
-    }
-
-    private parseComicLinksFromContainer($: CheerioAPI, container: any, results: ReadComicsOnlineSourceComic[], seen: Set<string>): void {
-        container.find('a[href*="/Comic/"]').each((_: number, linkElement: any) => {
-            const href = $(linkElement).attr('href')
-            const comicId = this.extractComicId(href)
-
-            if (!comicId || seen.has(comicId) || this.isIssueHref(href)) {
-                return
-            }
-
-            const title = this.extractComicTitleFromLink($, linkElement) || this.titleFromSlug(comicId)
-
-            if (!title) {
-                return
-            }
-
-            const itemContainer = $(linkElement).closest('li, tr, .item, .comic, .update, .row, div')
-            const image = this.absoluteUrl(
-                itemContainer.find('img').first().attr('src') ||
-                itemContainer.find('img').first().attr('data-src') ||
-                $(linkElement).find('img').first().attr('src') ||
-                $(linkElement).find('img').first().attr('data-src')
-            )
-
-            const subtitle = this.extractNearbyIssueText($, linkElement, comicId)
-
-            seen.add(comicId)
-            results.push({
-                comicId,
-                title,
-                image,
-                subtitle
-            })
-        })
-    }
-
-    private parseComicListItem($: CheerioAPI, element: any): ReadComicsOnlineSourceComic | undefined {
-        const link = $(element).find('a[href*="/Comic/"]').first()
-        const comicId = this.extractComicId(link.attr('href'))
-        const tooltipHtml = $(element).attr('title')
-        const tooltipTitle = tooltipHtml ? this.extractTooltipTitle(tooltipHtml) : undefined
-        const title = tooltipTitle || this.cleanText($(element).find('span.title').first().text()) || this.cleanText(link.text()) || this.titleFromSlug(comicId ?? '')
-
-        if (!comicId || !title) {
-            return undefined
-        }
-
-        return {
-            comicId,
-            title,
-            image: this.absoluteUrl($(element).find('img').first().attr('src') || $(element).find('img').first().attr('data-src')),
-            subtitle: tooltipHtml ? this.extractTooltipValue(tooltipHtml, 'Status') : undefined
-        }
-    }
-
-    private getChapterNameFromLink($: CheerioAPI, link: any, id: string): string {
-        return this.normalizeChapterName(this.cleanText(link.text()) || this.chapterNameFromId(id))
-    }
-
-    private chapterNameFromId(id: string): string {
-        return decodeURIComponent(id.split('?')[0]).replace(/-/g, ' ')
-    }
-
-    private titleFromSlug(slug: string): string {
-        const spaced = decodeURIComponent(slug)
-            .replace(/-s(?=-|$)/g, "'s")
-            .replace(/-/g, ' ')
-
-        return spaced
-            .split(' ')
-            .filter(Boolean)
-            .map(word => /^(and|or|the|in|of|a|an)$/i.test(word)
-                ? word.toLowerCase()
-                : word.charAt(0).toUpperCase() + word.slice(1)
-            )
-            .join(' ')
-            .replace(/^./, first => first.toUpperCase())
-    }
-
-    private extractComicTitleFromLink($: CheerioAPI, linkElement: any): string {
-        const link = $(linkElement)
-        const directText = this.cleanText(link.clone().children().remove().end().text())
-        const altText = this.cleanText(link.find('img').first().attr('alt'))
-        const titleText = this.cleanText(link.attr('title'))
-        const fullText = this.cleanText(link.text())
-
-        return directText || altText || titleText || fullText
-    }
-
-    private extractNearbyIssueText($: CheerioAPI, linkElement: any, comicId: string): string | undefined {
-        const link = $(linkElement)
-        const candidates = [
-            link.nextAll('a[href*="/Comic/"]').first(),
-            link.closest('li, tr, .item, .comic, .update, .row, div').find(`a[href*="/Comic/${comicId}/"]`).first(),
-            link.parent().find('a.textDark, a[href*="Issue"], a[href*="Annual"]').first()
-        ]
-
-        for (const candidate of candidates) {
-            const text = this.cleanText(candidate.text())
-
-            if (text) {
-                return this.normalizeChapterName(text)
-            }
-        }
-
-        return undefined
-    }
-
-    private extractNearbyDateText($: CheerioAPI, linkElement: any): string {
-        const container = $(linkElement).closest('tr, li, .item, .row, div')
-        const text = this.cleanText(container.text())
-        const dateMatch = text.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/)
-
-        return dateMatch?.[0] ?? ''
-    }
-
-    private extractSummary($: CheerioAPI): string | undefined {
-        let summary = ''
-
-        $('.barContent span.info, span.info').each((_: number, infoElement: any) => {
-            const label = this.cleanText($(infoElement).text()).replace(':', '').toLowerCase()
-
-            if (label !== 'summary') {
-                return
-            }
-
-            summary = this.cleanText($(infoElement).parent().text().replace(/Summary:/i, ''))
-        })
-
-        return summary || undefined
-    }
-
-    private extractInfoValue($: CheerioAPI, label: string): string | undefined {
-        let value: string | undefined
-
-        $('.barContent p, .barContent div, p, li').each((_: number, element: any) => {
-            if (value) {
-                return
-            }
-
-            const text = this.cleanText($(element).text())
-            const prefix = `${label}:`
-
-            if (!text.startsWith(prefix)) {
-                return
-            }
-
-            value = this.cleanText(text.replace(prefix, '').replace(/Views:.*$/i, ''))
-        })
-
-        return value
-    }
-
-    private extractTooltipTitle(html: string): string | undefined {
-        const cheerio = require('cheerio') as typeof import('cheerio')
-        const $ = cheerio.load(html)
-
-        return this.cleanText($('p.title').first().text()) || undefined
-    }
-
-    private extractTooltipValue(html: string, label: string): string | undefined {
-        const cheerio = require('cheerio') as typeof import('cheerio')
-        const $ = cheerio.load(html)
-        const strong = $('strong')
-            .filter((_: number, element: any) => this.cleanText($(element).text()).replace(':', '') === label)
-            .first()
-
-        if (strong.length === 0) {
-            return undefined
-        }
-
-        return this.cleanText(strong.parent().text().replace(`${label}:`, '')) || undefined
-    }
-
-    private extractPageImages($: CheerioAPI, html: string): string[] {
-        const pages: string[] = []
-        const seen = new Set<string>()
-        const addPage = (url?: string): void => {
-            const absolute = this.absoluteUrl(this.cleanText(url))
-
-            if (!absolute || seen.has(absolute) || !this.isPageImageUrl(absolute)) {
-                return
-            }
-
-            seen.add(absolute)
-            pages.push(absolute)
-        }
-
-        $('#divImage img, #divImages img, #viewer img, .chapter-content img, img').each((_: number, imgElement: any) => {
-            addPage($(imgElement).attr('src'))
-            addPage($(imgElement).attr('data-src'))
-            addPage($(imgElement).attr('data-original'))
-        })
-
-        const patterns = [
-            /_NsXaOMixnz\s*=\s*['"]([^'"]+)['"]/g,
-            /_kKFngEK\.push\(['"]([^'"]+)['"]\)/g,
-            /lstImages\.push\(['"]([^'"]+)['"]\)/g,
-            /chapterImages\.push\(['"]([^'"]+)['"]\)/g,
-            /['"](https?:\/\/[^'"]+\.(?:jpg|jpeg|png|webp)(?:\?[^'"]*)?)['"]/gi,
-            /['"](\/[^'"]+\.(?:jpg|jpeg|png|webp)(?:\?[^'"]*)?)['"]/gi
-        ]
-
-        for (const pattern of patterns) {
-            let match: RegExpExecArray | null
-
-            while ((match = pattern.exec(html)) !== null) {
-                addPage(match[1])
-            }
-        }
-
-        return pages
-    }
-
-    private isPageImageUrl(url: string): boolean {
-        return /^https?:\/\//i.test(url) && /\.(jpg|jpeg|png|webp)(?:\?|$)/i.test(url)
-    }
-
-    private extractAnchorTexts($: CheerioAPI, selector: string): string[] {
-        const values: string[] = []
-        const seen = new Set<string>()
-
-        $(selector).each((_: number, element: any) => {
-            const value = this.cleanText($(element).text())
-
-            if (!value || seen.has(value)) {
-                return
-            }
-
-            seen.add(value)
-            values.push(value)
-        })
-
-        return values
-    }
-
-    private extractComicId(url?: string): string | undefined {
-        return url?.match(/\/?Comic\/([^/?#]+)/i)?.[1]
-    }
-
-    private extractChapterId(comicId: string, url?: string): string | undefined {
-        if (!url) {
-            return undefined
-        }
-
-        const escapedComicId = comicId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-        return url.match(new RegExp(`/Comic/${escapedComicId}/([^#]+)`, 'i'))?.[1]
-    }
-
-    private isIssueHref(url?: string): boolean {
-        return !!url && /\/Comic\/[^/]+\/[^/]+/i.test(url)
-    }
-
-    private normalizeChapterName(text: string): string {
-        const issueMatch = text.match(/Issue\s+#?(\d+(?:\.\d+)?)/i)
-
-        if (issueMatch) {
-            return `Issue #${issueMatch[1]}`
-        }
-
-        const annualMatch = text.match(/_?Annual\s+(\d{1,4})/i)
-
-        if (annualMatch) {
-            return `Annual ${annualMatch[1]}`
-        }
-
-        return text
-    }
-
-    private parseChapterNumber(text: string): number | undefined {
-        const match = text.match(/(?:Issue\s+#?|Annual\s+)(\d+(?:\.\d+)?)/i)
-        const value = match ? Number.parseFloat(match[1]) : undefined
-
-        return value !== undefined && Number.isFinite(value) ? value : undefined
-    }
-
-    private parseDate(text: string): Date | undefined {
-        const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
-
-        if (!match) {
-            return undefined
-        }
-
-        return new Date(Number.parseInt(match[3], 10), Number.parseInt(match[1], 10) - 1, Number.parseInt(match[2], 10))
-    }
-
-    private extractTitleFromPageTitle($: CheerioAPI): string | undefined {
-        return this.cleanText($('title').first().text().match(/^(.*?)\s+comic\s+\|\s+Read/i)?.[1]) || undefined
-    }
-
-    private absoluteUrl(url?: string): string | undefined {
-        if (!url) {
-            return undefined
-        }
-
-        if (url.startsWith('//')) {
-            return `https:${url}`
-        }
-
-        if (url.startsWith('/')) {
-            return `${READ_COMICS_ONLINE_DOMAIN}${url}`
-        }
-
-        return url
-    }
-
-    private cleanText(value?: string): string {
-        return (value ?? '').replace(/\s+/g, ' ').replace(/\u00a0/g, ' ').trim()
-    }
+   parseComicDetails($: any, mangaId: string): ReadComicsOnlineComicDetails {
+       const title = $('div.heading h3, .barContent h1, h1').first().text().trim()
+           || $('title').text().replace(/\s+/g, ' ').trim()
+       const image =
+           $('meta[property="og:image"]').attr('content')
+           || $('link[rel="image_src"]').attr('href')
+           || $('img').first().attr('src')
+       const description =
+           $('div.manga-summary, div.summary, div#div_desc, p').first().text().trim()
+           || $('meta[name="description"]').attr('content')
+           || ''
+       const infoText = $('body').text()
+       const genres: string[] = []
+       $('a[href*="/Genre/"]').each((_: number, el: any) => {
+           const g = $(el).text().trim()
+           if (g) genres.push(g)
+       })
+       return {
+           id: mangaId,
+           title: title || mangaId,
+           image: this.toAbsoluteUrl(image),
+           description,
+           status: /status:\s*completed/i.test(infoText) ? 'Completed'
+               : /status:\s*ongoing/i.test(infoText) ? 'Ongoing'
+               : 'Unknown',
+           artists: this.extractLabeledList(infoText, 'Artist'),
+           writers: this.extractLabeledList(infoText, 'Writer'),
+           genres,
+           publisher: this.extractLabeledValue(infoText, 'Publisher'),
+           year: this.extractYear(infoText)
+       }
+   }
+   parseChapters($: any, mangaId: string): ReadComicsOnlineChapter[] {
+       const chapters: ReadComicsOnlineChapter[] = []
+       $('a[href*="/Comic/"]').each((_: number, el: any) => {
+           const href = $(el).attr('href') ?? ''
+           if (!href.includes(`/Comic/${mangaId}/`)) return
+           const parts = href.split('/').filter(Boolean)
+           const chapterId = parts[parts.length - 1]?.split('?')[0]
+           if (!chapterId || chapterId.toLowerCase() === mangaId.toLowerCase()) return
+           const name = $(el).text().trim()
+           if (!name) return
+           if (chapters.some(ch => ch.id === chapterId)) return
+           const numMatch = name.match(/(\d+(\.\d+)?)/)
+           chapters.push({
+               id: chapterId,
+               comicId: mangaId,
+               name,
+               chapNum: numMatch ? Number(numMatch[1]) : undefined,
+               time: undefined
+           })
+       })
+       return chapters.reverse()
+   }
+   parseChapterDetails(html: string, mangaId: string, chapterId: string): ChapterDetails {
+       const pages = this.extractReaderPages(html)
+       return App.createChapterDetails({
+           id: chapterId,
+           mangaId,
+           pages
+       })
+   }
+   parseSearchResults($: any): ReadComicsOnlineSourceComic[] {
+       const results: ReadComicsOnlineSourceComic[] = []
+       $('.list-comic .item, .item').each((_: number, el: any) => {
+           const link = $(el).find('a').first()
+           const href = link.attr('href') ?? ''
+           const title = link.attr('title')?.trim() || link.text().trim()
+           const comicId = href.split('/Comic/')[1]?.split('?')[0]?.split('/')[0]
+           if (!comicId || !title) return
+           const image =
+               $(el).find('img').attr('src')
+               || $(el).find('img').attr('data-src')
+               || $(el).find('img').attr('data-original')
+           results.push({
+               comicId,
+               title,
+               image: this.toAbsoluteUrl(image),
+               subtitle: undefined
+           })
+       })
+       return results
+   }
+   parseHomeLatestUpdates($: any): ReadComicsOnlineSourceComic[] {
+       return this.parseSearchResults($)
+   }
+   // -------------------------
+   // Reader extraction
+   // -------------------------
+   private extractReaderPages(html: string): string[] {
+       const rawPages: string[] = []
+       // Formato "vecchio"
+       for (const match of html.matchAll(/_NsXaOMixnz\s*=\s*['"]([^'"]+)['"]/g)) {
+           rawPages.push(match[1])
+       }
+       // Altri formati possibili
+       for (const match of html.matchAll(/_0ESoWptGk\.push\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+           rawPages.push(match[1])
+       }
+       for (const match of html.matchAll(/_lstImgs\.push\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+           rawPages.push(match[1])
+       }
+       for (const match of html.matchAll(/_lstImages\.push\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+           rawPages.push(match[1])
+       }
+       const decoded = rawPages
+           .map(page => this.decodeReaderUrl(page))
+           .map(page => page.trim())
+           .filter(page => this.isRealPage(page))
+       return [...new Set(decoded)]
+   }
+   private decodeReaderUrl(input: string): string {
+       let value = input
+           .replace(/Vz__x2OdwP_/g, 'g')
+           .replace(/pw_.g28x/g, 'b')
+           .replace(/d2pr.x_27/g, 'h')
+           .trim()
+       // Se è già un URL valido, basta restituirlo
+       if (/^https?:\/\//i.test(value)) {
+           return value
+       }
+       // Replica della logica baeu() del sito
+       if (!value.includes('?')) {
+           return value
+       }
+       const query = value.substring(value.indexOf('?'))
+       const marker = value.includes('=s0?') ? '=s0?' : '=s1600?'
+       const markerIndex = value.indexOf(marker)
+       if (markerIndex === -1) {
+           return value
+       }
+       let core = value.substring(0, markerIndex)
+       core = this.step1(core)
+       core = this.step2(core)
+       try {
+           core = Buffer.from(core, 'base64').toString('utf8')
+       } catch {
+           return value
+       }
+       if (core.length < 18) {
+           return value
+       }
+       core = core.substring(0, 13) + core.substring(17)
+       core = core.substring(0, core.length - 2) + (value.includes('=s0?') ? '=s0' : '=s1')
+       return `https://2.bp.blogspot.com/${core}${query}`
+   }
+   private step1(value: string): string {
+       return value.substring(15, 15 + 18) + value.substring(15 + 18 + 17)
+   }
+   private step2(value: string): string {
+       return value.substring(0, value.length - 11) + value[value.length - 2] + value[value.length - 1]
+   }
+   private isRealPage(url: string): boolean {
+       if (!url) return false
+       if (url.length < 20) return false
+       if (!/^https?:\/\//i.test(url)) return false
+       const lower = url.toLowerCase()
+       if (lower.includes('/content/images/')) return false
+       if (lower.includes('blank.gif')) return false
+       if (lower.includes('loading.gif')) return false
+       if (lower.includes('error.png')) return false
+       if (lower.includes('logo.png')) return false
+       return true
+   }
+   private toAbsoluteUrl(url?: string): string | undefined {
+       if (!url) return undefined
+       if (url.startsWith('http://') || url.startsWith('https://')) return url
+       if (url.startsWith('//')) return `https:${url}`
+       if (url.startsWith('/')) return `${READ_COMICS_ONLINE_DOMAIN}${url}`
+       return `${READ_COMICS_ONLINE_DOMAIN}/${url}`
+   }
+   private extractLabeledValue(text: string, label: string): string | undefined {
+       const re = new RegExp(`${label}\\s*:\\s*([^\\n\\r]+)`, 'i')
+       return text.match(re)?.[1]?.trim()
+   }
+   private extractLabeledList(text: string, label: string): string[] {
+       const value = this.extractLabeledValue(text, label)
+       if (!value) return []
+       return value.split(',').map(v => v.trim()).filter(Boolean)
+   }
+   private extractYear(text: string): number | undefined {
+       const match = text.match(/publication date:\s*.*?(\d{4})/i)
+       return match ? Number(match[1]) : undefined
+   }
 }
