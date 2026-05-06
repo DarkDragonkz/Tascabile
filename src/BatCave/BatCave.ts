@@ -36,15 +36,13 @@ const SECTION_IDS = {
     LATEST: 'latest'
 } as const
 
-const FALLBACK_SEARCH_PAGE_SIZE = 10
-
 interface BatCaveSearchPage {
     results: BatCaveSourceComic[]
     hasMore: boolean
 }
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.13',
+    version: '0.1.14',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -146,28 +144,17 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
 
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const searchTitle = this.getSearchTitle(query)
-        const includedTags = query.includedTags?.map(tag => tag.label).filter(Boolean) ?? []
-        const searchTerms = [searchTitle, ...includedTags].filter(Boolean).join(' ').trim()
+        const searchTerms = this.getSearchTerms(query)
 
         if (!searchTerms) {
             return App.createPagedResults({ results: [], metadata: undefined })
         }
 
-        const livePage = await this.getLiveSearchResults(searchTerms, page)
-
-        if (livePage.results.length > 0) {
-            return App.createPagedResults({
-                results: livePage.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-                metadata: livePage.hasMore ? { page: page + 1 } : undefined
-            })
-        }
-
-        const fallbackPage = this.getFallbackSearchResultsPage(searchTerms, page)
+        const searchPage = await this.getSearchPage(searchTerms, page)
 
         return App.createPagedResults({
-            results: fallbackPage.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-            metadata: fallbackPage.hasMore ? { page: page + 1 } : undefined
+            results: searchPage.results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+            metadata: searchPage.hasMore ? { page: page + 1 } : undefined
         })
     }
 
@@ -200,7 +187,7 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
                 return
             }
         } catch {
-            // Fall through to deterministic fallback below.
+            // Use deterministic fallback below.
         }
 
         this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', fallbackSections.featured, true)
@@ -237,81 +224,40 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
         return this.cheerio.load(data)
     }
 
-    private async getCheerioFromRequest(request: Request): Promise<CheerioAPI> {
-        const response = await this.requestManager.schedule(request, 1)
-        const data = typeof response.data === 'string' ? response.data : String(response.data)
+    private async getSearchPage(searchTerms: string, page: number): Promise<BatCaveSearchPage> {
+        const encodedQuery = encodeURIComponent(searchTerms)
+        const url = page <= 1
+            ? `${BATCAVE_DOMAIN}/search/${encodedQuery}`
+            : `${BATCAVE_DOMAIN}/search/${encodedQuery}/page/${page}/`
 
-        return this.cheerio.load(data)
-    }
-
-    private async getLiveSearchResults(searchTerms: string, page: number): Promise<BatCaveSearchPage> {
-        const searchPostPage = await this.getSearchResultsFromPost(searchTerms, page)
-
-        if (searchPostPage.results.length > 0) {
-            return searchPostPage
-        }
-
-        const searchPageUrl = `${BATCAVE_DOMAIN}/index.php?story=${encodeURIComponent(searchTerms)}&dosearch=Start+search${page > 1 ? `&search_start=${page}` : ''}`
-        const searchPage = await this.getSearchResultsFromUrl(searchPageUrl)
-
-        if (searchPage.results.length > 0) {
-            return searchPage
-        }
-
-        const legacyUrl = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodeURIComponent(searchTerms)}&search_start=${page}`
-        const legacyPage = await this.getSearchResultsFromUrl(legacyUrl)
-
-        if (legacyPage.results.length > 0 || page > 1) {
-            return legacyPage
-        }
-
-        return this.getSearchResultsFromUrl(`${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`)
-    }
-
-    private async getSearchResultsFromPost(searchTerms: string, page: number): Promise<BatCaveSearchPage> {
-        try {
-            const body = `do=search&subaction=search&story=${encodeURIComponent(searchTerms)}${page > 1 ? `&search_start=${page}` : ''}`
-            const request = App.createRequest({
-                url: `${BATCAVE_DOMAIN}/index.php`,
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded',
-                    referer: `${BATCAVE_DOMAIN}/`
-                },
-                body
-            } as any)
-            const $ = await this.getCheerioFromRequest(request)
-            const results = this.parser.parseSearchResults($)
-
-            return { results, hasMore: this.hasMoreSearchResults($, results) }
-        } catch {
-            return { results: [], hasMore: false }
-        }
-    }
-
-    private async getSearchResultsFromUrl(url: string): Promise<BatCaveSearchPage> {
         try {
             const $ = await this.getCheerio(url)
             const results = this.parser.parseSearchResults($)
 
-            return { results, hasMore: this.hasMoreSearchResults($, results) }
+            return {
+                results,
+                hasMore: this.hasMoreSearchResults($)
+            }
         } catch {
-            return { results: [], hasMore: false }
+            return {
+                results: [],
+                hasMore: false
+            }
         }
     }
 
-    private hasMoreSearchResults($: CheerioAPI, results: BatCaveSourceComic[]): boolean {
+    private hasMoreSearchResults($: CheerioAPI): boolean {
         const text = this.cleanText($.root().text())
         const rangeMatch = text.match(/Your query found\s+(\d+)\s+answers?\s*\(\s*Query results\s+(\d+)\s*-\s*(\d+)\s*\)/i)
 
-        if (rangeMatch) {
-            const total = Number.parseInt(rangeMatch[1], 10)
-            const end = Number.parseInt(rangeMatch[3], 10)
-
-            return Number.isFinite(total) && Number.isFinite(end) && end < total
+        if (!rangeMatch) {
+            return false
         }
 
-        return results.length >= FALLBACK_SEARCH_PAGE_SIZE
+        const total = Number.parseInt(rangeMatch[1], 10)
+        const end = Number.parseInt(rangeMatch[3], 10)
+
+        return Number.isFinite(total) && Number.isFinite(end) && end < total
     }
 
     private createSourceManga(details: BatCaveComicDetails): SourceManga {
@@ -324,7 +270,13 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
                 status: this.mapStatus(details.status),
                 author: details.publisher ?? '',
                 artist: '',
-                tags: details.publisher ? [App.createTagSection({ id: 'publisher', label: 'Publisher', tags: [App.createTag({ id: details.publisher.toLowerCase().replace(/\s+/g, '-'), label: details.publisher })] })] : []
+                tags: details.publisher
+                    ? [App.createTagSection({
+                        id: 'publisher',
+                        label: 'Publisher',
+                        tags: [App.createTag({ id: details.publisher.toLowerCase().replace(/\s+/g, '-'), label: details.publisher })]
+                    })]
+                    : []
             })
         })
     }
@@ -349,7 +301,9 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
     }
 
     private sendHomeSection(sectionCallback: (section: HomeSection) => void, id: string, title: string, type: 'singleRowLarge' | 'singleRowNormal' | 'doubleRow', items: BatCaveSourceComic[], containsMoreItems: boolean): void {
-        if (items.length === 0) return
+        if (items.length === 0) {
+            return
+        }
 
         sectionCallback(App.createHomeSection({
             id,
@@ -365,7 +319,10 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
         const deduped: BatCaveSourceComic[] = []
 
         for (const item of items) {
-            if (seen.has(item.comicId)) continue
+            if (seen.has(item.comicId)) {
+                continue
+            }
+
             seen.add(item.comicId)
             deduped.push(item)
         }
@@ -373,48 +330,12 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
         return deduped
     }
 
-    private getSearchTitle(query: SearchRequest): string {
+    private getSearchTerms(query: SearchRequest): string {
         const queryWithFallbacks = query as SearchRequest & { query?: string; searchTerm?: string; text?: string }
+        const title = query.title ?? queryWithFallbacks.query ?? queryWithFallbacks.searchTerm ?? queryWithFallbacks.text ?? ''
+        const includedTags = query.includedTags?.map(tag => tag.label).filter(Boolean) ?? []
 
-        return query.title ?? queryWithFallbacks.query ?? queryWithFallbacks.searchTerm ?? queryWithFallbacks.text ?? ''
-    }
-
-    private getFallbackSearchResultsPage(searchTerms: string, page: number): { results: BatCaveSourceComic[]; hasMore: boolean } {
-        const allResults = this.getFallbackSearchResults(searchTerms)
-        const offset = (page - 1) * FALLBACK_SEARCH_PAGE_SIZE
-        const results = allResults.slice(offset, offset + FALLBACK_SEARCH_PAGE_SIZE)
-
-        return { results, hasMore: offset + FALLBACK_SEARCH_PAGE_SIZE < allResults.length }
-    }
-
-    private getFallbackSearchResults(searchTerms: string): BatCaveSourceComic[] {
-        const normalizedSearch = this.normalizeSearchValue(searchTerms)
-        const items = [
-            ...this.getFallbackHomeSections().featured,
-            ...this.getFallbackHomeSections().hot,
-            ...this.getFallbackHomeSections().topRated,
-            ...this.getFallbackTheBoysSearchResults()
-        ]
-
-        return this.dedupeItems(items).filter((item: BatCaveSourceComic) => this.normalizeSearchValue(item.title).includes(normalizedSearch))
-    }
-
-    private getFallbackTheBoysSearchResults(): BatCaveSourceComic[] {
-        return [
-            { comicId: '5629-the-boys-2006-2012.html', title: 'The Boys (2006-2012)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/68/a134c2dc30a8bf16922095b4989fb4.webp`, subtitle: 'The Boys (2006-2012) #Omnibus Vol. 6' },
-            { comicId: '27657-the-boys-herogasm-2009.html', title: 'The Boys: Herogasm (2009)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/66/6f4afd212cea540df36163e5de0516.webp`, subtitle: 'The Boys: Herogasm Issue #6' },
-            { comicId: '27655-the-boys-omnibus-2019.html', title: 'The Boys Omnibus (2019-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/ff/c453990f0822ed10d881d451211104.webp`, subtitle: 'The Boys Omnibus TPB 6' },
-            { comicId: '5630-the-boys-dear-becky-2020.html', title: 'The Boys: Dear Becky (2020-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/62/40cd2837a2cf1b7e549a82a0113448.webp`, subtitle: 'The Boys: Dear Becky #8' },
-            { comicId: '27656-the-boys-butcher-baker-candlestickmaker-2011.html', title: 'The Boys: Butcher, Baker, Candlestickmaker (2011)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/99/954784273e3b984a49625ab2808fd4.webp`, subtitle: 'The Boys: Butcher, Baker, Candlestickmaker Issue #6' },
-            { comicId: '27658-the-boys-highland-laddie-2010-2011.html', title: 'The Boys: Highland Laddie (2010-2011)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/19/dad20da66f4e999a0d4a52d371878e.webp`, subtitle: 'The Boys: Highland Laddie TPB' },
-            { comicId: '27654-the-boys-of-sheriff-street-2016.html', title: 'The Boys of Sheriff Street (2016-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/f0/3629eaf170aca775da499203ad92ee.webp`, subtitle: 'The Boys of Sheriff Street TPB' },
-            { comicId: '29375-the-three-stooges-the-boys-are-back-2016.html', title: 'The Three Stooges: The Boys Are Back (2016-)', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/7a/3727f4538e80c0db77b31235f5cfb4.webp`, subtitle: 'The Three Stooges: The Boys Are Back Full' },
-            { comicId: '33593-please-login-or-register-adv-search-imgsearchclickfunction-submit-var-delay-function-var-timer-0-return-function-callback-ms-cleartimeouttimer-timer.html', title: 'The Boys', image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/0b/d764d3741a6432b6c8d5eaade025ae.webp`, subtitle: 'The Boys Issue #72' }
-        ]
-    }
-
-    private normalizeSearchValue(value: string): string {
-        return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+        return [title, ...includedTags].filter(Boolean).join(' ').trim()
     }
 
     private getFallbackItemsForSection(homepageSectionId: string, fallbackSections: { featured: BatCaveSourceComic[]; hot: BatCaveSourceComic[]; topRated: BatCaveSourceComic[] }): BatCaveSourceComic[] {
@@ -484,7 +405,10 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
     }
 
     private getPageFromMetadata(metadata: unknown): number {
-        if (!metadata || typeof metadata !== 'object') return 1
+        if (!metadata || typeof metadata !== 'object') {
+            return 1
+        }
+
         const page = (metadata as { page?: unknown }).page
 
         return typeof page === 'number' && Number.isFinite(page) ? page : 1
