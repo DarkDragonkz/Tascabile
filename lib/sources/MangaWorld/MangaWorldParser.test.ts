@@ -165,14 +165,16 @@ describe('MangaWorldParser', () => {
 
     it('parses entry subtitles consistently', () => {
         const $ = loadHtml(`
-            <div class="entry">
-                <a class="manga-title" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">Blue Lock</a>
-                <a class="xanh">Capitolo 341</a>
-            </div>
-            <div class="entry">
-                <a class="manga-title" href="https://www.mangaworld.mx/manga/1708/one-piece/" title="One Piece">One Piece</a>
-                <span class="genre">Tipo: Manga</span>
-                <span class="status">Stato: In corso</span>
+            <div class="comics-grid">
+                <div class="entry">
+                    <a class="manga-title" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">Blue Lock</a>
+                    <a class="xanh">Capitolo 341</a>
+                </div>
+                <div class="entry">
+                    <a class="manga-title" href="https://www.mangaworld.mx/manga/1708/one-piece/" title="One Piece">One Piece</a>
+                    <span class="genre">Tipo: Manga</span>
+                    <span class="status">Stato: In corso</span>
+                </div>
             </div>
         `)
 
