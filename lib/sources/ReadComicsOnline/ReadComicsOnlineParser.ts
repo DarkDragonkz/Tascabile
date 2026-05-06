@@ -42,24 +42,14 @@ export class ReadComicsOnlineParser {
         const seen = new Set<string>()
 
         $('div.item').each((_: number, element: any) => {
-            const link = $(element).find('a[href*="/Comic/"]').first()
-            const comicId = this.extractComicId(link.attr('href'))
-            const title = this.cleanText($(element).find('span.title').first().text()) || this.cleanText(link.text())
+            const item = this.parseComicListItem($, element)
 
-            if (!comicId || !title || seen.has(comicId)) {
+            if (!item || seen.has(item.comicId)) {
                 return
             }
 
-            const tooltipHtml = $(element).attr('title')
-            const tooltipStatus = tooltipHtml ? this.extractTooltipValue(tooltipHtml, 'Status') : undefined
-
-            seen.add(comicId)
-            results.push({
-                comicId,
-                title,
-                image: this.absoluteUrl($(element).find('img').first().attr('src')),
-                subtitle: tooltipStatus
-            })
+            seen.add(item.comicId)
+            results.push(item)
         })
 
         return results
@@ -69,34 +59,17 @@ export class ReadComicsOnlineParser {
         const results: ReadComicsOnlineSourceComic[] = []
         const seen = new Set<string>()
 
-        $('.barTitle').each((_: number, titleElement: any) => {
-            const sectionTitle = this.cleanText($(titleElement).text()).toLowerCase()
+        const latestContainers = this.findLatestContainers($)
 
-            if (!sectionTitle.includes('latest update')) {
-                return
-            }
+        for (const container of latestContainers) {
+            this.parseComicLinksFromContainer($, container, results, seen)
+        }
 
-            const content = $(titleElement).next('.barContent')
+        if (results.length > 0) {
+            return results
+        }
 
-            content.find('a[href*="/Comic/"]').each((__: number, linkElement: any) => {
-                const href = $(linkElement).attr('href')
-                const comicId = this.extractComicId(href)
-
-                if (!comicId || seen.has(comicId) || this.isIssueHref(href)) {
-                    return
-                }
-
-                const title = this.cleanText($(linkElement).text())
-                const subtitle = this.cleanText($(linkElement).nextAll('a.textDark').first().text())
-
-                if (!title) {
-                    return
-                }
-
-                seen.add(comicId)
-                results.push({ comicId, title, subtitle: subtitle || undefined })
-            })
-        })
+        this.parseComicLinksFromContainer($, $('body'), results, seen)
 
         return results
     }
@@ -158,6 +131,121 @@ export class ReadComicsOnlineParser {
         }
     }
 
+    private findLatestContainers($: CheerioAPI): any[] {
+        const containers: any[] = []
+
+        $('.barTitle, .heading, .box-title, h1, h2, h3, h4').each((_: number, titleElement: any) => {
+            const text = this.cleanText($(titleElement).text()).toLowerCase()
+
+            if (!text.includes('latest')) {
+                return
+            }
+
+            const nextContent = $(titleElement).next('.barContent, .box-content, .content, ul, table, div')
+
+            if (nextContent.length > 0) {
+                containers.push(nextContent)
+            }
+
+            const parent = $(titleElement).parent()
+
+            if (parent.length > 0) {
+                containers.push(parent)
+            }
+        })
+
+        $('.barContent, .box-content, .content').each((_: number, containerElement: any) => {
+            const text = this.cleanText($(containerElement).prev().text()).toLowerCase()
+
+            if (text.includes('latest')) {
+                containers.push($(containerElement))
+            }
+        })
+
+        return containers
+    }
+
+    private parseComicLinksFromContainer($: CheerioAPI, container: any, results: ReadComicsOnlineSourceComic[], seen: Set<string>): void {
+        container.find('a[href*="/Comic/"]').each((_: number, linkElement: any) => {
+            const href = $(linkElement).attr('href')
+            const comicId = this.extractComicId(href)
+
+            if (!comicId || seen.has(comicId) || this.isIssueHref(href)) {
+                return
+            }
+
+            const title = this.extractComicTitleFromLink($, linkElement)
+
+            if (!title) {
+                return
+            }
+
+            const itemContainer = $(linkElement).closest('li, tr, .item, .comic, .update, .row, div')
+            const image = this.absoluteUrl(
+                itemContainer.find('img').first().attr('src') ||
+                $(linkElement).find('img').first().attr('src')
+            )
+
+            const subtitle = this.extractNearbyIssueText($, linkElement, comicId)
+
+            seen.add(comicId)
+            results.push({
+                comicId,
+                title,
+                image,
+                subtitle
+            })
+        })
+    }
+
+    private parseComicListItem($: CheerioAPI, element: any): ReadComicsOnlineSourceComic | undefined {
+        const link = $(element).find('a[href*="/Comic/"]').first()
+        const comicId = this.extractComicId(link.attr('href'))
+        const tooltipHtml = $(element).attr('title')
+        const tooltipTitle = tooltipHtml ? this.extractTooltipTitle(tooltipHtml) : undefined
+        const title = tooltipTitle || this.cleanText($(element).find('span.title').first().text()) || this.cleanText(link.text())
+
+        if (!comicId || !title) {
+            return undefined
+        }
+
+        return {
+            comicId,
+            title,
+            image: this.absoluteUrl($(element).find('img').first().attr('src')),
+            subtitle: tooltipHtml ? this.extractTooltipValue(tooltipHtml, 'Status') : undefined
+        }
+    }
+
+    private extractComicTitleFromLink($: CheerioAPI, linkElement: any): string {
+        const link = $(linkElement)
+        const directText = this.cleanText(link.clone().children().remove().end().text())
+        const altText = this.cleanText(link.find('img').first().attr('alt'))
+        const titleText = this.cleanText(link.attr('title'))
+        const fullText = this.cleanText(link.text())
+
+        return directText || altText || titleText || fullText
+    }
+
+    private extractNearbyIssueText($: CheerioAPI, linkElement: any, comicId: string): string | undefined {
+        const link = $(linkElement)
+        const candidates = [
+            link.nextAll('a[href*="/Comic/"]').first(),
+            link.closest('li, tr, .item, .comic, .update, .row, div').find(`a[href*="/Comic/${comicId}/"]`).first(),
+            link.parent().find('a.textDark, a[href*="Issue"], a[href*="Annual"]').first()
+        ]
+
+        for (const candidate of candidates) {
+            const text = this.cleanText(candidate.text())
+
+            if (text) {
+                return this.normalizeChapterName(text)
+            }
+        }
+
+        return undefined
+    }
+
     private extractSummary($: CheerioAPI): string | undefined {
         let summary = ''
 
@@ -189,6 +277,13 @@ export class ReadComicsOnlineParser {
         })
 
         return value
+    }
+
+    private extractTooltipTitle(html: string): string | undefined {
+        const cheerio = require('cheerio') as typeof import('cheerio')
+        const $ = cheerio.load(html)
+
+        return this.cleanText($('p.title').first().text()) || undefined
     }
 
     private extractTooltipValue(html: string, label: string): string | undefined {
