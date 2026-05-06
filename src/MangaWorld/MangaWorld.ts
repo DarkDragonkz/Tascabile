@@ -40,7 +40,7 @@ const SECTION_IDS = {
 } as const
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.0',
+    version: '0.2.1',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -298,7 +298,8 @@ export class MangaWorld
         return App.createPartialSourceManga({
             mangaId: manga.mangaId,
             title: manga.title,
-            image: manga.image ?? PLACEHOLDER_IMAGE
+            image: manga.image ?? PLACEHOLDER_IMAGE,
+            subtitle: manga.subtitle
         })
     }
 
