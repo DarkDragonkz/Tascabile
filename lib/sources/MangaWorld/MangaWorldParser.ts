@@ -1,4 +1,5 @@
 import type { CheerioAPI } from 'cheerio'
+import { MANGA_WORLD_DOMAIN } from './constants'
 
 export interface MangaWorldSourceManga {
     mangaId: string
@@ -215,14 +216,19 @@ export class MangaWorldParser {
         const pages: string[] = []
         const seen = new Set<string>()
 
-        $('#page img.page-image, #page img.img-fluid, #page img').each((_: number, element: any) => {
-            const src = this.absoluteUrl($(element).attr('src'))
+        $('#page img.page-image, #page img.img-fluid, #page img, img.page-image, img.img-fluid').each((_: number, element: any) => {
+            const src = this.absoluteUrl(
+                $(element).attr('src')
+                    || $(element).attr('data-src')
+                    || this.extractFirstSrcFromSrcset($(element).attr('srcset'))
+                    || this.extractFirstSrcFromSrcset($(element).attr('data-srcset'))
+            )
 
             if (!src || seen.has(src)) {
                 return
             }
 
-            if (!src.includes('/chapters/')) {
+            if (!this.isChapterPageImage(src)) {
                 return
             }
 
@@ -290,7 +296,7 @@ export class MangaWorldParser {
     }
 
     private parseSourceMangaFromEntry($: CheerioAPI, element: any): MangaWorldSourceManga | undefined {
-        const link = $(element).find('a.manga-title, .name a, a.thumb').first()
+        const link = $(element).find('a.manga-title, .name a, a.thumb, a[href*="/manga/"]').first()
         const href = link.attr('href') || $(element).find('a[href*="/manga/"]').first().attr('href')
         const mangaId = this.extractMangaId(href)
 
@@ -306,7 +312,12 @@ export class MangaWorldParser {
             return undefined
         }
 
-        const image = this.absoluteUrl($(element).find('img').first().attr('src'))
+        const image = this.absoluteUrl(
+            $(element).find('img').first().attr('src')
+                || $(element).find('img').first().attr('data-src')
+                || this.extractFirstSrcFromSrcset($(element).find('img').first().attr('srcset'))
+                || this.extractFirstSrcFromSrcset($(element).find('img').first().attr('data-srcset'))
+        )
         const subtitle = this.extractEntrySubtitle($, element)
 
         return {
@@ -321,13 +332,13 @@ export class MangaWorldParser {
         const chapterBadge = this.cleanText($(element).find('.chapter').first().text())
 
         if (chapterBadge) {
-            return chapterBadge
+            return this.prefixLatestChapter(chapterBadge)
         }
 
         const latestChapter = this.cleanText($(element).find('a.xanh').first().text())
 
         if (latestChapter) {
-            return latestChapter
+            return this.prefixLatestChapter(latestChapter)
         }
 
         const type = this.cleanText(
@@ -338,10 +349,6 @@ export class MangaWorldParser {
                 .replace(/^Tipo:\s*/i, '')
         )
 
-        if (type) {
-            return type
-        }
-
         const status = this.cleanText(
             $(element)
                 .find('.status')
@@ -350,11 +357,11 @@ export class MangaWorldParser {
                 .replace(/^Stato:\s*/i, '')
         )
 
-        if (status) {
-            return status
+        if (type && status) {
+            return `${type} • ${status}`
         }
 
-        return undefined
+        return type || status || undefined
     }
 
     private extractMetaValue($: CheerioAPI, label: string): string {
@@ -429,8 +436,9 @@ export class MangaWorldParser {
         }
 
         const value = chapterMatch[1]
-        const normalizedValue = value.length > 2 && value.startsWith('0')
-            ? value.slice(0, 2)
+        const parsedValue = Number.parseFloat(value)
+        const normalizedValue = Number.isFinite(parsedValue)
+            ? this.formatChapterNumber(parsedValue)
             : value
 
         return `Capitolo ${normalizedValue}`
@@ -465,6 +473,27 @@ export class MangaWorldParser {
             return undefined
         }
 
+        const normalizedText = this.normalizeTextForMatch(text)
+        const today = new Date()
+
+        if (normalizedText === 'oggi') {
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        }
+
+        if (normalizedText === 'ieri') {
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+        }
+
+        const relativeDaysMatch = normalizedText.match(/(\d+)\s+giorn[oi]\s+fa/)
+
+        if (relativeDaysMatch) {
+            const daysAgo = Number.parseInt(relativeDaysMatch[1], 10)
+
+            if (Number.isFinite(daysAgo)) {
+                return new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysAgo)
+            }
+        }
+
         const months: Record<string, number> = {
             gennaio: 0,
             febbraio: 1,
@@ -480,7 +509,7 @@ export class MangaWorldParser {
             dicembre: 11
         }
 
-        const match = text.toLowerCase().match(/(\d{1,2})\s+([a-zà]+)/)
+        const match = normalizedText.match(/(\d{1,2})\s+([a-z]+)(?:\s+(\d{4}))?/)
 
         if (!match) {
             return undefined
@@ -488,14 +517,16 @@ export class MangaWorldParser {
 
         const day = Number.parseInt(match[1], 10)
         const month = months[match[2]]
+        const parsedYear = match[3] ? Number.parseInt(match[3], 10) : undefined
+        const year = parsedYear !== undefined && Number.isFinite(parsedYear)
+            ? parsedYear
+            : today.getFullYear()
 
         if (!Number.isFinite(day) || month === undefined) {
             return undefined
         }
 
-        const currentYear = new Date().getFullYear()
-
-        return new Date(currentYear, month, day)
+        return new Date(year, month, day)
     }
 
     private absoluteUrl(url?: string): string | undefined {
@@ -508,10 +539,44 @@ export class MangaWorldParser {
         }
 
         if (url.startsWith('/')) {
-            return `https://www.mangaworld.mx${url}`
+            return `${MANGA_WORLD_DOMAIN}${url}`
         }
 
         return url
+    }
+
+    private extractFirstSrcFromSrcset(srcset?: string): string | undefined {
+        if (!srcset) {
+            return undefined
+        }
+
+        return this.cleanText(srcset.split(',')[0]?.trim().split(/\s+/)[0]) || undefined
+    }
+
+    private formatChapterNumber(value: number): string {
+        if (!Number.isInteger(value)) {
+            return String(value)
+        }
+
+        return value < 10
+            ? `0${value}`
+            : String(value)
+    }
+
+    private isChapterPageImage(url: string): boolean {
+        return url.includes('/chapters/') && /\.(jpg|jpeg|png|webp)(?:\?|$)/i.test(url)
+    }
+
+    private prefixLatestChapter(value: string): string {
+        const normalizedValue = this.cleanText(value)
+
+        if (/^(ultimo|latest):/i.test(normalizedValue)) {
+            return normalizedValue
+        }
+
+        return /^capitolo\s+/i.test(normalizedValue)
+            ? `Ultimo: ${normalizedValue}`
+            : normalizedValue
     }
 
     private normalizeTextForMatch(value?: string): string {
