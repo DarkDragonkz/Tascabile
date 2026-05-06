@@ -33,6 +33,11 @@ export interface BatCaveChapterDetails {
     pages: string[]
 }
 
+export interface BatCaveTag {
+    id: string
+    label: string
+}
+
 interface JsonLdNode {
     '@type'?: string | string[]
     '@graph'?: JsonLdNode[]
@@ -94,20 +99,53 @@ export class BatCaveParser {
                 .filter(Boolean)
 
             const lastIssue = this.cleanText($(element).find('.readed__info li').last().text().replace(/^Last issue:\s*/i, ''))
+            const imageElement = $(element).find('img').first()
 
             seen.add(comicId)
             results.push({
                 comicId,
                 title,
-                image: this.absoluteUrl(
-                    $(element).find('img').first().attr('data-src')
-                        || $(element).find('img').first().attr('src')
-                ),
+                image: this.extractImageUrl(imageElement),
                 subtitle: lastIssue || meta.join(' • ') || undefined
             })
         })
 
         return results
+    }
+
+    parseTags($: CheerioAPI): { publishers: BatCaveTag[]; years: BatCaveTag[] } {
+        const publishers = new Map<string, BatCaveTag>()
+        const years = new Map<string, BatCaveTag>()
+
+        $('.poster.grid-item.has-overlay, .readed.d-flex.short').each((_: number, element: any) => {
+            const metaItems = $(element)
+                .find('.poster__subtitle li, .readed__meta-item')
+                .map((__: number, item: any) => this.cleanText($(item).text()))
+                .get()
+                .filter(Boolean)
+
+            const publisher = metaItems.find((item: string) => !/^\d{4}$/.test(item))
+            const year = metaItems.find((item: string) => /^\d{4}$/.test(item))
+
+            if (publisher) {
+                publishers.set(this.slugify(publisher), {
+                    id: this.slugify(publisher),
+                    label: publisher
+                })
+            }
+
+            if (year) {
+                years.set(year, {
+                    id: year,
+                    label: year
+                })
+            }
+        })
+
+        return {
+            publishers: Array.from(publishers.values()),
+            years: Array.from(years.values())
+        }
     }
 
     parseComicDetails($: CheerioAPI, fallbackComicId: string): BatCaveComicDetails {
@@ -121,7 +159,7 @@ export class BatCaveParser {
         return {
             id: comicId,
             title,
-            image: this.absoluteUrl(series?.image || series?.thumbnailUrl || $('.page__poster img').first().attr('src')),
+            image: this.absoluteUrl(series?.image || series?.thumbnailUrl || this.extractImageUrl($('.page__poster img').first())),
             description: this.cleanText(series?.description) || this.cleanText($('.page__text').first().text()),
             publisher: publisher || this.extractListValue($, 'Publisher'),
             status: this.extractListValue($, 'Release type'),
@@ -182,7 +220,7 @@ export class BatCaveParser {
         }
 
         if (pages.length === 0) {
-            const image = this.absoluteUrl(jsonLdIssue?.image || $('#ssr-shell img').first().attr('src'))
+            const image = this.absoluteUrl(jsonLdIssue?.image || this.extractImageUrl($('#ssr-shell img').first()))
 
             if (image) {
                 pages.push(image)
@@ -220,14 +258,13 @@ export class BatCaveParser {
                 .filter(Boolean)
                 .join(' • ')
 
+            const imageElement = $(element).find('img').first()
+
             seen.add(comicId)
             results.push({
                 comicId,
                 title,
-                image: this.absoluteUrl(
-                    $(element).find('img').first().attr('data-src')
-                        || $(element).find('img').first().attr('src')
-                ),
+                image: this.extractImageUrl(imageElement),
                 subtitle: subtitle || undefined
             })
         })
@@ -418,6 +455,29 @@ export class BatCaveParser {
         return Number.isNaN(date.getTime()) ? undefined : date
     }
 
+    private extractImageUrl(element: any): string | undefined {
+        const candidates = [
+            element.attr('data-src'),
+            element.attr('data-lazy-src'),
+            element.attr('data-original'),
+            element.attr('src')
+        ]
+
+        for (const candidate of candidates) {
+            const absolute = this.absoluteUrl(candidate)
+
+            if (absolute && this.isUsableImageUrl(absolute)) {
+                return absolute
+            }
+        }
+
+        return undefined
+    }
+
+    private isUsableImageUrl(url: string): boolean {
+        return !url.startsWith('data:image/') && /\.(jpg|jpeg|png|webp)(?:\?|$)/i.test(url)
+    }
+
     private absoluteUrl(url?: string): string | undefined {
         if (!url) {
             return undefined
@@ -432,6 +492,14 @@ export class BatCaveParser {
         }
 
         return url
+    }
+
+    private slugify(value: string): string {
+        return value
+            .toLowerCase()
+            .replace(/&amp;/g, 'and')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
     }
 
     private cleanText(value?: string): string {
