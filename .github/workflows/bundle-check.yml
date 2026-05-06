@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - "feature/**"
+  pull_request:
+    branches:
+      - main
+      - "0.8"
 
 jobs:
   bundle-check:
@@ -68,11 +72,11 @@ jobs:
           ids = [source.get('id') for source in sources]
           print('Source ids:', ids)
 
-          required = {'MangaWorld'}
-          missing = required.difference(ids)
+          expected = {'MangaWorld'}
+          actual = set(ids)
 
-          if missing:
-              raise SystemExit(f'Missing sources: {sorted(missing)}')
+          if actual != expected:
+              raise SystemExit(f'Unexpected sources: expected {sorted(expected)}, got {sorted(actual)}')
           PY
 
       - name: Upload bundle artifact
