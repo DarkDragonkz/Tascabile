@@ -35,15 +35,13 @@ const SECTION_IDS = {
     LATEST: 'latest'
 } as const
 
-const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
-
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.3',
+    version: '0.1.4',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
     description: 'English comics source for BatCave.biz.',
-    contentRating: ContentRating.MATURE,
+    contentRating: ContentRating.EVERYONE,
     websiteBaseURL: BATCAVE_DOMAIN,
     sourceTags: [
         {
@@ -57,8 +55,7 @@ export const BatCaveInfo: SourceInfo = {
     ],
     intents:
         SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS |
-        SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
+        SourceIntents.HOMEPAGE_SECTIONS
 }
 
 export class BatCave
@@ -68,14 +65,15 @@ export class BatCave
     private readonly parser = new BatCaveParser()
 
     requestManager = App.createRequestManager({
-        requestsPerSecond: 4,
+        requestsPerSecond: 2,
         requestTimeout: 20000,
         interceptor: {
             interceptRequest: async (request: Request): Promise<Request> => {
                 request.headers = {
                     ...(request.headers ?? {}),
-                    Referer: `${BATCAVE_DOMAIN}/`,
-                    'User-Agent': BATCAVE_USER_AGENT,
+                    referer: `${BATCAVE_DOMAIN}/`,
+                    origin: BATCAVE_DOMAIN,
+                    'user-agent': 'Mozilla/5.0',
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'accept-language': 'en-US,en;q=0.9'
                 }
@@ -158,47 +156,67 @@ export class BatCave
         return false
     }
 
-    async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
-        const page = this.getPageFromMetadata(metadata)
+    async getSearchResults(query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
         const searchTitle = query.title ?? ''
         const includedTags = query.includedTags?.map(tag => tag.label).filter(Boolean) ?? []
         const searchTerms = [searchTitle, ...includedTags].filter(Boolean).join(' ')
-        const encodedSearchTerms = encodeURIComponent(searchTerms)
-        const url = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodedSearchTerms}&search_start=${page}`
+        const url = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
         const $ = await this.getCheerio(url)
         const results = this.parser.parseSearchResults($)
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-            metadata: results.length > 0
-                ? { page: page + 1 }
-                : undefined
+            metadata: undefined
         })
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
+        const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster'))
 
         const featuredItems = this.dedupeItems(this.parser.parseHomeItems(
             $,
-            '.sect--popular .poster, .carou .poster, #owl-carou .poster, a.poster[data-hot_marker]'
+            '.sect--popular a.poster, .carou a.poster, #owl-carou a.poster, a.poster[data-hot_marker]'
         )).slice(0, 15)
 
         const hotItems = this.dedupeItems(this.parser.parseHomeItems(
             $,
-            '.sect--hot .poster, section:has(.sect__title:contains("Hot new releases")) .poster'
-        )).filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
+            '.sect--hot a.poster, .sect__content a.poster'
+        ))
+            .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
             .slice(0, 15)
 
-        const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster'))
         const latestItems = allItems
             .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
             .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
             .slice(0, 15)
 
-        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics 🔥', 'singleRowLarge', featuredItems.length > 0 ? featuredItems : allItems.slice(0, 15), false)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.HOT, 'Hot New Releases ⚡', 'singleRowNormal', hotItems.length > 0 ? hotItems : allItems.slice(15, 30), false)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.LATEST, 'Latest Updates 🆙', 'doubleRow', latestItems.length > 0 ? latestItems : allItems.slice(30, 45), true)
+        this.sendHomeSection(
+            sectionCallback,
+            SECTION_IDS.FEATURED,
+            'Featured Comics',
+            'singleRowLarge',
+            featuredItems.length > 0 ? featuredItems : allItems.slice(0, 15),
+            false
+        )
+
+        this.sendHomeSection(
+            sectionCallback,
+            SECTION_IDS.HOT,
+            'Hot New Releases',
+            'singleRowNormal',
+            hotItems.length > 0 ? hotItems : allItems.slice(15, 30),
+            false
+        )
+
+        this.sendHomeSection(
+            sectionCallback,
+            SECTION_IDS.LATEST,
+            'Latest Updates',
+            'doubleRow',
+            latestItems.length > 0 ? latestItems : allItems.slice(30, 45),
+            true
+        )
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
@@ -224,24 +242,13 @@ export class BatCave
         })
     }
 
-    async getCloudflareBypassRequestAsync(): Promise<Request> {
-        return App.createRequest({
-            url: BATCAVE_DOMAIN,
-            method: 'GET',
-            headers: {
-                Referer: `${BATCAVE_DOMAIN}/`,
-                'User-Agent': BATCAVE_USER_AGENT
-            }
-        })
-    }
-
     private async getCheerio(url: string): Promise<CheerioAPI> {
         const request = App.createRequest({
             url,
             method: 'GET'
         })
 
-        const response = await this.requestManager.schedule(request, 2)
+        const response = await this.requestManager.schedule(request, 1)
         const data = typeof response.data === 'string'
             ? response.data
             : String(response.data)
@@ -308,15 +315,13 @@ export class BatCave
             return
         }
 
-        const section = App.createHomeSection({
+        sectionCallback(App.createHomeSection({
             id,
             title,
+            type,
             containsMoreItems,
-            type
-        })
-
-        section.items = items.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
-        sectionCallback(section)
+            items: items.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
+        }))
     }
 
     private dedupeItems(items: BatCaveSourceComic[]): BatCaveSourceComic[] {
