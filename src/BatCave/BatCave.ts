@@ -32,11 +32,12 @@ import {
 const SECTION_IDS = {
     FEATURED: 'featured',
     HOT: 'hot',
+    TOP_RATED: 'top_rated',
     LATEST: 'latest'
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.5',
+    version: '0.1.6',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -172,11 +173,11 @@ export class BatCave
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
-        const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster'))
+        const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
 
         const featuredItems = this.dedupeItems(this.parser.parseHomeItems(
             $,
-            '.sect--popular a.poster, .carou a.poster, #owl-carou a.poster, a.poster[data-hot_marker]'
+            '.owl-stage a.poster, .owl-stage-outer a.poster, a.poster[data-hot_marker]'
         )).slice(0, 15)
 
         const hotItems = this.dedupeItems(this.parser.parseHomeItems(
@@ -186,9 +187,18 @@ export class BatCave
             .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
             .slice(0, 15)
 
+        const topRatedItems = this.dedupeItems(this.parser.parseHomeItems(
+            $,
+            '.side-block__content--populars a.popular, a.popular'
+        ))
+            .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
+            .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
+            .slice(0, 15)
+
         const latestItems = allItems
             .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
             .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
+            .filter((item: BatCaveSourceComic) => !topRatedItems.some((topRated: BatCaveSourceComic) => topRated.comicId === item.comicId))
             .slice(0, 15)
 
         this.sendHomeSection(
@@ -211,10 +221,19 @@ export class BatCave
 
         this.sendHomeSection(
             sectionCallback,
+            SECTION_IDS.TOP_RATED,
+            'Top Rated Comics',
+            'singleRowNormal',
+            topRatedItems.length > 0 ? topRatedItems : allItems.slice(30, 45),
+            false
+        )
+
+        this.sendHomeSection(
+            sectionCallback,
             SECTION_IDS.LATEST,
             'Latest Updates',
             'doubleRow',
-            latestItems.length > 0 ? latestItems : allItems.slice(30, 45),
+            latestItems.length > 0 ? latestItems : allItems.slice(45, 60),
             true
         )
     }
@@ -232,7 +251,7 @@ export class BatCave
             ? BATCAVE_DOMAIN
             : `${BATCAVE_DOMAIN}/page/${page}/`
         const $ = await this.getCheerio(url)
-        const results = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster'))
+        const results = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
