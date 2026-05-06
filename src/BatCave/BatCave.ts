@@ -36,7 +36,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.4',
+    version: '0.1.5',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
