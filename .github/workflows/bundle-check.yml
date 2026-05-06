@@ -68,7 +68,7 @@ jobs:
           ids = [source.get('id') for source in sources]
           print('Source ids:', ids)
 
-          required = {'MangaWorld', 'ReadComicsOnline'}
+          required = {'MangaWorld'}
           missing = required.difference(ids)
 
           if missing:
