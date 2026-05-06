@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
+      - "0.8"
       - "feature/**"
   pull_request:
     branches:
