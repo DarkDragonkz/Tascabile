@@ -13,19 +13,21 @@ import {
     Response,
     SearchRequest,
     SearchResultsProviding,
+    SearchTagsProviding,
     Source,
     SourceInfo,
     SourceIntents,
-    SourceManga
+    SourceManga,
+    TagSection
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
-import { buildUrl } from '../../lib/core/url'
 import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
 import {
     BatCaveChapter,
     BatCaveComicDetails,
     BatCaveParser,
-    BatCaveSourceComic
+    BatCaveSourceComic,
+    BatCaveTag
 } from '../../lib/sources/BatCave/BatCaveParser'
 
 const SECTION_IDS = {
@@ -34,7 +36,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.1',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -58,7 +60,7 @@ export const BatCaveInfo: SourceInfo = {
 
 export class BatCave
     extends Source
-    implements MangaProviding, ChapterProviding, HomePageSectionsProviding, SearchResultsProviding {
+    implements MangaProviding, ChapterProviding, HomePageSectionsProviding, SearchResultsProviding, SearchTagsProviding {
 
     private readonly parser = new BatCaveParser()
 
@@ -116,6 +118,36 @@ export class BatCave
         })
     }
 
+    async getSearchTags(): Promise<TagSection[]> {
+        const $ = await this.getCheerio(BATCAVE_DOMAIN)
+        const tags = this.parser.parseTags($)
+        const sections: TagSection[] = []
+
+        if (tags.publishers.length > 0) {
+            sections.push(App.createTagSection({
+                id: 'publishers',
+                label: 'Publishers',
+                tags: tags.publishers.map((tag: BatCaveTag) => App.createTag({
+                    id: tag.id,
+                    label: tag.label
+                }))
+            }))
+        }
+
+        if (tags.years.length > 0) {
+            sections.push(App.createTagSection({
+                id: 'years',
+                label: 'Years',
+                tags: tags.years.map((tag: BatCaveTag) => App.createTag({
+                    id: tag.id,
+                    label: tag.label
+                }))
+            }))
+        }
+
+        return sections
+    }
+
     async supportsSearchOperators(): Promise<boolean> {
         return false
     }
@@ -126,7 +158,9 @@ export class BatCave
 
     async getSearchResults(query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
         const searchTitle = query.title ?? ''
-        const url = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTitle)}`
+        const includedTags = query.includedTags?.map(tag => tag.label).filter(Boolean) ?? []
+        const searchTerms = [searchTitle, ...includedTags].filter(Boolean).join(' ')
+        const url = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
         const $ = await this.getCheerio(url)
         const results = this.parser.parseSearchResults($)
 
