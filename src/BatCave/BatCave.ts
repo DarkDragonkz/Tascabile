@@ -13,7 +13,6 @@ import {
     Response,
     SearchRequest,
     SearchResultsProviding,
-    SearchTagsProviding,
     Source,
     SourceInfo,
     SourceIntents,
@@ -36,7 +35,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.2',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -60,7 +59,7 @@ export const BatCaveInfo: SourceInfo = {
 
 export class BatCave
     extends Source
-    implements MangaProviding, ChapterProviding, HomePageSectionsProviding, SearchResultsProviding, SearchTagsProviding {
+    implements MangaProviding, ChapterProviding, HomePageSectionsProviding, SearchResultsProviding {
 
     private readonly parser = new BatCaveParser()
 
@@ -172,32 +171,42 @@ export class BatCave
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
+        const allItems = this.dedupeItems(this.parser.parseHomeItems($)).slice(0, 30)
 
-        const popularItems = this.parser
-            .parseHomeItems($, '.sect--popular .poster.grid-item.has-overlay')
+        const popularItems = this.dedupeItems(this.parser
+            .parseHomeItems($, '.sect--popular .poster, .carou .poster, #owl-carou .poster'))
             .slice(0, 15)
 
-        const newReleaseItems = this.parser
-            .parseHomeItems($, '.sect--hot .poster.grid-item.has-overlay')
+        const newReleaseItems = this.dedupeItems(this.parser
+            .parseHomeItems($, '.sect--hot .poster, .sect__content .poster'))
+            .filter((item: BatCaveSourceComic) => !popularItems.some((popular: BatCaveSourceComic) => popular.comicId === item.comicId))
             .slice(0, 15)
 
-        if (popularItems.length > 0) {
+        const safePopularItems = popularItems.length > 0
+            ? popularItems
+            : allItems.slice(0, 15)
+
+        const safeNewReleaseItems = newReleaseItems.length > 0
+            ? newReleaseItems
+            : allItems.slice(15, 30)
+
+        if (safePopularItems.length > 0) {
             sectionCallback(App.createHomeSection({
                 id: SECTION_IDS.POPULAR,
                 title: 'Popular comics',
                 type: 'singleRowNormal',
                 containsMoreItems: false,
-                items: popularItems.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
+                items: safePopularItems.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
             }))
         }
 
-        if (newReleaseItems.length > 0) {
+        if (safeNewReleaseItems.length > 0) {
             sectionCallback(App.createHomeSection({
                 id: SECTION_IDS.NEW_RELEASES,
                 title: 'New releases',
                 type: 'singleRowNormal',
                 containsMoreItems: false,
-                items: newReleaseItems.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
+                items: safeNewReleaseItems.map((item: BatCaveSourceComic) => this.createPartialSourceManga(item))
             }))
         }
     }
@@ -267,6 +276,22 @@ export class BatCave
             chapNum: chapter.chapNum ?? 0,
             time: chapter.time
         })
+    }
+
+    private dedupeItems(items: BatCaveSourceComic[]): BatCaveSourceComic[] {
+        const seen = new Set<string>()
+        const deduped: BatCaveSourceComic[] = []
+
+        for (const item of items) {
+            if (seen.has(item.comicId)) {
+                continue
+            }
+
+            seen.add(item.comicId)
+            deduped.push(item)
+        }
+
+        return deduped
     }
 
     private mapStatus(status?: string): string {
