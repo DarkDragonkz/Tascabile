@@ -34,6 +34,10 @@ src/
     MangaWorld.ts
     includes/
       icon.png
+  BatCave/
+    BatCave.ts
+    includes/
+      icon.png
 
 lib/
   core/
@@ -43,6 +47,10 @@ lib/
       constants.ts
       MangaWorldParser.ts
       MangaWorldParser.test.ts
+    BatCave/
+      constants.ts
+      BatCaveParser.ts
+      BatCaveParser.test.ts
 
 fixtures/
   mangaworld/
@@ -50,6 +58,12 @@ fixtures/
     search.html
     manga-detail.html
     chapter-list.html
+  batcave/
+    home.html
+    search.html
+    comic-detail.html
+    chapter-reader-page-1.html
+    chapter-reader-page-2.html
 
 .github/workflows/
   validate.yml
@@ -77,7 +91,8 @@ Ogni source deve avere:
 
 | Source | Stato | Note |
 |---|---|---|
-| MangaWorld | In corso | Source attiva, parser e test presenti |
+| MangaWorld | Attiva | Source italiana, parser e test presenti |
+| BatCave | Attiva | Source comics inglese, parser e test presenti |
 | MangaDex IT | Da migrare | Prossima fase |
 | MangaDex | Da migrare | Da analizzare dopo MangaDex IT |
 | Altre source | Da analizzare dopo | Nessuna source aggiunta senza analisi dedicata |
@@ -86,6 +101,7 @@ Ogni source deve avere:
 
 1. Stabilizzare MangaWorld.
 2. Migliorare test, bundle check e documentazione.
-3. Migrare MangaDex IT.
-4. Migrare MangaDex.
-5. Valutare nuove source solo dopo validazione tecnica.
+3. Migrare BatCave.
+4. Migrare MangaDex IT.
+5. Migrare MangaDex.
+6. Valutare nuove source solo dopo validazione tecnica.
