@@ -4,6 +4,7 @@ export interface MangaWorldSourceManga {
     mangaId: string
     title: string
     image?: string
+    subtitle?: string
 }
 
 export interface MangaWorldMangaDetails {
@@ -306,12 +307,54 @@ export class MangaWorldParser {
         }
 
         const image = this.absoluteUrl($(element).find('img').first().attr('src'))
+        const subtitle = this.extractEntrySubtitle($, element)
 
         return {
             mangaId,
             title,
-            image
+            image,
+            subtitle
         }
+    }
+
+    private extractEntrySubtitle($: CheerioAPI, element: any): string | undefined {
+        const chapterBadge = this.cleanText($(element).find('.chapter').first().text())
+
+        if (chapterBadge) {
+            return chapterBadge
+        }
+
+        const latestChapter = this.cleanText($(element).find('a.xanh').first().text())
+
+        if (latestChapter) {
+            return latestChapter
+        }
+
+        const type = this.cleanText(
+            $(element)
+                .find('.genre')
+                .first()
+                .text()
+                .replace(/^Tipo:\s*/i, '')
+        )
+
+        if (type) {
+            return type
+        }
+
+        const status = this.cleanText(
+            $(element)
+                .find('.status')
+                .first()
+                .text()
+                .replace(/^Stato:\s*/i, '')
+        )
+
+        if (status) {
+            return status
+        }
+
+        return undefined
     }
 
     private extractMetaValue($: CheerioAPI, label: string): string {
