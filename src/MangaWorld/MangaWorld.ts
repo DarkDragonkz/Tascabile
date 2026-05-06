@@ -192,6 +192,8 @@ export class MangaWorld
             .parseHomeSectionItems($, '.comics-grid .entry')
             .slice(0, 12)
 
+        const mostReadItems = await this.getArchiveItems('most_read', 12)
+
         if (trendingItems.length > 0) {
             sectionCallback(App.createHomeSection({
                 id: SECTION_IDS.TRENDING,
@@ -222,13 +224,15 @@ export class MangaWorld
             }))
         }
 
-        sectionCallback(App.createHomeSection({
-            id: SECTION_IDS.MOST_READ,
-            title: 'Più letti',
-            type: 'singleRowNormal',
-            containsMoreItems: true,
-            items: []
-        }))
+        if (mostReadItems.length > 0) {
+            sectionCallback(App.createHomeSection({
+                id: SECTION_IDS.MOST_READ,
+                title: 'Più letti',
+                type: 'singleRowNormal',
+                containsMoreItems: true,
+                items: mostReadItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+            }))
+        }
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
@@ -256,6 +260,13 @@ export class MangaWorld
                 ? { page: page + 1 }
                 : undefined
         })
+    }
+
+    private async getArchiveItems(sort: string, limit: number): Promise<MangaWorldSourceManga[]> {
+        const url = buildUrl(MANGA_WORLD_DOMAIN, '/archive', { sort })
+        const $ = await this.getCheerio(url)
+
+        return this.parser.parseSearchResults($).slice(0, limit)
     }
 
     private async getCheerio(url: string): Promise<CheerioAPI> {
