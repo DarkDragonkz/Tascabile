@@ -26,19 +26,19 @@ import {
     ReadComicsOnlineSourceComic
 } from '../../lib/sources/ReadComicsOnline/ReadComicsOnlineParser'
 
-const READ_COMICS_ONLINE_DOMAIN = 'https://readcomiconline.li'
-const PLACEHOLDER_IMAGE = `${READ_COMICS_ONLINE_DOMAIN}/Content/images/logo.png`
+const READ_COMICS_ONLINE_DOMAIN = 'https://readcomicsonline.ru'
+const PLACEHOLDER_IMAGE = `${READ_COMICS_ONLINE_DOMAIN}/images/logo.png`
 
 const SECTION_IDS = {
-    LATEST: 'latest'
+    LATEST: 'hot-comic-updates'
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.5',
+    version: '0.2.0',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
-    description: 'Source for ReadComicsOnline.',
+    description: 'Source for ReadComicsOnline.ru.',
     contentRating: ContentRating.EVERYONE,
     websiteBaseURL: READ_COMICS_ONLINE_DOMAIN,
     sourceTags: [
@@ -72,7 +72,7 @@ export class ReadComicsOnline
                     referer: `${READ_COMICS_ONLINE_DOMAIN}/`,
                     origin: READ_COMICS_ONLINE_DOMAIN,
                     'user-agent': 'Mozilla/5.0',
-                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,application/json,*/*;q=0.8',
                     'accept-language': 'en-US,en;q=0.9'
                 }
 
@@ -83,7 +83,7 @@ export class ReadComicsOnline
     })
 
     getMangaShareUrl(mangaId: string): string {
-        return `${READ_COMICS_ONLINE_DOMAIN}/Comic/${mangaId}`
+        return `${READ_COMICS_ONLINE_DOMAIN}/comic/${mangaId}`
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
@@ -101,11 +101,17 @@ export class ReadComicsOnline
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        return App.createChapterDetails({
-            id: chapterId,
-            mangaId,
-            pages: []
+        const request = App.createRequest({
+            url: `${READ_COMICS_ONLINE_DOMAIN}/comic/${mangaId}/${chapterId}`,
+            method: 'GET'
         })
+
+        const response = await this.requestManager.schedule(request, 1)
+        const html = typeof response.data === 'string'
+            ? response.data
+            : String(response.data)
+
+        return this.parser.parseChapterDetails(html, mangaId, chapterId)
     }
 
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
@@ -119,8 +125,7 @@ export class ReadComicsOnline
             })
         }
 
-        const $ = await this.postSearchCheerio(keyword)
-        const results = this.parser.parseSearchResults($)
+        const results = await this.getSearchSuggestions(keyword)
 
         return App.createPagedResults({
             results: results.map((result: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(result)),
@@ -138,7 +143,7 @@ export class ReadComicsOnline
 
         sectionCallback(App.createHomeSection({
             id: SECTION_IDS.LATEST,
-            title: 'Latest Updates',
+            title: 'Hot Comic Updates',
             type: 'singleRowNormal',
             containsMoreItems: false,
             items: latestItems.map((item: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(item))
@@ -166,22 +171,27 @@ export class ReadComicsOnline
         return this.cheerio.load(data)
     }
 
-    private async postSearchCheerio(keyword: string): Promise<CheerioAPI> {
+    private async getSearchSuggestions(keyword: string): Promise<ReadComicsOnlineSourceComic[]> {
         const request = App.createRequest({
-            url: `${READ_COMICS_ONLINE_DOMAIN}/Search/Comic`,
-            method: 'POST',
+            url: `${READ_COMICS_ONLINE_DOMAIN}/search?query=${encodeURIComponent(keyword)}`,
+            method: 'GET',
             headers: {
-                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            data: `keyword=${encodeURIComponent(keyword)}`
-        } as any)
+                accept: 'application/json,text/javascript,*/*;q=0.01',
+                'x-requested-with': 'XMLHttpRequest'
+            }
+        })
 
         const response = await this.requestManager.schedule(request, 1)
         const data = typeof response.data === 'string'
             ? response.data
             : String(response.data)
 
-        return this.cheerio.load(data)
+        try {
+            return this.parser.parseSearchJson(JSON.parse(data))
+        } catch {
+            const $ = this.cheerio.load(data)
+            return this.parser.parseSearchResults($)
+        }
     }
 
     private createSourceManga(details: ReadComicsOnlineComicDetails): SourceManga {
@@ -235,6 +245,8 @@ export class ReadComicsOnline
             case 'ongoing':
                 return 'ONGOING'
             case 'completed':
+                return 'COMPLETED'
+            case 'complete':
                 return 'COMPLETED'
             case 'hiatus':
                 return 'HIATUS'
