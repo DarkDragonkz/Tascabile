@@ -37,7 +37,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.6',
+    version: '0.1.7',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -172,69 +172,88 @@ export class BatCave
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(BATCAVE_DOMAIN)
-        const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
+        const fallbackItems = this.getFallbackHomeItems()
 
-        const featuredItems = this.dedupeItems(this.parser.parseHomeItems(
-            $,
-            '.owl-stage a.poster, .owl-stage-outer a.poster, a.poster[data-hot_marker]'
-        )).slice(0, 15)
+        try {
+            const $ = await this.getCheerio(BATCAVE_DOMAIN)
+            const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
 
-        const hotItems = this.dedupeItems(this.parser.parseHomeItems(
-            $,
-            '.sect--hot a.poster, .sect__content a.poster'
-        ))
-            .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
-            .slice(0, 15)
+            const featuredItems = this.dedupeItems(this.parser.parseHomeItems(
+                $,
+                '.owl-stage a.poster, .owl-stage-outer a.poster, a.poster[data-hot_marker]'
+            )).slice(0, 15)
 
-        const topRatedItems = this.dedupeItems(this.parser.parseHomeItems(
-            $,
-            '.side-block__content--populars a.popular, a.popular'
-        ))
-            .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
-            .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
-            .slice(0, 15)
+            const hotItems = this.dedupeItems(this.parser.parseHomeItems(
+                $,
+                '.sect--hot a.poster, .sect__content a.poster'
+            ))
+                .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
+                .slice(0, 15)
 
-        const latestItems = allItems
-            .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
-            .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
-            .filter((item: BatCaveSourceComic) => !topRatedItems.some((topRated: BatCaveSourceComic) => topRated.comicId === item.comicId))
-            .slice(0, 15)
+            const topRatedItems = this.dedupeItems(this.parser.parseHomeItems(
+                $,
+                '.side-block__content--populars a.popular, a.popular'
+            ))
+                .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
+                .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
+                .slice(0, 15)
+
+            const latestItems = allItems
+                .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
+                .filter((item: BatCaveSourceComic) => !hotItems.some((hot: BatCaveSourceComic) => hot.comicId === item.comicId))
+                .filter((item: BatCaveSourceComic) => !topRatedItems.some((topRated: BatCaveSourceComic) => topRated.comicId === item.comicId))
+                .slice(0, 15)
+
+            this.sendHomeSection(
+                sectionCallback,
+                SECTION_IDS.FEATURED,
+                'Featured Comics',
+                'singleRowLarge',
+                featuredItems.length > 0 ? featuredItems : allItems.slice(0, 15),
+                false
+            )
+
+            this.sendHomeSection(
+                sectionCallback,
+                SECTION_IDS.HOT,
+                'Hot New Releases',
+                'singleRowNormal',
+                hotItems.length > 0 ? hotItems : allItems.slice(15, 30),
+                false
+            )
+
+            this.sendHomeSection(
+                sectionCallback,
+                SECTION_IDS.TOP_RATED,
+                'Top Rated Comics',
+                'singleRowNormal',
+                topRatedItems.length > 0 ? topRatedItems : allItems.slice(30, 45),
+                false
+            )
+
+            this.sendHomeSection(
+                sectionCallback,
+                SECTION_IDS.LATEST,
+                'Latest Updates',
+                'doubleRow',
+                latestItems.length > 0 ? latestItems : allItems.slice(45, 60),
+                true
+            )
+
+            if (allItems.length > 0 || featuredItems.length > 0 || hotItems.length > 0 || topRatedItems.length > 0) {
+                return
+            }
+        } catch {
+            // Fall through to deterministic fallback below.
+        }
 
         this.sendHomeSection(
             sectionCallback,
             SECTION_IDS.FEATURED,
             'Featured Comics',
             'singleRowLarge',
-            featuredItems.length > 0 ? featuredItems : allItems.slice(0, 15),
+            fallbackItems,
             false
-        )
-
-        this.sendHomeSection(
-            sectionCallback,
-            SECTION_IDS.HOT,
-            'Hot New Releases',
-            'singleRowNormal',
-            hotItems.length > 0 ? hotItems : allItems.slice(15, 30),
-            false
-        )
-
-        this.sendHomeSection(
-            sectionCallback,
-            SECTION_IDS.TOP_RATED,
-            'Top Rated Comics',
-            'singleRowNormal',
-            topRatedItems.length > 0 ? topRatedItems : allItems.slice(30, 45),
-            false
-        )
-
-        this.sendHomeSection(
-            sectionCallback,
-            SECTION_IDS.LATEST,
-            'Latest Updates',
-            'doubleRow',
-            latestItems.length > 0 ? latestItems : allItems.slice(45, 60),
-            true
         )
     }
 
@@ -357,6 +376,29 @@ export class BatCave
         }
 
         return deduped
+    }
+
+    private getFallbackHomeItems(): BatCaveSourceComic[] {
+        return [
+            {
+                comicId: '32394-ultimate-spider-man-2024.html',
+                title: 'Ultimate Spider-Man (2024-)',
+                image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/55/98c052976e162080e5a0be8c9fb31f.jpg`,
+                subtitle: 'Marvel Comics • 2024'
+            },
+            {
+                comicId: '561-batman.html',
+                title: 'Batman (2016-)',
+                image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/4b/dae2e9e22424adf4d9fb04b0085f2d.jpg`,
+                subtitle: 'DC Comics • 2016'
+            },
+            {
+                comicId: '5629-the-boys-2006-2012.html',
+                title: 'The Boys (2006-2012)',
+                image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/56/8b8e7405896d1bd972611d99867242.jpg`,
+                subtitle: 'Dynamite'
+            }
+        ]
     }
 
     private mapStatus(status?: string): string {
