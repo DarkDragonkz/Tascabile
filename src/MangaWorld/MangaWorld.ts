@@ -16,7 +16,8 @@ import {
     Source,
     SourceInfo,
     SourceIntents,
-    SourceManga
+    SourceManga,
+    TagSection
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
 import { buildUrl } from '../../lib/core/url'
@@ -24,7 +25,8 @@ import {
     MangaWorldChapter,
     MangaWorldMangaDetails,
     MangaWorldParser,
-    MangaWorldSourceManga
+    MangaWorldSourceManga,
+    MangaWorldTag
 } from '../../lib/sources/MangaWorld/MangaWorldParser'
 
 const MANGA_WORLD_DOMAIN = 'https://www.mangaworld.mx'
@@ -38,7 +40,7 @@ const SECTION_IDS = {
 } as const
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.1.3',
+    version: '0.2.0',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -127,12 +129,38 @@ export class MangaWorld
         })
     }
 
+    async getSearchTags(): Promise<TagSection[]> {
+        const $ = await this.getCheerio(`${MANGA_WORLD_DOMAIN}/archive`)
+        const tags = this.parser.parseTags($)
+
+        return [
+            App.createTagSection({
+                id: 'genres',
+                label: 'Generi',
+                tags: tags.map((tag: MangaWorldTag) => App.createTag({
+                    id: tag.id,
+                    label: tag.label
+                }))
+            })
+        ]
+    }
+
+    async supportsSearchOperators(): Promise<boolean> {
+        return true
+    }
+
+    async supportsTagExclusion(): Promise<boolean> {
+        return false
+    }
+
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
         const searchTitle = query.title ?? ''
         const page = this.getPageFromMetadata(metadata)
+        const includedGenres = query.includedTags?.map(tag => tag.id) ?? []
 
         const url = buildUrl(MANGA_WORLD_DOMAIN, '/archive', {
             keyword: searchTitle,
+            genre: includedGenres,
             page
         })
 
