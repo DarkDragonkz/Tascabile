@@ -35,7 +35,7 @@ const SECTION_IDS = {
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.1',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -131,6 +131,10 @@ export class ReadComicsOnline
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(READ_COMICS_ONLINE_DOMAIN)
         const latestItems = this.parser.parseHomeLatestUpdates($).slice(0, 20)
+
+        if (latestItems.length === 0) {
+            return
+        }
 
         sectionCallback(App.createHomeSection({
             id: SECTION_IDS.LATEST,
