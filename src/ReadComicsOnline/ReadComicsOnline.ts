@@ -35,7 +35,7 @@ const SECTION_IDS = {
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.2',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
