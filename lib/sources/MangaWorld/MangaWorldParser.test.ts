@@ -17,6 +17,10 @@ function loadFixture(fileName: string): CheerioAPI {
     return cheerio.load(html)
 }
 
+function loadHtml(html: string): CheerioAPI {
+    return cheerio.load(html)
+}
+
 describe('MangaWorldParser', () => {
     const parser = new MangaWorldParser()
 
@@ -89,5 +93,55 @@ describe('MangaWorldParser', () => {
         assert.ok(tags.length > 0)
         assert.ok(tags.some((tag: MangaWorldTag) => tag.id === 'azione' && tag.label === 'Azione'))
         assert.ok(tags.some((tag: MangaWorldTag) => tag.id === 'shounen' && tag.label === 'Shounen'))
+    })
+
+    it('parses trending items from the homepage fixture', () => {
+        const $ = loadFixture('home.html')
+        const results = parser.parseHomeSectionItems($, '#chapters-slide .entry.vertical')
+
+        assert.ok(results.length > 0)
+        assert.ok(results.some((result: MangaWorldSourceManga) => result.title.length > 0))
+        assert.ok(results.every((result: MangaWorldSourceManga) => result.mangaId.includes('/')))
+    })
+
+    it('parses monthly section items by heading', () => {
+        const $ = loadHtml(`
+            <section>
+                <div class="s-title">
+                    <i class="fas fa-star"></i>
+                    <h3>Manga del mese</h3>
+                </div>
+                <div class="comics-grid">
+                    <div class="entry">
+                        <a class="thumb position-relative" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">
+                            <img src="https://cdn.mangaworld.mx/mangas/blue-lock.jpg" alt="Blue Lock">
+                        </a>
+                        <div class="content">
+                            <p class="name m-0">
+                                <a class="manga-title" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">Blue Lock</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="entry">
+                        <a class="thumb position-relative" href="https://www.mangaworld.mx/manga/1708/one-piece/" title="One Piece">
+                            <img src="https://cdn.mangaworld.mx/mangas/one-piece.jpg" alt="One Piece">
+                        </a>
+                        <div class="content">
+                            <p class="name m-0">
+                                <a class="manga-title" href="https://www.mangaworld.mx/manga/1708/one-piece/" title="One Piece">One Piece</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `)
+
+        const results = parser.parseHomeSectionItemsByHeading($, ['Manga del mese'])
+
+        assert.equal(results.length, 2)
+        assert.equal(results[0].mangaId, '1848/blue-lock')
+        assert.equal(results[0].title, 'Blue Lock')
+        assert.equal(results[1].mangaId, '1708/one-piece')
+        assert.equal(results[1].title, 'One Piece')
     })
 })
