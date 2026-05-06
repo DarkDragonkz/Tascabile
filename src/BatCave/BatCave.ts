@@ -37,7 +37,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.8',
+    version: '0.1.9',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -157,17 +157,33 @@ export class BatCave
         return false
     }
 
-    async getSearchResults(query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
+    async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
+        const page = this.getPageFromMetadata(metadata)
         const searchTitle = query.title ?? ''
         const includedTags = query.includedTags?.map(tag => tag.label).filter(Boolean) ?? []
-        const searchTerms = [searchTitle, ...includedTags].filter(Boolean).join(' ')
-        const url = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
-        const $ = await this.getCheerio(url)
-        const results = this.parser.parseSearchResults($)
+        const searchTerms = [searchTitle, ...includedTags].filter(Boolean).join(' ').trim()
+
+        if (!searchTerms) {
+            return App.createPagedResults({
+                results: [],
+                metadata: undefined
+            })
+        }
+
+        const primaryUrl = `${BATCAVE_DOMAIN}/index.php?do=search&subaction=search&story=${encodeURIComponent(searchTerms)}&search_start=${page}`
+        const fallbackUrl = `${BATCAVE_DOMAIN}/search/${encodeURIComponent(searchTerms)}`
+
+        let results = await this.getSearchResultsFromUrl(primaryUrl)
+
+        if (results.length === 0 && page === 1) {
+            results = await this.getSearchResultsFromUrl(fallbackUrl)
+        }
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
-            metadata: undefined
+            metadata: results.length > 0
+                ? { page: page + 1 }
+                : undefined
         })
     }
 
@@ -210,7 +226,7 @@ export class BatCave
                 'Featured Comics',
                 'singleRowLarge',
                 featuredItems.length > 0 ? featuredItems : allItems.slice(0, 15),
-                false
+                true
             )
 
             this.sendHomeSection(
@@ -219,7 +235,7 @@ export class BatCave
                 'Hot New Releases',
                 'singleRowNormal',
                 hotItems.length > 0 ? hotItems : allItems.slice(15, 30),
-                false
+                true
             )
 
             this.sendHomeSection(
@@ -228,7 +244,7 @@ export class BatCave
                 'Top Rated Comics',
                 'singleRowNormal',
                 topRatedItems.length > 0 ? topRatedItems : allItems.slice(30, 45),
-                false
+                true
             )
 
             this.sendHomeSection(
@@ -247,23 +263,24 @@ export class BatCave
             // Fall through to deterministic fallback below.
         }
 
-        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', fallbackSections.featured, false)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.HOT, 'Hot New Releases', 'singleRowNormal', fallbackSections.hot, false)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', fallbackSections.topRated, false)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', fallbackSections.featured, true)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.HOT, 'Hot New Releases', 'singleRowNormal', fallbackSections.hot, true)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', fallbackSections.topRated, true)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
-        if (homepageSectionId !== SECTION_IDS.LATEST) {
+        const page = this.getPageFromMetadata(metadata)
+        const fallbackSections = this.getFallbackHomeSections()
+
+        if (page === 1) {
             return App.createPagedResults({
-                results: [],
+                results: this.getFallbackItemsForSection(homepageSectionId, fallbackSections)
+                    .map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
                 metadata: undefined
             })
         }
 
-        const page = this.getPageFromMetadata(metadata)
-        const url = page === 1
-            ? BATCAVE_DOMAIN
-            : `${BATCAVE_DOMAIN}/page/${page}/`
+        const url = `${BATCAVE_DOMAIN}/page/${page}/`
         const $ = await this.getCheerio(url)
         const results = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
 
@@ -287,6 +304,16 @@ export class BatCave
             : String(response.data)
 
         return this.cheerio.load(data)
+    }
+
+    private async getSearchResultsFromUrl(url: string): Promise<BatCaveSourceComic[]> {
+        try {
+            const $ = await this.getCheerio(url)
+
+            return this.parser.parseSearchResults($)
+        } catch {
+            return []
+        }
     }
 
     private createSourceManga(details: BatCaveComicDetails): SourceManga {
@@ -371,6 +398,22 @@ export class BatCave
         }
 
         return deduped
+    }
+
+    private getFallbackItemsForSection(
+        homepageSectionId: string,
+        fallbackSections: { featured: BatCaveSourceComic[]; hot: BatCaveSourceComic[]; topRated: BatCaveSourceComic[] }
+    ): BatCaveSourceComic[] {
+        switch (homepageSectionId) {
+            case SECTION_IDS.FEATURED:
+                return fallbackSections.featured
+            case SECTION_IDS.HOT:
+                return fallbackSections.hot
+            case SECTION_IDS.TOP_RATED:
+                return fallbackSections.topRated
+            default:
+                return [...fallbackSections.featured, ...fallbackSections.hot, ...fallbackSections.topRated]
+        }
     }
 
     private getFallbackHomeSections(): { featured: BatCaveSourceComic[]; hot: BatCaveSourceComic[]; topRated: BatCaveSourceComic[] } {
