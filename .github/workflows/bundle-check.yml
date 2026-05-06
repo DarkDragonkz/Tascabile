@@ -1,0 +1,82 @@
+name: Bundle Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "feature/**"
+
+jobs:
+  bundle-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate project
+        run: npm run validate
+
+      - name: Prepare bundle directory
+        shell: bash
+        run: mkdir -p bundles/0.8
+
+      - name: Build Paperback bundle
+        run: npm run bundle -- --folder=0.8
+
+      - name: Inspect generated bundle
+        shell: bash
+        run: |
+          echo "Generated files:"
+          find bundles -maxdepth 4 -type f | sort || true
+
+      - name: Print versioning JSON
+        shell: bash
+        run: |
+          cat bundles/0.8/versioning.json
+
+      - name: Verify versioning JSON
+        shell: bash
+        run: |
+          if [ ! -f "bundles/0.8/versioning.json" ]; then
+            echo "Missing bundles/0.8/versioning.json"
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('bundles/0.8/versioning.json').read_text())
+          sources = data.get('sources')
+
+          if not isinstance(sources, list):
+              raise SystemExit('versioning.json sources is not a list')
+
+          if any(source is None for source in sources):
+              raise SystemExit('versioning.json contains a null source')
+
+          ids = [source.get('id') for source in sources]
+          print('Source ids:', ids)
+
+          required = {'MangaWorld', 'ReadComicsOnline'}
+          missing = required.difference(ids)
+
+          if missing:
+              raise SystemExit(f'Missing sources: {sorted(missing)}')
+          PY
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paperback-bundle-0.8
+          path: bundles/0.8
