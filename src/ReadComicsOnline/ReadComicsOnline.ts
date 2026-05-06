@@ -35,7 +35,7 @@ const SECTION_IDS = {
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.2',
+    version: '0.1.3',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -114,17 +114,28 @@ export class ReadComicsOnline
 
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const url = buildUrl(READ_COMICS_ONLINE_DOMAIN, '/Search/Comic', {
-            keyword: query.title ?? '',
-            page
-        })
+        const keyword = query.title ?? ''
+        const urls = [
+            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/Search/Comic', { keyword, page }),
+            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/ComicList', { keyword, page }),
+            buildUrl(READ_COMICS_ONLINE_DOMAIN, '/Search', { keyword, page })
+        ]
 
-        const $ = await this.getCheerio(url)
-        const results = this.parser.parseSearchResults($)
+        for (const url of urls) {
+            const $ = await this.getCheerio(url)
+            const results = this.parser.parseSearchResults($)
+
+            if (results.length > 0) {
+                return App.createPagedResults({
+                    results: results.map((result: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(result)),
+                    metadata: { page: page + 1 }
+                })
+            }
+        }
 
         return App.createPagedResults({
-            results: results.map((result: ReadComicsOnlineSourceComic) => this.createPartialSourceManga(result)),
-            metadata: results.length > 0 ? { page: page + 1 } : undefined
+            results: [],
+            metadata: undefined
         })
     }
 
