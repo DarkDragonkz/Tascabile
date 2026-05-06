@@ -34,7 +34,7 @@ const SECTION_IDS = {
 } as const
 
 export const ReadComicsOnlineInfo: SourceInfo = {
-    version: '0.1.4',
+    version: '0.1.5',
     name: 'ReadComicsOnline',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -93,26 +93,18 @@ export class ReadComicsOnline
         return this.createSourceManga(details)
     }
 
-    async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-   const request = App.createRequest({
-       url: `${READ_COMICS_ONLINE_DOMAIN}/Comic/${mangaId}/${chapterId}`,
-       method: 'GET'
-   })
-   const response = await this.requestManager.schedule(request, 1)
-   const html = typeof response.data === 'string'
-       ? response.data
-       : String(response.data)
-   return this.parser.parseChapterDetails(html, mangaId, chapterId)
-}
+    async getChapters(mangaId: string): Promise<Chapter[]> {
+        const $ = await this.getCheerio(this.getMangaShareUrl(mangaId))
+        const chapters = this.parser.parseChapters($, mangaId)
+
+        return chapters.map((chapter: ReadComicsOnlineChapter) => this.createChapter(chapter))
+    }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const $ = await this.getCheerio(`${READ_COMICS_ONLINE_DOMAIN}/Comic/${mangaId}/${chapterId}`)
-        const details = this.parser.parseChapterDetails($, mangaId, chapterId)
-
         return App.createChapterDetails({
-            id: details.id,
-            mangaId: details.comicId,
-            pages: details.pages
+            id: chapterId,
+            mangaId,
+            pages: []
         })
     }
 
