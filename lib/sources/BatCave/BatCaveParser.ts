@@ -38,6 +38,13 @@ export interface BatCaveTag {
     label: string
 }
 
+interface JsonLdListItem {
+    position?: number
+    url?: string
+    name?: string
+    item?: JsonLdNode
+}
+
 interface JsonLdNode {
     '@type'?: string | string[]
     '@graph'?: JsonLdNode[]
@@ -51,11 +58,9 @@ interface JsonLdNode {
     startDate?: string
     datePublished?: string
     dateCreated?: string
+    itemListElement?: JsonLdListItem[]
     hasPart?: {
-        itemListElement?: Array<{
-            position?: number
-            item?: JsonLdNode
-        }>
+        itemListElement?: JsonLdListItem[]
     }
     identifier?: Array<{
         propertyID?: string
@@ -75,7 +80,10 @@ interface BatCaveReaderData {
 
 export class BatCaveParser {
     parseHomeItems($: CheerioAPI, selector = '.poster.grid-item.has-overlay'): BatCaveSourceComic[] {
-        return this.parsePosterItems($, selector)
+        const domItems = this.parsePosterItems($, selector)
+        const jsonLdItems = this.parseHomeItemsFromJsonLd($)
+
+        return this.dedupeSourceComics([...domItems, ...jsonLdItems])
     }
 
     parseSearchResults($: CheerioAPI): BatCaveSourceComic[] {
@@ -268,6 +276,36 @@ export class BatCaveParser {
                 subtitle: subtitle || undefined
             })
         })
+
+        return results
+    }
+
+    private parseHomeItemsFromJsonLd($: CheerioAPI): BatCaveSourceComic[] {
+        const results: BatCaveSourceComic[] = []
+        const seen = new Set<string>()
+        const lists = this.getJsonLdNodes($).filter((node: JsonLdNode) => this.hasJsonLdType(node, 'ItemList'))
+
+        for (const list of lists) {
+            const elements = list.itemListElement ?? []
+
+            for (const element of elements) {
+                const url = element.url || element.item?.url
+                const comicId = this.extractComicId(url)
+                const title = this.cleanText(element.name || element.item?.name)
+
+                if (!comicId || !title || seen.has(comicId)) {
+                    continue
+                }
+
+                seen.add(comicId)
+                results.push({
+                    comicId,
+                    title,
+                    image: this.absoluteUrl(element.item?.image || element.item?.thumbnailUrl),
+                    subtitle: 'Comic'
+                })
+            }
+        }
 
         return results
     }
@@ -500,6 +538,22 @@ export class BatCaveParser {
             .replace(/&amp;/g, 'and')
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '')
+    }
+
+    private dedupeSourceComics(items: BatCaveSourceComic[]): BatCaveSourceComic[] {
+        const seen = new Set<string>()
+        const results: BatCaveSourceComic[] = []
+
+        for (const item of items) {
+            if (seen.has(item.comicId)) {
+                continue
+            }
+
+            seen.add(item.comicId)
+            results.push(item)
+        }
+
+        return results
     }
 
     private cleanText(value?: string): string {
