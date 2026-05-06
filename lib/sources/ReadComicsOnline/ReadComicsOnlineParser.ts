@@ -41,7 +41,7 @@ export class ReadComicsOnlineParser {
         const results: ReadComicsOnlineSourceComic[] = []
         const seen = new Set<string>()
 
-        $('div.item').each((_: number, element: any) => {
+        $('div.item, li, tr, .comic, .row, .update').each((_: number, element: any) => {
             const item = this.parseComicListItem($, element)
 
             if (!item || seen.has(item.comicId)) {
@@ -51,6 +51,12 @@ export class ReadComicsOnlineParser {
             seen.add(item.comicId)
             results.push(item)
         })
+
+        if (results.length > 0) {
+            return results
+        }
+
+        this.parseComicLinksFromContainer($, $('body'), results, seen)
 
         return results
     }
@@ -160,7 +166,7 @@ export class ReadComicsOnlineParser {
         return {
             id: chapterId,
             comicId,
-            pages: this.extractPageImagesFromScripts(html)
+            pages: this.extractPageImages($, html)
         }
     }
 
@@ -216,7 +222,9 @@ export class ReadComicsOnlineParser {
             const itemContainer = $(linkElement).closest('li, tr, .item, .comic, .update, .row, div')
             const image = this.absoluteUrl(
                 itemContainer.find('img').first().attr('src') ||
-                $(linkElement).find('img').first().attr('src')
+                itemContainer.find('img').first().attr('data-src') ||
+                $(linkElement).find('img').first().attr('src') ||
+                $(linkElement).find('img').first().attr('data-src')
             )
 
             const subtitle = this.extractNearbyIssueText($, linkElement, comicId)
@@ -245,7 +253,7 @@ export class ReadComicsOnlineParser {
         return {
             comicId,
             title,
-            image: this.absoluteUrl($(element).find('img').first().attr('src')),
+            image: this.absoluteUrl($(element).find('img').first().attr('src') || $(element).find('img').first().attr('data-src')),
             subtitle: tooltipHtml ? this.extractTooltipValue(tooltipHtml, 'Status') : undefined
         }
     }
@@ -369,26 +377,40 @@ export class ReadComicsOnlineParser {
         return this.cleanText(strong.parent().text().replace(`${label}:`, '')) || undefined
     }
 
-    private extractPageImagesFromScripts(html: string): string[] {
+    private extractPageImages($: CheerioAPI, html: string): string[] {
         const pages: string[] = []
         const seen = new Set<string>()
+        const addPage = (url?: string): void => {
+            const absolute = this.absoluteUrl(this.cleanText(url))
+
+            if (!absolute || seen.has(absolute) || !this.isPageImageUrl(absolute)) {
+                return
+            }
+
+            seen.add(absolute)
+            pages.push(absolute)
+        }
+
+        $('#divImage img, #divImages img, #viewer img, .chapter-content img, img').each((_: number, imgElement: any) => {
+            addPage($(imgElement).attr('src'))
+            addPage($(imgElement).attr('data-src'))
+            addPage($(imgElement).attr('data-original'))
+        })
+
         const patterns = [
-            /_NsXaOMixnz\s*=\s*'([^']+)'/g,
-            /_kKFngEK\.push\('([^']+)'\)/g
+            /_NsXaOMixnz\s*=\s*['"]([^'"]+)['"]/g,
+            /_kKFngEK\.push\(['"]([^'"]+)['"]\)/g,
+            /lstImages\.push\(['"]([^'"]+)['"]\)/g,
+            /chapterImages\.push\(['"]([^'"]+)['"]\)/g,
+            /['"](https?:\/\/[^'"]+\.(?:jpg|jpeg|png|webp)(?:\?[^'"]*)?)['"]/gi,
+            /['"](\/[^'"]+\.(?:jpg|jpeg|png|webp)(?:\?[^'"]*)?)['"]/gi
         ]
 
         for (const pattern of patterns) {
             let match: RegExpExecArray | null
 
             while ((match = pattern.exec(html)) !== null) {
-                const url = this.cleanText(match[1])
-
-                if (!url || seen.has(url) || !this.isPageImageUrl(url)) {
-                    continue
-                }
-
-                seen.add(url)
-                pages.push(url)
+                addPage(match[1])
             }
         }
 
