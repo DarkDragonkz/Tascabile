@@ -93,12 +93,17 @@ export class ReadComicsOnline
         return this.createSourceManga(details)
     }
 
-    async getChapters(mangaId: string): Promise<Chapter[]> {
-        const $ = await this.getCheerio(this.getMangaShareUrl(mangaId))
-        const chapters = this.parser.parseChapters($, mangaId)
-
-        return chapters.map((chapter: ReadComicsOnlineChapter) => this.createChapter(chapter))
-    }
+    async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+   const request = App.createRequest({
+       url: `${READ_COMICS_ONLINE_DOMAIN}/Comic/${mangaId}/${chapterId}`,
+       method: 'GET'
+   })
+   const response = await this.requestManager.schedule(request, 1)
+   const html = typeof response.data === 'string'
+       ? response.data
+       : String(response.data)
+   return this.parser.parseChapterDetails(html, mangaId, chapterId)
+}
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
         const $ = await this.getCheerio(`${READ_COMICS_ONLINE_DOMAIN}/Comic/${mangaId}/${chapterId}`)
