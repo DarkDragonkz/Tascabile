@@ -46,6 +46,17 @@ export class ReadAllComicsParser {
         const results: ReadAllComicsSeries[] = []
         const seen = new Set<string>()
 
+        $('#post-area .post').each((_: number, element: any) => {
+            const item = this.parsePostGridItem($, element)
+
+            if (!item || seen.has(item.mangaId)) {
+                return
+            }
+
+            seen.add(item.mangaId)
+            results.push(item)
+        })
+
         $('ul.list-story.categories > li').each((_: number, element: any) => {
             const item = this.parseSeriesItem($, element)
 
@@ -71,6 +82,7 @@ export class ReadAllComicsParser {
         const image = this.absoluteUrl(
             this.cleanText($('meta[property="og:image:secure_url"]').attr('content'))
                 || this.cleanText($('meta[property="og:image"]').attr('content'))
+                || this.extractImageUrl($('.description-archive img, #post-area .post img').first())
         )
 
         const description = this.cleanText($('meta[name="description"]').attr('content'))
@@ -178,6 +190,46 @@ export class ReadAllComicsParser {
         }
 
         return slug
+    }
+
+    private parsePostGridItem($: CheerioAPI, element: any): ReadAllComicsSeries | undefined {
+        const link = $(element).find('.pinbin-copy a, h2 a, h1 a, a[rel="bookmark"], a').first()
+        const href = link.attr('href')
+        const title = this.decodeHtmlEntities(
+            this.cleanText(link.text())
+                || this.cleanText(link.attr('title'))
+                || this.cleanText($(element).find('img').first().attr('alt'))
+        )
+
+        if (!title) {
+            return undefined
+        }
+
+        let mangaId = this.extractCategoryId(href)
+
+        if (!mangaId) {
+            const classAttribute = $(element).attr('class') ?? ''
+            const categoryMatch = classAttribute.match(/(?:^|\s)category-([^\s]+)/)
+            mangaId = categoryMatch?.[1]
+        }
+
+        if (!mangaId) {
+            mangaId = this.extractPostId(href)
+        }
+
+        if (!mangaId) {
+            return undefined
+        }
+
+        const subtitle = this.cleanText($(element).find('.pinbin-copy span, time, .entry-date').first().text())
+
+        return {
+            mangaId,
+            title,
+            image: this.absoluteUrl(this.extractImageUrl($(element).find('img').first())),
+            subtitle: subtitle || undefined,
+            genres: []
+        }
     }
 
     private parseSeriesItem($: CheerioAPI, element: any): ReadAllComicsSeries | undefined {
