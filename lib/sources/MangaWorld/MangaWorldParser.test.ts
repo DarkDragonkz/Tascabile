@@ -96,6 +96,31 @@ describe('MangaWorldParser', () => {
         assert.equal(chapters[2].chapNum, 100)
     })
 
+    it('parses chapter ids from URL variants', () => {
+        const $ = loadHtml(`
+            <div class="volume-element">
+                <div class="volume-name">Volume 01</div>
+                <div class="chapter">
+                    <a class="chap" href="https://www.mangaworld.mx/manga/1848/blue-lock/read/6024a4f7561c8f438deec5fc/1?style=list">Capitolo 01</a>
+                </div>
+                <div class="chapter">
+                    <a href="/manga/1848/blue-lock/read/chapter-002/1#reader" title="Capitolo 02"></a>
+                </div>
+                <div class="chapter">
+                    <a href="/read/chapter-003?style=list">Capitolo 03</a>
+                </div>
+            </div>
+        `)
+
+        const chapters = parser.parseChapters($, '1848/blue-lock')
+
+        assert.deepEqual(chapters.map((chapter: MangaWorldChapter) => chapter.id), [
+            '6024a4f7561c8f438deec5fc',
+            'chapter-002',
+            'chapter-003'
+        ])
+    })
+
     it('parses all chapter pages from list reader fixture', () => {
         const $ = loadFixture('chapter-list.html')
         const details = parser.parseChapterDetails(
@@ -127,6 +152,55 @@ describe('MangaWorldParser', () => {
             'https://www.mangaworld.mx/chapters/blue-lock/1.jpg',
             'https://cdn.mangaworld.mx/chapters/blue-lock/2.webp'
         ])
+    })
+
+    it('prefers data-src over placeholder src for chapter pages', () => {
+        const $ = loadHtml(`
+            <div id="page">
+                <img class="page-image" src="https://www.mangaworld.mx/public/assets/images/placeholder.png" data-src="https://cdn.mangaworld.mx/chapters/blue-lock/real-page-1.jpg">
+                <img class="page-image" src="https://www.mangaworld.mx/public/assets/images/loading.gif" data-srcset="https://cdn.mangaworld.mx/reader/blue-lock/real-page-2.webp 1x, https://cdn.mangaworld.mx/reader/blue-lock/real-page-2@2x.webp 2x">
+            </div>
+        `)
+
+        const details = parser.parseChapterDetails($, '1848/blue-lock', 'chapter-001')
+
+        assert.deepEqual(details.pages, [
+            'https://cdn.mangaworld.mx/chapters/blue-lock/real-page-1.jpg',
+            'https://cdn.mangaworld.mx/reader/blue-lock/real-page-2.webp'
+        ])
+    })
+
+    it('accepts chapter page image paths beyond the classic chapters directory', () => {
+        const $ = loadHtml(`
+            <div id="reader">
+                <img src="https://cdn.mangaworld.mx/read/blue-lock/page-1">
+                <img src="https://cdn.mangaworld.mx/reader/blue-lock/page-2.avif?token=abc">
+                <img src="https://cdn.mangaworld.mx/mangas/blue-lock-cover.jpg">
+                <img src="https://www.mangaworld.mx/public/assets/images/logo.png">
+            </div>
+        `)
+
+        const details = parser.parseChapterDetails($, '1848/blue-lock', 'chapter-001')
+
+        assert.deepEqual(details.pages, [
+            'https://cdn.mangaworld.mx/read/blue-lock/page-1',
+            'https://cdn.mangaworld.mx/reader/blue-lock/page-2.avif?token=abc'
+        ])
+    })
+
+    it('prefers data-src over placeholder src for search result covers', () => {
+        const $ = loadHtml(`
+            <div class="comics-grid">
+                <div class="entry">
+                    <a class="manga-title" href="https://www.mangaworld.mx/manga/1848/blue-lock/" title="Blue Lock">Blue Lock</a>
+                    <img src="https://www.mangaworld.mx/public/assets/images/placeholder.png" data-src="https://cdn.mangaworld.mx/mangas/blue-lock.jpg" alt="Blue Lock">
+                </div>
+            </div>
+        `)
+
+        const results = parser.parseSearchResults($)
+
+        assert.equal(results[0].image, 'https://cdn.mangaworld.mx/mangas/blue-lock.jpg')
     })
 
     it('parses search results from archive search fixture', () => {
