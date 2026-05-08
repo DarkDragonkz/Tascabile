@@ -33,8 +33,18 @@ const SECTION_IDS = {
     LATEST: 'latest'
 } as const
 
+const READ_ALL_COMICS_DIAGNOSTIC_ITEMS: ReadAllComicsSeries[] = [
+    {
+        mangaId: 'batman',
+        title: 'ReadAllComics diagnostic: Batman',
+        image: READ_ALL_COMICS_PLACEHOLDER_IMAGE,
+        subtitle: 'If you see this, the source loads but ReadAllComics returned no parseable homepage items.',
+        genres: []
+    }
+]
+
 export const ReadAllComicsInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.2',
     name: 'ReadAllComics',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -166,13 +176,25 @@ export class ReadAllComics
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(READ_ALL_COMICS_DOMAIN)
-        const items = this.parser.parseSeriesList($).slice(0, 20)
+        let items: ReadAllComicsSeries[] = []
+        let usedDiagnosticFallback = false
+
+        try {
+            const $ = await this.getCheerio(READ_ALL_COMICS_DOMAIN)
+            items = this.parser.parseSeriesList($).slice(0, 20)
+        } catch {
+            items = []
+        }
+
+        if (items.length === 0) {
+            usedDiagnosticFallback = true
+            items = READ_ALL_COMICS_DIAGNOSTIC_ITEMS
+        }
 
         this.emitHomeSection(
             sectionCallback,
             SECTION_IDS.LATEST,
-            'Latest series',
+            usedDiagnosticFallback ? 'ReadAllComics diagnostic' : 'Latest series',
             'singleRowNormal',
             true,
             items
