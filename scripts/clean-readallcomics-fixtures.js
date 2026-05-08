@@ -7,7 +7,8 @@ const fixtureNames = [
   'home',
   'page-2',
   'search-batman',
-  'comic-reader'
+  'comic-reader',
+  'category-batman'
 ]
 
 function extractBody(html) {
