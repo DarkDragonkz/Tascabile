@@ -74,7 +74,7 @@ jobs:
           ids = [source.get('id') for source in sources]
           print('Source ids:', ids)
 
-          expected = {'MangaWorld', 'ReadAllComics'}
+          expected = {'BatCave', 'MangaWorld', 'ReadAllComics'}
           actual = set(ids)
 
           if actual != expected:
