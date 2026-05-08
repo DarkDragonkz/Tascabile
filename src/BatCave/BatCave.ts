@@ -22,13 +22,15 @@ import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/Bat
 import { BatCaveHomeItem, BatCaveParser } from '../../lib/sources/BatCave/BatCaveParser'
 
 const SECTION_IDS = {
-    FEATURED: 'featured'
+    FEATURED: 'featured',
+    TOP_RATED: 'top_rated',
+    JUST_ADDED: 'just_added'
 } as const
 
 const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.2',
+    version: '0.1.3',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -101,16 +103,12 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
         const featuredItems = this.parser.parseFeaturedHomeItems($).slice(0, 16)
+        const topRatedItems = this.parser.parseTopRatedHomeItems($).slice(0, 16)
+        const justAddedItems = this.parser.parseJustAddedHomeItems($).slice(0, 16)
 
-        if (featuredItems.length === 0) return
-
-        sectionCallback(App.createHomeSection({
-            id: SECTION_IDS.FEATURED,
-            title: 'Featured Comics',
-            type: 'singleRowLarge',
-            containsMoreItems: false,
-            items: featuredItems.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
-        }))
+        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', featuredItems)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', topRatedItems)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.JUST_ADDED, 'Just Added', 'singleRowNormal', justAddedItems)
     }
 
     async getViewMoreItems(_homepageSectionId: string, _metadata: unknown): Promise<PagedResults> {
@@ -155,6 +153,18 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
             : String(response.data)
 
         return this.cheerio.load(data)
+    }
+
+    private sendHomeSection(sectionCallback: (section: HomeSection) => void, id: string, title: string, type: 'singleRowLarge' | 'singleRowNormal' | 'doubleRow', items: BatCaveHomeItem[]): void {
+        if (items.length === 0) return
+
+        sectionCallback(App.createHomeSection({
+            id,
+            title,
+            type,
+            containsMoreItems: false,
+            items: items.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
+        }))
     }
 
     private createPartialSourceManga(item: BatCaveHomeItem): PartialSourceManga {
