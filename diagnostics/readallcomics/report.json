@@ -7,8 +7,8 @@
       "final_url": "https://readallcomics.com/",
       "error": null,
       "title": "Read All Comics Online - ReadAllComics",
-      "raw_chars": 135698,
-      "clean_chars": 43217,
+      "raw_chars": 125472,
+      "clean_chars": 43210,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -292,8 +292,8 @@
       "final_url": "https://readallcomics.com/page/2/",
       "error": null,
       "title": "Read All Comics Online - Page 2 of 18717 - ReadAllComics",
-      "raw_chars": 123578,
-      "clean_chars": 42610,
+      "raw_chars": 153529,
+      "clean_chars": 42580,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -577,8 +577,8 @@
       "final_url": "https://readallcomics.com/?story=Batman&s=&type=comic",
       "error": null,
       "title": "- Read All Comics Online",
-      "raw_chars": 143472,
-      "clean_chars": 43235,
+      "raw_chars": 143912,
+      "clean_chars": 43243,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -863,8 +863,8 @@
       "final_url": "https://readallcomics.com/category/batman/",
       "error": null,
       "title": "Read Batman Comic Book Online Free",
-      "raw_chars": 243279,
-      "clean_chars": 109646,
+      "raw_chars": 243211,
+      "clean_chars": 109637,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -1395,7 +1395,7 @@
       "final_url": "https://readallcomics.com/batman-v1-annual-001/",
       "error": null,
       "title": "Batman v1 .Annual 001 | Read All Comics Online",
-      "raw_chars": 342323,
+      "raw_chars": 342225,
       "clean_chars": 4538,
       "blocked": true,
       "block_reasons": [
