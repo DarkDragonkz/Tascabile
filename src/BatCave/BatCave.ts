@@ -20,7 +20,6 @@ import {
     TagSection
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
-import { buildUrl } from '../../lib/core/url'
 import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
 import {
     BatCaveChapter,
@@ -31,16 +30,34 @@ import {
 } from '../../lib/sources/BatCave/BatCaveParser'
 
 const SECTION_IDS = {
-    POPULAR: 'popular',
-    HOT: 'hot',
-    NEWEST: 'newest',
-    ALL: 'all'
+    LATEST: 'latest'
 } as const
 
 const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
+const BATCAVE_FALLBACK_ITEMS: BatCaveSourceComic[] = [
+    {
+        comicId: '33758-batman-2025',
+        title: 'Batman (2025-)',
+        image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/24/6d05b97e996488d756edfb9102406a.webp`,
+        subtitle: 'Fallback item • BatCave request returned no catalogue results'
+    },
+    {
+        comicId: '6975-invincible-2003',
+        title: 'Invincible (2003)',
+        image: `${BATCAVE_DOMAIN}/uploads/posts/poster/69/6975-invincible-2003.jpg`,
+        subtitle: 'Fallback item • BatCave request returned no catalogue results'
+    },
+    {
+        comicId: '561-batman',
+        title: 'Batman (2016-)',
+        image: `${BATCAVE_DOMAIN}/uploads/mini/100x150/c6/ed42565ee2951f427acb19aca058e8.webp`,
+        subtitle: 'Fallback item • BatCave request returned no catalogue results'
+    }
+]
+
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.4',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -59,7 +76,8 @@ export const BatCaveInfo: SourceInfo = {
     ],
     intents:
         SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS
+        SourceIntents.HOMEPAGE_SECTIONS |
+        SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 
 export class BatCave
@@ -69,7 +87,7 @@ export class BatCave
     private readonly parser = new BatCaveParser()
 
     requestManager = App.createRequestManager({
-        requestsPerSecond: 2,
+        requestsPerSecond: 1,
         requestTimeout: 20000,
         interceptor: {
             interceptRequest: async (request: Request): Promise<Request> => {
@@ -89,6 +107,17 @@ export class BatCave
             }
         }
     })
+
+    async getCloudflareBypassRequestAsync(): Promise<Request> {
+        return App.createRequest({
+            url: BATCAVE_DOMAIN,
+            method: 'GET',
+            headers: {
+                Referer: `${BATCAVE_DOMAIN}/`,
+                'User-Agent': BATCAVE_USER_AGENT
+            }
+        })
+    }
 
     getMangaShareUrl(mangaId: string): string {
         return `${BATCAVE_DOMAIN}/${mangaId}.html`
@@ -168,7 +197,7 @@ export class BatCave
         }
 
         const $ = await this.getSearchCheerio(searchTitle)
-        const results = this.parser.parseSearchResults($)
+        const results = this.parser.parseCatalogueResults($)
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
@@ -177,75 +206,75 @@ export class BatCave
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(BATCAVE_DOMAIN)
-
-        const allItems = this.parser
-            .parseHomeSectionItems($, 'body')
-            .slice(0, 20)
-
-        const popularItems = this.parser
-            .parseHomeSectionItems($, '.sect--popular')
-            .slice(0, 12)
-
-        const hotItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Hot new releases in comics', 'Hot new releases'])
-            .slice(0, 12)
-
-        const newestItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Newest comic releases', 'New comics', 'Latest updates'])
-            .slice(0, 12)
+        const items = await this.getHomepageItems()
 
         this.emitHomeSection(
             sectionCallback,
-            SECTION_IDS.POPULAR,
-            'Popular comics',
-            'singleRowLarge',
-            false,
-            popularItems.length > 0 ? popularItems : allItems.slice(0, 12)
-        )
-
-        this.emitHomeSection(
-            sectionCallback,
-            SECTION_IDS.HOT,
-            'Hot new releases',
+            SECTION_IDS.LATEST,
+            items === BATCAVE_FALLBACK_ITEMS ? 'BatCave diagnostics' : 'Latest comics',
             'singleRowNormal',
-            false,
-            hotItems
+            true,
+            items
         )
-
-        this.emitHomeSection(
-            sectionCallback,
-            SECTION_IDS.NEWEST,
-            'Newest releases',
-            'singleRowNormal',
-            false,
-            newestItems
-        )
-
-        if (popularItems.length === 0 && hotItems.length === 0 && newestItems.length === 0) {
-            this.emitHomeSection(
-                sectionCallback,
-                SECTION_IDS.ALL,
-                'Comics',
-                'singleRowNormal',
-                false,
-                allItems
-            )
-        }
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
+        if (homepageSectionId !== SECTION_IDS.LATEST) {
+            return App.createPagedResults({
+                results: [],
+                metadata: undefined
+            })
+        }
+
+        const page = this.getPageFromMetadata(metadata)
+        const url = page <= 1
+            ? `${BATCAVE_DOMAIN}/comix/`
+            : `${BATCAVE_DOMAIN}/comix/page/${page}/`
+
+        const results = await this.getCatalogueItemsFromUrl(url)
+
         return App.createPagedResults({
-            results: [],
-            metadata: undefined
+            results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+            metadata: results.length > 0
+                ? { page: page + 1 }
+                : undefined
         })
+    }
+
+    private async getHomepageItems(): Promise<BatCaveSourceComic[]> {
+        const urls = [
+            `${BATCAVE_DOMAIN}/comix/`,
+            `${BATCAVE_DOMAIN}/ComicList/`,
+            BATCAVE_DOMAIN
+        ]
+
+        for (const url of urls) {
+            const items = await this.getCatalogueItemsFromUrl(url)
+
+            if (items.length > 0) {
+                return items.slice(0, 20)
+            }
+        }
+
+        return BATCAVE_FALLBACK_ITEMS
+    }
+
+    private async getCatalogueItemsFromUrl(url: string): Promise<BatCaveSourceComic[]> {
+        try {
+            const $ = await this.getCheerio(url)
+            return this.parser.parseCatalogueResults($)
+        } catch {
+            return []
+        }
     }
 
     private async getGenreResults(genreId: string, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const url = buildUrl(BATCAVE_DOMAIN, `/genres/${encodeURIComponent(genreId)}/`, { page })
-        const $ = await this.getCheerio(url)
-        const results = this.parser.parseHomeSectionItems($, '#dle-content, .col-main, body')
+        const url = page <= 1
+            ? `${BATCAVE_DOMAIN}/genres/${encodeURIComponent(genreId)}/`
+            : `${BATCAVE_DOMAIN}/genres/${encodeURIComponent(genreId)}/page/${page}/`
+
+        const results = await this.getCatalogueItemsFromUrl(url)
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
@@ -385,13 +414,13 @@ export class BatCave
 
     private getPageFromMetadata(metadata: unknown): number {
         if (!metadata || typeof metadata !== 'object') {
-            return 1
+            return 2
         }
 
         const page = (metadata as { page?: unknown }).page
 
         return typeof page === 'number' && Number.isFinite(page)
             ? page
-            : 1
+            : 2
     }
 }
