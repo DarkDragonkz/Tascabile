@@ -37,8 +37,10 @@ const SECTION_IDS = {
     MOST_READ: 'most_read'
 } as const
 
+const MANGA_WORLD_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.2',
+    version: '0.2.3',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -57,7 +59,8 @@ export const MangaWorldInfo: SourceInfo = {
     ],
     intents:
         SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS
+        SourceIntents.HOMEPAGE_SECTIONS |
+        SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 
 export class MangaWorld
@@ -73,9 +76,9 @@ export class MangaWorld
             interceptRequest: async (request: Request): Promise<Request> => {
                 request.headers = {
                     ...(request.headers ?? {}),
-                    referer: `${MANGA_WORLD_DOMAIN}/`,
-                    origin: MANGA_WORLD_DOMAIN,
-                    'user-agent': 'Mozilla/5.0',
+                    Referer: `${MANGA_WORLD_DOMAIN}/`,
+                    Origin: MANGA_WORLD_DOMAIN,
+                    'User-Agent': MANGA_WORLD_USER_AGENT,
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'accept-language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7'
                 }
@@ -87,6 +90,17 @@ export class MangaWorld
             }
         }
     })
+
+    async getCloudflareBypassRequestAsync(): Promise<Request> {
+        return App.createRequest({
+            url: MANGA_WORLD_DOMAIN,
+            method: 'GET',
+            headers: {
+                Referer: `${MANGA_WORLD_DOMAIN}/`,
+                'User-Agent': MANGA_WORLD_USER_AGENT
+            }
+        })
+    }
 
     getMangaShareUrl(mangaId: string): string {
         return `${MANGA_WORLD_DOMAIN}/manga/${mangaId}/`
