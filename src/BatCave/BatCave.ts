@@ -25,19 +25,21 @@ const SECTION_IDS = {
     FEATURED: 'featured'
 } as const
 
+const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.2',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
     description: 'English comics source for BatCave.biz.',
-    contentRating: ContentRating.EVERYONE,
+    contentRating: ContentRating.MATURE,
     websiteBaseURL: BATCAVE_DOMAIN,
     sourceTags: [
         { text: 'English', type: BadgeColor.GREY },
         { text: 'Comics', type: BadgeColor.BLUE }
     ],
-    intents: SourceIntents.HOMEPAGE_SECTIONS
+    intents: SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 
 export class BatCave extends Source implements MangaProviding, HomePageSectionsProviding, SearchResultsProviding {
@@ -50,9 +52,8 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
             interceptRequest: async (request: Request): Promise<Request> => {
                 request.headers = {
                     ...(request.headers ?? {}),
-                    referer: `${BATCAVE_DOMAIN}/`,
-                    origin: BATCAVE_DOMAIN,
-                    'user-agent': 'Mozilla/5.0',
+                    Referer: `${BATCAVE_DOMAIN}/`,
+                    'User-Agent': BATCAVE_USER_AGENT,
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'accept-language': 'en-US,en;q=0.9'
                 }
@@ -127,6 +128,17 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
         return false
     }
 
+    async getCloudflareBypassRequestAsync(): Promise<Request> {
+        return App.createRequest({
+            url: BATCAVE_DOMAIN,
+            method: 'GET',
+            headers: {
+                Referer: `${BATCAVE_DOMAIN}/`,
+                'User-Agent': BATCAVE_USER_AGENT
+            }
+        })
+    }
+
     getMangaShareUrl(mangaId: string): string {
         return `${BATCAVE_DOMAIN}/${mangaId}`
     }
@@ -137,7 +149,7 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
             method: 'GET'
         })
 
-        const response = await this.requestManager.schedule(request, 1)
+        const response = await this.requestManager.schedule(request, 2)
         const data = typeof response.data === 'string'
             ? response.data
             : String(response.data)
