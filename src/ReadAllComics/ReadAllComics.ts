@@ -33,29 +33,25 @@ const SECTION_IDS = {
     LATEST: 'latest'
 } as const
 
-const READ_ALL_COMICS_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
-
 export const ReadAllComicsInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.1',
     name: 'ReadAllComics',
     icon: 'icon.png',
     author: 'DarkDragonkz',
-    description: 'Source inglese per ReadAllComics.',
+    authorWebsite: 'https://github.com/DarkDragonkz',
+    description: `Source inglese per ReadAllComics (${READ_ALL_COMICS_DOMAIN}).`,
     contentRating: ContentRating.EVERYONE,
     websiteBaseURL: READ_ALL_COMICS_DOMAIN,
     sourceTags: [
         {
-            text: 'English',
-            type: BadgeColor.GREY
-        },
-        {
-            text: 'Comics',
+            text: 'Comics 🇺🇸',
             type: BadgeColor.BLUE
         }
     ],
     intents:
         SourceIntents.MANGA_CHAPTERS |
-        SourceIntents.HOMEPAGE_SECTIONS
+        SourceIntents.HOMEPAGE_SECTIONS |
+        SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
 }
 
 export class ReadAllComics
@@ -65,15 +61,15 @@ export class ReadAllComics
     private readonly parser = new ReadAllComicsParser()
 
     requestManager = App.createRequestManager({
-        requestsPerSecond: 1,
+        requestsPerSecond: 3,
         requestTimeout: 20000,
         interceptor: {
             interceptRequest: async (request: Request): Promise<Request> => {
                 request.headers = {
                     ...(request.headers ?? {}),
-                    Referer: `${READ_ALL_COMICS_DOMAIN}/`,
-                    Origin: READ_ALL_COMICS_DOMAIN,
-                    'User-Agent': READ_ALL_COMICS_USER_AGENT,
+                    referer: `${READ_ALL_COMICS_DOMAIN}/`,
+                    origin: READ_ALL_COMICS_DOMAIN,
+                    'user-agent': await this.requestManager.getDefaultUserAgent(),
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'accept-language': 'en-US,en;q=0.9'
                 }
@@ -85,6 +81,18 @@ export class ReadAllComics
             }
         }
     })
+
+    async getCloudflareBypassRequestAsync(): Promise<Request> {
+        return App.createRequest({
+            url: READ_ALL_COMICS_DOMAIN,
+            method: 'GET',
+            headers: {
+                referer: `${READ_ALL_COMICS_DOMAIN}/`,
+                origin: READ_ALL_COMICS_DOMAIN,
+                'user-agent': await this.requestManager.getDefaultUserAgent()
+            }
+        })
+    }
 
     getMangaShareUrl(mangaId: string): string {
         return `${READ_ALL_COMICS_DOMAIN}/category/${mangaId}/`
@@ -113,7 +121,8 @@ export class ReadAllComics
     }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const $ = await this.getCheerio(`${READ_ALL_COMICS_DOMAIN}/${chapterId}/`)
+        const chapterUrl = this.getChapterUrl(chapterId)
+        const $ = await this.getCheerio(chapterUrl)
         const details = this.parser.parseChapterDetails($, mangaId, chapterId)
 
         return App.createChapterDetails({
@@ -206,6 +215,21 @@ export class ReadAllComics
             : String(response.data)
 
         return this.cheerio.load(data)
+    }
+
+    private getChapterUrl(chapterId: string): string {
+        if (chapterId.startsWith('http')) {
+            const parsedUrl = new URL(chapterId)
+            const baseHost = new URL(READ_ALL_COMICS_DOMAIN).host
+
+            if (parsedUrl.host !== baseHost) {
+                throw new Error('Invalid chapter URL')
+            }
+
+            return chapterId
+        }
+
+        return `${READ_ALL_COMICS_DOMAIN}/${chapterId.replace(/^\/+/, '')}/`
     }
 
     private createSourceManga(details: ReadAllComicsDetails): SourceManga {
