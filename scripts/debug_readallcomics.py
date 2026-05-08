@@ -66,6 +66,7 @@ COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
 TAG_RE = re.compile(r"<[^>]+>")
 IMG_RE = re.compile(r"<img\b[^>]*>", re.IGNORECASE | re.DOTALL)
 LINK_RE = re.compile(r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", re.IGNORECASE | re.DOTALL)
+ANY_A_RE = re.compile(r"<a\b[^>]*>[\s\S]*?</a>", re.IGNORECASE | re.DOTALL)
 IMAGE_URL_RE = re.compile(r"https?:\\?/\\?/[^\"'<>\s)]+", re.IGNORECASE)
 
 
@@ -178,6 +179,11 @@ def attr(tag: str, name: str) -> str | None:
     return html.unescape(match.group(1)).strip() if match else None
 
 
+def class_contains(tag: str, class_name: str) -> bool:
+    class_value = attr(tag, "class") or ""
+    return class_name in class_value.split()
+
+
 def normalize_url(url: str) -> str:
     return html.unescape(url.replace(r"\/", "/")).strip()
 
@@ -223,19 +229,27 @@ def extract_series(raw: str, limit: int = 30) -> list[dict[str, str | None]]:
     results: list[dict[str, str | None]] = []
     seen: set[str] = set()
 
-    # Layout nuovo: lista serie/categorie.
+    # Layout nuovo: lista serie/categorie. Non assumere ordine attributi href/class.
     for li in re.findall(r"<li\b[^>]*>[\s\S]*?</li>", raw, re.IGNORECASE):
         if "cat-title" not in li and "book-link" not in li:
             continue
-        link_match = re.search(r"<a\b[^>]*class=[\"'][^\"']*cat-title[^\"']*[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", li, re.IGNORECASE | re.DOTALL)
-        if not link_match:
+
+        title_anchor = None
+        for anchor in ANY_A_RE.findall(li):
+            if class_contains(anchor, "cat-title"):
+                title_anchor = anchor
+                break
+
+        if not title_anchor:
             continue
-        href, label_html = link_match.groups()
+
+        href = attr(title_anchor, "href")
         series_id = extract_category_id(href)
-        title = strip_tags(label_html)
+        title = strip_tags(title_anchor)
+
         if series_id and title and series_id not in seen:
             seen.add(series_id)
-            results.append({"id": series_id, "title": title, "href": html.unescape(href), "image": image_from_fragment(li)})
+            results.append({"id": series_id, "title": title, "href": html.unescape(href or ""), "image": image_from_fragment(li)})
             if len(results) >= limit:
                 return results
 
@@ -277,7 +291,7 @@ def is_reader_image(url: str) -> bool:
     lower = url.lower().split("?")[0]
     if any(noise in lower for noise in ["logo", "icon", "avatar", "readallcomics-1", "cropped-logo", "facebook", "twitter"]):
         return False
-    return any(host in lower for host in ["blogspot.", "blogger.googleusercontent.com", "googleusercontent.com", "bp.blogspot", "lh3.googleusercontent"])
+    return any(host in lower for host in ["blogspot.", "blogger.googleusercontent.com", "googleusercontent.com", "bp.blogspot", "lh3.googleusercontent", "s3.amazonaws.com/comicgeeks"])
 
 
 def extract_images(raw: str, limit: int = 100) -> list[str]:
@@ -400,7 +414,6 @@ def check_paperback_repo(repo_url: str | None, args: argparse.Namespace) -> Repo
         if str(source_id).lower() == "readallcomics":
             report.readallcomics_present = True
 
-        # The exact keys vary by toolchain. Check common URL/path fields.
         candidate_paths = []
         for key in ["path", "file", "source", "content", "url"]:
             value = source.get(key)
