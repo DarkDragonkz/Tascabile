@@ -13,6 +13,14 @@ export class BatCaveParser {
         return this.parsePosterItems($, '.owl-stage a.poster, .owl-stage-outer a.poster, .sect--popular a.poster, #owl-carou a.poster, a.poster.grid-item.has-overlay')
     }
 
+    parseTopRatedHomeItems($: CheerioAPI): BatCaveHomeItem[] {
+        return this.parseSideBlockItems($, ['top-rated comics', 'top rated comics'])
+    }
+
+    parseJustAddedHomeItems($: CheerioAPI): BatCaveHomeItem[] {
+        return this.parseSideBlockItems($, ['just added', 'fresh comics'])
+    }
+
     parsePosterItems($: CheerioAPI, selector: string): BatCaveHomeItem[] {
         const items: BatCaveHomeItem[] = []
         const seen = new Set<string>()
@@ -38,6 +46,36 @@ export class BatCaveParser {
                 title,
                 image: this.extractImageUrl(imageElement),
                 subtitle: subtitle || undefined
+            })
+        })
+
+        return items
+    }
+
+    private parseSideBlockItems($: CheerioAPI, titleNeedles: string[]): BatCaveHomeItem[] {
+        const items: BatCaveHomeItem[] = []
+        const seen = new Set<string>()
+
+        $('.side-block').each((_: number, block: any) => {
+            const sideBlock = $(block)
+            const title = this.cleanText(sideBlock.find('.side-block__title').first().text()).toLowerCase()
+
+            if (!titleNeedles.some((needle) => title.includes(needle))) return
+
+            sideBlock.find('a.popular').each((__: number, element: any) => {
+                const anchor = $(element)
+                const comicId = this.extractComicId(anchor.attr('href'))
+                const imageElement = anchor.find('img').first()
+                const itemTitle = this.cleanText(anchor.find('.popular__title').first().text()) || this.cleanText(imageElement.attr('alt'))
+
+                if (!comicId || !itemTitle || seen.has(comicId)) return
+
+                seen.add(comicId)
+                items.push({
+                    comicId,
+                    title: itemTitle,
+                    image: this.extractImageUrl(imageElement)
+                })
             })
         })
 
