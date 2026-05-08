@@ -21,21 +21,15 @@ import type { CheerioAPI } from 'cheerio'
 import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
 import { BatCaveHomeItem, BatCaveParser } from '../../lib/sources/BatCave/BatCaveParser'
 
-const SECTION_IDS = {
-    FEATURED: 'featured',
-    TOP_RATED: 'top_rated',
-    JUST_ADDED: 'just_added'
-} as const
-
 const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.3',
+    version: '0.1.4',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
     description: 'English comics source for BatCave.biz.',
-    contentRating: ContentRating.MATURE,
+    contentRating: ContentRating.EVERYONE,
     websiteBaseURL: BATCAVE_DOMAIN,
     sourceTags: [
         { text: 'English', type: BadgeColor.GREY },
@@ -59,12 +53,29 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                     'accept-language': 'en-US,en;q=0.9'
                 }
-
                 return request
             },
             interceptResponse: async (response: Response): Promise<Response> => response
         }
     })
+
+    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+        const $ = await this.getCheerio(BATCAVE_DOMAIN)
+        const items = this.parser.parseFeaturedHomeItems($).slice(0, 16)
+        if (items.length === 0) return
+
+        sectionCallback(App.createHomeSection({
+            id: 'featured',
+            title: 'Featured Comics',
+            type: 'singleRowLarge',
+            containsMoreItems: false,
+            items: items.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
+        }))
+    }
+
+    async getViewMoreItems(_homepageSectionId: string, _metadata: unknown): Promise<PagedResults> {
+        return App.createPagedResults({ results: [], metadata: undefined })
+    }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
         return App.createSourceManga({
@@ -81,50 +92,19 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
         })
     }
 
-    async getChapters(_mangaId: string): Promise<Chapter[]> {
-        return []
-    }
+    async getChapters(_mangaId: string): Promise<Chapter[]> { return [] }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        return App.createChapterDetails({
-            id: chapterId,
-            mangaId,
-            pages: []
-        })
+        return App.createChapterDetails({ id: chapterId, mangaId, pages: [] })
     }
 
     async getSearchResults(_query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
-        return App.createPagedResults({
-            results: [],
-            metadata: undefined
-        })
+        return App.createPagedResults({ results: [], metadata: undefined })
     }
 
-    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(BATCAVE_DOMAIN)
-        const featuredItems = this.parser.parseFeaturedHomeItems($).slice(0, 16)
-        const topRatedItems = this.parser.parseTopRatedHomeItems($).slice(0, 16)
-        const justAddedItems = this.parser.parseJustAddedHomeItems($).slice(0, 16)
+    async supportsSearchOperators(): Promise<boolean> { return false }
 
-        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', featuredItems)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', topRatedItems)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.JUST_ADDED, 'Just Added', 'singleRowNormal', justAddedItems)
-    }
-
-    async getViewMoreItems(_homepageSectionId: string, _metadata: unknown): Promise<PagedResults> {
-        return App.createPagedResults({
-            results: [],
-            metadata: undefined
-        })
-    }
-
-    async supportsSearchOperators(): Promise<boolean> {
-        return false
-    }
-
-    async supportsTagExclusion(): Promise<boolean> {
-        return false
-    }
+    async supportsTagExclusion(): Promise<boolean> { return false }
 
     async getCloudflareBypassRequestAsync(): Promise<Request> {
         return App.createRequest({
@@ -137,34 +117,12 @@ export class BatCave extends Source implements MangaProviding, HomePageSectionsP
         })
     }
 
-    getMangaShareUrl(mangaId: string): string {
-        return `${BATCAVE_DOMAIN}/${mangaId}`
-    }
+    getMangaShareUrl(mangaId: string): string { return `${BATCAVE_DOMAIN}/${mangaId}` }
 
     private async getCheerio(url: string): Promise<CheerioAPI> {
-        const request = App.createRequest({
-            url,
-            method: 'GET'
-        })
-
-        const response = await this.requestManager.schedule(request, 2)
-        const data = typeof response.data === 'string'
-            ? response.data
-            : String(response.data)
-
+        const response = await this.requestManager.schedule(App.createRequest({ url, method: 'GET' }), 2)
+        const data = typeof response.data === 'string' ? response.data : String(response.data)
         return this.cheerio.load(data)
-    }
-
-    private sendHomeSection(sectionCallback: (section: HomeSection) => void, id: string, title: string, type: 'singleRowLarge' | 'singleRowNormal' | 'doubleRow', items: BatCaveHomeItem[]): void {
-        if (items.length === 0) return
-
-        sectionCallback(App.createHomeSection({
-            id,
-            title,
-            type,
-            containsMoreItems: false,
-            items: items.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
-        }))
     }
 
     private createPartialSourceManga(item: BatCaveHomeItem): PartialSourceManga {
