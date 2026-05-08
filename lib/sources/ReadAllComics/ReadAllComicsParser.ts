@@ -57,8 +57,8 @@ export class ReadAllComicsParser {
             results.push(item)
         })
 
-        $('ul.list-story.categories > li').each((_: number, element: any) => {
-            const item = this.parseSeriesItem($, element)
+        $('a.cat-title[href*="/category/"]').each((_: number, element: any) => {
+            const item = this.parseSeriesItemFromTitleLink($, element)
 
             if (!item || seen.has(item.mangaId)) {
                 return
@@ -82,7 +82,7 @@ export class ReadAllComicsParser {
         const image = this.absoluteUrl(
             this.cleanText($('meta[property="og:image:secure_url"]').attr('content'))
                 || this.cleanText($('meta[property="og:image"]').attr('content'))
-                || this.extractImageUrl($('.description-archive img, #post-area .post img').first())
+                || this.extractImageUrl($('.description-archive img, #post-area .post img, img.book-cover').first())
         )
 
         const description = this.cleanText($('meta[name="description"]').attr('content'))
@@ -192,6 +192,62 @@ export class ReadAllComicsParser {
         return slug
     }
 
+    private parseSeriesItemFromTitleLink($: CheerioAPI, element: any): ReadAllComicsSeries | undefined {
+        const titleLink = $(element)
+        const href = titleLink.attr('href')
+        const mangaId = this.extractCategoryId(href)
+
+        if (!mangaId) {
+            return undefined
+        }
+
+        const container = titleLink.closest('li')
+        const title = this.cleanText(titleLink.text())
+            || this.cleanText(container.find('img.book-cover').first().attr('alt'))
+            || this.titleFromSlug(mangaId)
+
+        if (!title) {
+            return undefined
+        }
+
+        const publisher = this.cleanLabelValue(container.find('.cat-publisher').first().text(), 'Publisher')
+        const genres = this.cleanLabelValue(container.find('.cat-genres').first().text(), 'Genres')
+            .split(',')
+            .map((genre: string) => this.cleanText(genre))
+            .filter(Boolean)
+        const year = this.parseInteger(
+            this.cleanText(container.find('.cat-year, .cat-vol').first().text())
+        )
+        const issueCount = this.parseInteger(
+            this.cleanText(container.find('.issue-count').first().text())
+        )
+        const latestChapter = container.find('a.latest-chapter').first()
+        const latestChapterId = this.extractPostId(latestChapter.attr('href'))
+        const latestChapterName = this.cleanText(latestChapter.text())
+        const updatedAt = this.parseUpdatedDate(container.find('.latest-date').first().text())
+
+        const subtitleParts = [
+            publisher,
+            year ? String(year) : '',
+            issueCount ? `${issueCount} issues` : '',
+            latestChapterName ? `Latest: ${latestChapterName}` : ''
+        ].filter(Boolean)
+
+        return {
+            mangaId,
+            title: this.decodeHtmlEntities(title),
+            image: this.absoluteUrl(this.extractImageUrl(container.find('img.book-cover').first())),
+            subtitle: subtitleParts.join(' • ') || undefined,
+            publisher,
+            genres,
+            year,
+            issueCount,
+            latestChapterId,
+            latestChapterName,
+            updatedAt
+        }
+    }
+
     private parsePostGridItem($: CheerioAPI, element: any): ReadAllComicsSeries | undefined {
         const link = $(element).find('.pinbin-copy a, h2 a, h1 a, a[rel="bookmark"], a').first()
         const href = link.attr('href')
@@ -232,61 +288,6 @@ export class ReadAllComicsParser {
         }
     }
 
-    private parseSeriesItem($: CheerioAPI, element: any): ReadAllComicsSeries | undefined {
-        const titleLink = $(element).find('a.cat-title').first()
-        const href = titleLink.attr('href') || $(element).find('a.book-link').first().attr('href')
-        const mangaId = this.extractCategoryId(href)
-
-        if (!mangaId) {
-            return undefined
-        }
-
-        const title = this.cleanText(titleLink.text())
-            || this.cleanText($(element).find('img.book-cover').first().attr('alt'))
-            || this.titleFromSlug(mangaId)
-
-        if (!title) {
-            return undefined
-        }
-
-        const publisher = this.cleanLabelValue($(element).find('.cat-publisher').first().text(), 'Publisher')
-        const genres = this.cleanLabelValue($(element).find('.cat-genres').first().text(), 'Genres')
-            .split(',')
-            .map((genre: string) => this.cleanText(genre))
-            .filter(Boolean)
-        const year = this.parseInteger(
-            this.cleanText($(element).find('.cat-year, .cat-vol').first().text())
-        )
-        const issueCount = this.parseInteger(
-            this.cleanText($(element).find('.issue-count').first().text())
-        )
-        const latestChapter = $(element).find('a.latest-chapter').first()
-        const latestChapterId = this.extractPostId(latestChapter.attr('href'))
-        const latestChapterName = this.cleanText(latestChapter.text())
-        const updatedAt = this.parseUpdatedDate($(element).find('.latest-date').first().text())
-
-        const subtitleParts = [
-            publisher,
-            year ? String(year) : '',
-            issueCount ? `${issueCount} issues` : '',
-            latestChapterName ? `Latest: ${latestChapterName}` : ''
-        ].filter(Boolean)
-
-        return {
-            mangaId,
-            title: this.decodeHtmlEntities(title),
-            image: this.absoluteUrl(this.extractImageUrl($(element).find('img.book-cover').first())),
-            subtitle: subtitleParts.join(' • ') || undefined,
-            publisher,
-            genres,
-            year,
-            issueCount,
-            latestChapterId,
-            latestChapterName,
-            updatedAt
-        }
-    }
-
     private extractImageUrl(image: any): string | undefined {
         if (!image || image.length === 0) {
             return undefined
@@ -319,6 +320,7 @@ export class ReadAllComicsParser {
         return normalized.includes('blogspot.')
             || normalized.includes('blogger.googleusercontent.com')
             || normalized.includes('googleusercontent.com')
+            || normalized.includes('s3.amazonaws.com/comicgeeks')
     }
 
     private isPlaceholderImage(url: string): boolean {
