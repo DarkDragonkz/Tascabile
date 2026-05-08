@@ -129,9 +129,11 @@ export class MangaWorldParser {
             || this.cleanText($('h1.name.bigger').first().text())
             || mangaId
 
+        const coverImage = $('.single-comic .comic-info .thumb img').first()
+        const fallbackCoverImage = $('.comic-info img.rounded').first()
         const image = this.absoluteUrl(
-            $('.single-comic .comic-info .thumb img').first().attr('src')
-                || $('.comic-info img.rounded').first().attr('src')
+            this.extractImageUrl(coverImage)
+                || this.extractImageUrl(fallbackCoverImage)
                 || $('meta[property="og:image"]').first().attr('content')
         )
 
@@ -216,13 +218,8 @@ export class MangaWorldParser {
         const pages: string[] = []
         const seen = new Set<string>()
 
-        $('#page img.page-image, #page img.img-fluid, #page img, img.page-image, img.img-fluid').each((_: number, element: any) => {
-            const src = this.absoluteUrl(
-                $(element).attr('src')
-                    || $(element).attr('data-src')
-                    || this.extractFirstSrcFromSrcset($(element).attr('srcset'))
-                    || this.extractFirstSrcFromSrcset($(element).attr('data-srcset'))
-            )
+        $('#page img.page-image, #page img.img-fluid, #page img, #reader img.page-image, #reader img.img-fluid, #reader img').each((_: number, element: any) => {
+            const src = this.absoluteUrl(this.extractImageUrl($(element)))
 
             if (!src || seen.has(src)) {
                 return
@@ -312,12 +309,7 @@ export class MangaWorldParser {
             return undefined
         }
 
-        const image = this.absoluteUrl(
-            $(element).find('img').first().attr('src')
-                || $(element).find('img').first().attr('data-src')
-                || this.extractFirstSrcFromSrcset($(element).find('img').first().attr('srcset'))
-                || this.extractFirstSrcFromSrcset($(element).find('img').first().attr('data-srcset'))
-        )
+        const image = this.absoluteUrl(this.extractImageUrl($(element).find('img').first()))
         const subtitle = this.extractEntrySubtitle($, element)
 
         return {
@@ -545,6 +537,18 @@ export class MangaWorldParser {
         return url
     }
 
+    private extractImageUrl(image: any): string | undefined {
+        if (!image || image.length === 0) {
+            return undefined
+        }
+
+        return this.cleanText(image.attr('data-src'))
+            || this.extractFirstSrcFromSrcset(image.attr('data-srcset'))
+            || this.cleanText(image.attr('src'))
+            || this.extractFirstSrcFromSrcset(image.attr('srcset'))
+            || undefined
+    }
+
     private extractFirstSrcFromSrcset(srcset?: string): string | undefined {
         if (!srcset) {
             return undefined
@@ -564,7 +568,18 @@ export class MangaWorldParser {
     }
 
     private isChapterPageImage(url: string): boolean {
-        return url.includes('/chapters/') && /\.(jpg|jpeg|png|webp)(?:\?|$)/i.test(url)
+        const normalizedUrl = url.toLowerCase().split('#')[0]
+        const withoutQuery = normalizedUrl.split('?')[0]
+
+        if (/\/(covers|mangas|volumes|public|assets|seo)\//.test(withoutQuery)) {
+            return false
+        }
+
+        if (/\.(jpg|jpeg|png|webp|avif)$/.test(withoutQuery)) {
+            return true
+        }
+
+        return /\/(chapter|chapters|reader|read)\//.test(withoutQuery)
     }
 
     private prefixLatestChapter(value: string): string {
