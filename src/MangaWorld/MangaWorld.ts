@@ -40,7 +40,7 @@ const SECTION_IDS = {
 const MANGA_WORLD_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.4',
+    version: '0.2.6',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -206,47 +206,32 @@ export class MangaWorld
             .parseHomeSectionItems($, '.comics-grid .entry')
             .slice(0, 12)
 
-        const mostReadItems = await this.getArchiveItems('most_read', 12)
+        this.emitHomeSection(
+            sectionCallback,
+            SECTION_IDS.TRENDING,
+            'In tendenza',
+            'singleRowLarge',
+            true,
+            trendingItems
+        )
 
-        if (trendingItems.length > 0) {
-            sectionCallback(App.createHomeSection({
-                id: SECTION_IDS.TRENDING,
-                title: 'In tendenza',
-                type: 'singleRowLarge',
-                containsMoreItems: true,
-                items: trendingItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-            }))
-        }
+        this.emitHomeSection(
+            sectionCallback,
+            SECTION_IDS.MONTHLY,
+            'Manga del mese',
+            'singleRowNormal',
+            false,
+            monthlyItems
+        )
 
-        if (monthlyItems.length > 0) {
-            sectionCallback(App.createHomeSection({
-                id: SECTION_IDS.MONTHLY,
-                title: 'Manga del mese',
-                type: 'singleRowNormal',
-                containsMoreItems: false,
-                items: monthlyItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-            }))
-        }
-
-        if (newestItems.length > 0) {
-            sectionCallback(App.createHomeSection({
-                id: SECTION_IDS.NEWEST,
-                title: 'Ultime aggiunte',
-                type: 'singleRowNormal',
-                containsMoreItems: true,
-                items: newestItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-            }))
-        }
-
-        if (mostReadItems.length > 0) {
-            sectionCallback(App.createHomeSection({
-                id: SECTION_IDS.MOST_READ,
-                title: 'Più letti',
-                type: 'singleRowNormal',
-                containsMoreItems: true,
-                items: mostReadItems.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
-            }))
-        }
+        this.emitHomeSection(
+            sectionCallback,
+            SECTION_IDS.NEWEST,
+            'Ultime aggiunte',
+            'singleRowNormal',
+            true,
+            newestItems
+        )
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
@@ -274,13 +259,6 @@ export class MangaWorld
                 ? { page: page + 1 }
                 : undefined
         })
-    }
-
-    private async getArchiveItems(sort: string, limit: number): Promise<MangaWorldSourceManga[]> {
-        const url = buildUrl(MANGA_WORLD_DOMAIN, '/archive', { sort })
-        const $ = await this.getCheerio(url)
-
-        return this.parser.parseSearchResults($).slice(0, limit)
     }
 
     private async getCheerio(url: string): Promise<CheerioAPI> {
@@ -340,6 +318,27 @@ export class MangaWorld
             volume: chapter.volume,
             time: chapter.time
         })
+    }
+
+    private emitHomeSection(
+        sectionCallback: (section: HomeSection) => void,
+        id: string,
+        title: string,
+        type: 'singleRowLarge' | 'singleRowNormal',
+        containsMoreItems: boolean,
+        items: MangaWorldSourceManga[]
+    ): void {
+        if (items.length === 0) {
+            return
+        }
+
+        sectionCallback(App.createHomeSection({
+            id,
+            title,
+            type,
+            containsMoreItems,
+            items: items.map((item: MangaWorldSourceManga) => this.createPartialSourceManga(item))
+        }))
     }
 
     private getSortForSection(homepageSectionId: string): string {
