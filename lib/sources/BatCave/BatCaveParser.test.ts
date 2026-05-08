@@ -1,77 +1,67 @@
-import { strict as assert } from 'assert'
-import * as cheerio from 'cheerio'
-import type { CheerioAPI } from 'cheerio'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { BatCaveParser, BatCaveSourceComic } from './BatCaveParser'
+import { describe, expect, it } from "vitest"
+import { BatcaveParser } from "../src/batcaveParser"
+import { loadFixture } from "./helpers/loadFixture"
 
-function loadFixture(fileName: string): CheerioAPI {
-    const fixturePath = join(process.cwd(), 'fixtures', 'batcave', fileName)
-    const html = readFileSync(fixturePath, 'utf8')
+const parser = new BatcaveParser()
 
-    return cheerio.load(html)
-}
+describe("search", () => {
+  it("parses Batman page 1", () => {
+    const page = parser.parseSearchPage(loadFixture("search-batman-page-1.html"))
+    expect(page.query).toBe("Batman")
+    expect(page.total).toBe(721)
+    expect(page.rangeStart).toBe(1)
+    expect(page.rangeEnd).toBe(10)
+    expect(page.results).toHaveLength(10)
+    expect(page.results[0]).toMatchObject({ title: "Batman (2025-)", publisher: "DC Comics", year: "2025", lastIssue: "Batman (2025-) #9", votes: 855, ratingPercent: 100 })
+    expect(page.pagination).toMatchObject({ currentPage: 1, lastPage: 10, nextPageUrl: "https://batcave.biz/search/Batman/page/2/" })
+  })
 
-describe('BatCaveParser', () => {
-    const parser = new BatCaveParser()
+  it("parses Batman page 2", () => {
+    const page = parser.parseSearchPage(loadFixture("search-batman-page-2.html"))
+    expect(page.total).toBe(721)
+    expect(page.rangeStart).toBe(11)
+    expect(page.rangeEnd).toBe(20)
+    expect(page.results[0]).toMatchObject({ title: "Batman: Dark Victory (1999)", publisher: "DC Comics", year: "1999", lastIssue: "Batman: Dark Victory (1999) Issue #13", votes: 251 })
+    expect(page.pagination).toMatchObject({ currentPage: 2, lastPage: 10, prevPageUrl: "https://batcave.biz/search/Batman", nextPageUrl: "https://batcave.biz/search/Batman/page/3/" })
+  })
 
-    it('parses search results from The Boys search fixture', () => {
-        const $ = loadFixture('search.html')
-        const results = parser.parseSearchResults($)
+  it("parses zero results", () => {
+    const page = parser.parseSearchPage(loadFixture("search-not-found.html"))
+    expect(page.query).toBe("asdasdasdasdasdnotfound")
+    expect(page.total).toBe(0)
+    expect(page.results).toHaveLength(0)
+  })
+})
 
-        assert.ok(results.length >= 10)
+describe("catalog", () => {
+  it("parses page 1 with filters", () => {
+    const page = parser.parseCatalogPage(loadFixture("catalog-page-1.html"))
+    expect(page.results).toHaveLength(10)
+    expect(page.results[0]).toMatchObject({ title: "The Bogie Man The Manhattan Project (1992-)", publisher: "Tundra Publishing", year: "1992", lastIssue: "The Bogie Man The Manhattan Project Full", votes: 0, ratingPercent: 0 })
+    expect(page.pagination).toMatchObject({ currentPage: 1, lastPage: 3267, nextPageUrl: "https://batcave.biz/comix/page/2/" })
+    expect(page.filters?.y).toMatchObject({ name: "y", title: "Year of issue", format: "range" })
+  })
 
-        const first = results[0]
+  it("parses page 2 without filters and excludes sidebar", () => {
+    const page = parser.parseCatalogPage(loadFixture("catalog-page-2.html"))
+    expect(page.results).toHaveLength(10)
+    expect(page.results.map((x) => x.title)).not.toContain("Should Not Parse")
+    expect(page.results[0]).toMatchObject({ title: "Jubilee: Deadly Reunion (2026-)", publisher: "Marvel Comics", year: "2026", lastIssue: "Jubilee: Deadly Reunion (2026-) #1", votes: 5, ratingPercent: 100 })
+    expect(page.pagination).toMatchObject({ currentPage: 2, lastPage: 3267, prevPageUrl: "https://batcave.biz/comix/", nextPageUrl: "https://batcave.biz/comix/page/3/" })
+    expect(page.filters).toBeUndefined()
+  })
+})
 
-        assert.equal(first.comicId, '5629-the-boys-2006-2012.html')
-        assert.equal(first.title, 'The Boys (2006-2012)')
-        assert.equal(first.subtitle, 'The Boys (2006-2012) #Omnibus Vol. 6')
-        assert.ok(first.image?.includes('/uploads/mini/100x150/'))
-        assert.ok(results.some((result: BatCaveSourceComic) => result.title === 'The Boys: Herogasm (2009)'))
-    })
-
-    it('parses home poster items from homepage fixture', () => {
-        const $ = loadFixture('home.html')
-        const results = parser.parseHomeItems($)
-
-        assert.ok(results.length > 0)
-        assert.ok(results.some((result: BatCaveSourceComic) => result.title === 'Lobo (2026-)'))
-        assert.ok(results.every((result: BatCaveSourceComic) => result.comicId.endsWith('.html')))
-    })
-
-    it('parses comic details and chapters from detail page data', () => {
-        const $ = loadFixture('comic-detail.html')
-        const details = parser.parseComicDetails($, '5629-the-boys-2006-2012.html')
-
-        assert.equal(details.id, '5629-the-boys-2006-2012.html')
-        assert.equal(details.title, 'The Boys (2006-2012)')
-        assert.equal(details.publisher, 'Dynamite')
-        assert.equal(details.status, 'Complete')
-        assert.equal(details.year, 2006)
-        assert.ok(details.image?.endsWith('/uploads/posts/poster/32/5629-the-boys-2006-2012.jpg'))
-        assert.ok(details.description?.includes('The city’s superheroes are celebrated idols'))
-        assert.equal(details.chapters.length, 6)
-        assert.ok(details.chapters.some(chapter => chapter.id === '29427' && chapter.name === 'The Boys (2006-2012) #Omnibus Vol. 1'))
-    })
-
-    it('parses chapter list from detail fixture', () => {
-        const $ = loadFixture('comic-detail.html')
-        const chapters = parser.parseChapters($, '5629-the-boys-2006-2012.html')
-
-        assert.equal(chapters.length, 6)
-        assert.ok(chapters.some(chapter => chapter.id === '29426' && chapter.name === 'The Boys (2006-2012) #Omnibus Vol. 2' && chapter.chapNum === 2))
-        assert.ok(chapters.some(chapter => chapter.id === '29427' && chapter.chapNum === 1))
-        assert.ok(chapters.every(chapter => chapter.comicId === '5629-the-boys-2006-2012.html'))
-    })
-
-    it('parses all reader pages from window data', () => {
-        const $ = loadFixture('chapter-reader-page-1.html')
-        const details = parser.parseChapterDetails($, '5629-the-boys-2006-2012.html', '29427')
-
-        assert.equal(details.id, '29427')
-        assert.equal(details.comicId, '5629-the-boys-2006-2012.html')
-        assert.equal(details.pages.length, 531)
-        assert.ok(details.pages[0].startsWith('https://img.batcave.biz/img/6/5629/29427/1-'))
-        assert.ok(details.pages[530].startsWith('https://img.batcave.biz/img/6/5629/29427/531-'))
-    })
+describe("reader", () => {
+  it("parses window.__DATA__", () => {
+    const page = parser.parseReaderPage(loadFixture("reader-ultimate-spider-man-24.html"))
+    expect(page.title).toBe("Ultimate Spider-Man (2024-) #24")
+    expect(page.seriesTitle).toBe("Ultimate Spider-Man (2024-)")
+    expect(page.chapterId).toBe(246090)
+    expect(page.newsId).toBe(32394)
+    expect(page.pages).toBe(47)
+    expect(page.images).toHaveLength(47)
+    expect(page.prev).toBe("https://batcave.biz/reader/32394/245070#last")
+    expect(page.next).toBe("https://batcave.biz/32394-ultimate-spider-man-2024.html")
+  })
 })

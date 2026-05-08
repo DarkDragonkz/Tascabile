@@ -1,25 +1,8 @@
 {
-  "name": "tascabile",
-  "version": "0.1.0",
-  "description": "Repository modulare di estensioni Paperback/Tascabile per manga e comics.",
-  "private": true,
-  "scripts": {
-    "bundle": "npx paperback bundle",
-    "serve": "npx paperback serve",
-    "test": "npx mocha --timeout 300000 -r ts-node/register \"lib/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit",
-    "validate": "npm run typecheck && npm test"
-  },
-  "dependencies": {
-    "@paperback/toolchain": "^0.8.4",
-    "@paperback/types": "^0.8.4",
-    "cheerio": "1.0.0-rc.12"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^24.9.2",
-    "mocha": "^11.7.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^4.9.5"
-  }
+  "name": "batcave-parser-fixtures",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": { "test": "vitest run" },
+  "dependencies": { "cheerio": "^1.0.0" },
+  "devDependencies": { "typescript": "^5.6.3", "vitest": "^2.1.4", "tsx": "^4.19.2" }
 }
