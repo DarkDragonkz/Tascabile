@@ -31,6 +31,7 @@ import {
 
 const SECTION_IDS = {
     FEATURED: 'featured',
+    HOT: 'hot',
     TOP_RATED: 'top_rated',
     LATEST: 'latest'
 } as const
@@ -40,14 +41,8 @@ interface BatCaveSearchPage {
     hasMore: boolean
 }
 
-interface BatCaveHomeSections {
-    featured: BatCaveSourceComic[]
-    topRated: BatCaveSourceComic[]
-    latest: BatCaveSourceComic[]
-}
-
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.16',
+    version: '0.2.0',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -148,13 +143,13 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
     }
 
     async getSearchResults(query: SearchRequest, metadata: unknown): Promise<PagedResults> {
-        const page = this.getPageFromMetadata(metadata)
         const searchTerms = this.getSearchTerms(query)
 
         if (!searchTerms) {
             return App.createPagedResults({ results: [], metadata: undefined })
         }
 
+        const page = this.getPageFromMetadata(metadata)
         const searchPage = await this.getSearchPage(searchTerms, page)
 
         return App.createPagedResults({
@@ -164,34 +159,28 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const fallbackSections = this.getFallbackHomeSections()
+        const $ = await this.getCheerio(BATCAVE_DOMAIN)
+        const featured = this.parser.parseHomeItems($, '.sect--popular a.poster, #owl-carou a.poster, .owl-stage a.poster, .owl-stage-outer a.poster').slice(0, 16)
+        const hot = this.parser.parseHomeItems($, '.sect--hot a.poster').filter((item) => !this.containsItem(featured, item)).slice(0, 16)
+        const topRated = this.parser.parseHomeItems($, '.side-block:has(.side-block__title:contains("Top-rated")) a.popular, .side-block__content--populars a.popular').filter((item) => !this.containsItem(featured, item)).slice(0, 16)
+        const all = this.parser.parseHomeItems($, 'a.poster, a.popular')
+        const latest = all
+            .filter((item) => !this.containsItem(featured, item))
+            .filter((item) => !this.containsItem(hot, item))
+            .filter((item) => !this.containsItem(topRated, item))
+            .slice(0, 16)
 
-        try {
-            const $ = await this.getCheerio(BATCAVE_DOMAIN)
-            const allItems = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
-            const featuredItems = this.dedupeItems(this.parser.parseHomeItems($, '.owl-stage a.poster, .owl-stage-outer a.poster, a.poster[data-hot_marker]')).slice(0, 15)
-            const topRatedItems = this.dedupeItems(this.parser.parseHomeItems($, '.side-block__content--populars a.popular, a.popular'))
-                .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
-                .slice(0, 15)
-            const latestItems = allItems
-                .filter((item: BatCaveSourceComic) => !featuredItems.some((featured: BatCaveSourceComic) => featured.comicId === item.comicId))
-                .filter((item: BatCaveSourceComic) => !topRatedItems.some((topRated: BatCaveSourceComic) => topRated.comicId === item.comicId))
-                .slice(0, 15)
-
-            this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', featuredItems.length > 0 ? featuredItems : fallbackSections.featured, true)
-            this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', topRatedItems.length > 0 ? topRatedItems : fallbackSections.topRated, true)
-            this.sendHomeSection(sectionCallback, SECTION_IDS.LATEST, 'Latest Updates', 'doubleRow', latestItems.length > 0 ? latestItems : fallbackSections.latest, true)
-            return
-        } catch {
-            this.sendFallbackHomeSections(sectionCallback, fallbackSections)
-        }
+        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', featured, true)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.HOT, 'Hot New Releases', 'singleRowNormal', hot, true)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', topRated, true)
+        this.sendHomeSection(sectionCallback, SECTION_IDS.LATEST, 'Latest Updates', 'doubleRow', latest, true)
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const url = `${BATCAVE_DOMAIN}/page/${page}/`
+        const url = this.getViewMoreUrl(homepageSectionId, page)
         const $ = await this.getCheerio(url)
-        const results = this.dedupeItems(this.parser.parseHomeItems($, 'a.poster.grid-item.has-overlay, a.poster, a.popular'))
+        const results = this.parser.parseHomeItems($, 'a.poster, a.popular')
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
@@ -223,12 +212,12 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
 
     private hasMoreSearchResults($: CheerioAPI): boolean {
         const text = this.cleanText($.root().text())
-        const rangeMatch = text.match(/Your query found\s+(\d+)\s+answers?\s*\(\s*Query results\s+(\d+)\s*-\s*(\d+)\s*\)/i)
+        const match = text.match(/Your query found\s+(\d+)\s+answers?\s*\(\s*Query results\s+(\d+)\s*-\s*(\d+)\s*\)/i)
 
-        if (!rangeMatch) return false
+        if (!match) return false
 
-        const total = Number.parseInt(rangeMatch[1], 10)
-        const end = Number.parseInt(rangeMatch[3], 10)
+        const total = Number.parseInt(match[1], 10)
+        const end = Number.parseInt(match[3], 10)
 
         return Number.isFinite(total) && Number.isFinite(end) && end < total
     }
@@ -247,7 +236,7 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
                     ? [App.createTagSection({
                         id: 'publisher',
                         label: 'Publisher',
-                        tags: [App.createTag({ id: details.publisher.toLowerCase().replace(/\s+/g, '-'), label: details.publisher })]
+                        tags: [App.createTag({ id: this.slugify(details.publisher), label: details.publisher })]
                     })]
                     : []
             })
@@ -285,50 +274,16 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
         }))
     }
 
-    private sendFallbackHomeSections(sectionCallback: (section: HomeSection) => void, fallbackSections: BatCaveHomeSections): void {
-        this.sendHomeSection(sectionCallback, SECTION_IDS.FEATURED, 'Featured Comics', 'singleRowLarge', fallbackSections.featured, true)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.TOP_RATED, 'Top Rated Comics', 'singleRowNormal', fallbackSections.topRated, true)
-        this.sendHomeSection(sectionCallback, SECTION_IDS.LATEST, 'Latest Updates', 'doubleRow', fallbackSections.latest, true)
-    }
-
-    private getFallbackHomeSections(): BatCaveHomeSections {
-        return {
-            featured: [
-                { comicId: '32394-ultimate-spider-man-2024.html', title: 'Ultimate Spider-Man (2024-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/55/98c052976e162080e5a0be8c9fb31f.jpg`, subtitle: 'Marvel Comics • 2024' },
-                { comicId: '2395-green-lantern.html', title: 'Green Lantern (2023-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/b9/4d6b2820842cc41b14d14b6720c0f3.jpg`, subtitle: 'DC Comics • 2023' },
-                { comicId: '99-action-comics.html', title: 'Action Comics (2016-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/50/7c571952a923d6495c3a5e9809c9cf.jpg`, subtitle: 'DC Comics • 2016' },
-                { comicId: '33124-batgirl-2024.html', title: 'Batgirl (2024-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/91/bc114b5aea67915050dc331be3db9c.jpg`, subtitle: 'DC Comics • 2024' },
-                { comicId: '33524-invincible-universe-battle-beast-2025.html', title: 'Invincible Universe: Battle Beast (2025-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/ab/d52803037615cc2d8fe030ea3434bd.jpg`, subtitle: 'Image Comics • 2025' },
-                { comicId: '32886-uncanny-x-men-2024.html', title: 'Uncanny X-Men (2024-)', image: `${BATCAVE_DOMAIN}/uploads/mini/142x212/1f/f89c248846ebadf94bf34ace5f9c7f.jpg`, subtitle: 'Marvel Comics • 2024' }
-            ],
-            topRated: [
-                { comicId: '6975-invincible-2003.html', title: 'Invincible (2003)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/25/f6a2dd4c3708ea1519f0ac28084790.jpg`, subtitle: 'Top Rated' },
-                { comicId: '33051-absolute-batman-2024.html', title: 'Absolute Batman (2024-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/6e/fdb398ba48cfbe9c2b9c2fa9a917af.jpg`, subtitle: 'Top Rated' },
-                { comicId: '2913-invincible-compendium.html', title: 'Invincible Compendium (2011-2018)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/6c/e9e3eabcf5e389cdc0ed9765c2c6bd.jpg`, subtitle: 'Top Rated' },
-                { comicId: '12291-crossed.html', title: 'Crossed', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/58/f2213bc20847aa3052113b0be7b3f8.jpg`, subtitle: 'Top Rated' },
-                { comicId: '5629-the-boys-2006-2012.html', title: 'The Boys (2006-2012)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/56/8b8e7405896d1bd972611d99867242.jpg`, subtitle: 'Top Rated' }
-            ],
-            latest: [
-                { comicId: '34344-ghoul-2026.html', title: 'Ghoul (2026)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/11/91acbf52971fb5d2f7159da355548c.jpg`, subtitle: 'Just Added' },
-                { comicId: '34343-dc-x-sonic-the-hedgehog-the-metal-legion-2026.html', title: 'DC x Sonic the Hedgehog: The Metal Legion (2026-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/5c/bacfff4451c27a13cd8cd57da30908.jpg`, subtitle: 'Just Added' },
-                { comicId: '34342-tales-of-the-green-lantern-corps-guy-gardner-2026.html', title: 'Tales of the Green Lantern Corps: Guy Gardner (2026-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/cb/0c2e11a96a31dd6030d3f6fcd67cf4.jpg`, subtitle: 'Just Added' },
-                { comicId: '34341-sleepy-hollow-the-witches-of-the-western-wood-2026.html', title: 'Sleepy Hollow: The Witches of the Western Wood (2026-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/c6/a8ef5f12c6c60a893b6c5dbe75d13b.jpg`, subtitle: 'Just Added' },
-                { comicId: '34340-astonishing-miles-morales-spider-man-the-art-of-thwip-2026.html', title: 'Astonishing Miles Morales: Spider-Man – The Art of Thwip (2026-)', image: `${BATCAVE_DOMAIN}/uploads/mini/64x96/95/6277603f5d6d70bee677808f91cf65.jpg`, subtitle: 'Just Added' }
-            ]
-        }
-    }
-
-    private dedupeItems(items: BatCaveSourceComic[]): BatCaveSourceComic[] {
-        const seen = new Set<string>()
-        const deduped: BatCaveSourceComic[] = []
-
-        for (const item of items) {
-            if (seen.has(item.comicId)) continue
-            seen.add(item.comicId)
-            deduped.push(item)
+    private getViewMoreUrl(homepageSectionId: string, page: number): string {
+        if (homepageSectionId === SECTION_IDS.HOT || homepageSectionId === SECTION_IDS.LATEST) {
+            return page <= 1 ? `${BATCAVE_DOMAIN}/comix/` : `${BATCAVE_DOMAIN}/comix/page/${page}/`
         }
 
-        return deduped
+        return page <= 1 ? BATCAVE_DOMAIN : `${BATCAVE_DOMAIN}/page/${page}/`
+    }
+
+    private containsItem(items: BatCaveSourceComic[], item: BatCaveSourceComic): boolean {
+        return items.some((existing) => existing.comicId === item.comicId)
     }
 
     private getSearchTerms(query: SearchRequest): string {
@@ -361,6 +316,10 @@ export class BatCave extends Source implements MangaProviding, ChapterProviding,
         const page = (metadata as { page?: unknown }).page
 
         return typeof page === 'number' && Number.isFinite(page) ? page : 1
+    }
+
+    private slugify(value: string): string {
+        return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     }
 
     private cleanText(value: string): string {
