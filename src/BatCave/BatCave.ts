@@ -1,136 +1,177 @@
 import {
-    BadgeColor,
     Chapter,
     ChapterDetails,
     ContentRating,
-    HomePageSectionsProviding,
     HomeSection,
-    MangaProviding,
     PagedResults,
-    PartialSourceManga,
-    Request,
-    Response,
     SearchRequest,
-    SearchResultsProviding,
-    Source,
     SourceInfo,
     SourceIntents,
-    SourceManga
+    SourceManga,
+    BadgeColor,
+    SearchResultsProviding,
+    MangaProviding,
+    ChapterProviding,
+    HomePageSectionsProviding,
 } from '@paperback/types'
-import type { CheerioAPI } from 'cheerio'
-import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
-import { BatCaveHomeItem, BatCaveParser } from '../../lib/sources/BatCave/BatCaveParser'
 
-const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+import { BatCaveParser } from '../../lib/sources/BatCave/BatCaveParser'
+
+const DOMAIN = 'https://batcave.biz'
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.4',
+    version: '1.2.0',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
-    description: 'English comics source for BatCave.biz.',
-    contentRating: ContentRating.EVERYONE,
-    websiteBaseURL: BATCAVE_DOMAIN,
+    authorWebsite: 'https://github.com/DarkDragonkz',
+    description: `Extension that pulls comics from ${DOMAIN}`,
+    contentRating: ContentRating.MATURE,
+    websiteBaseURL: DOMAIN,
     sourceTags: [
-        { text: 'English', type: BadgeColor.GREY },
-        { text: 'Comics', type: BadgeColor.BLUE }
+        {
+            text: 'Comics 🇺🇸',
+            type: BadgeColor.BLUE,
+        },
     ],
-    intents: SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.CLOUDFLARE_BYPASS_REQUIRED,
 }
 
-export class BatCave extends Source implements MangaProviding, HomePageSectionsProviding, SearchResultsProviding {
-    private readonly parser = new BatCaveParser()
+export class BatCave implements SearchResultsProviding, MangaProviding, ChapterProviding, HomePageSectionsProviding {
+    baseUrl = DOMAIN
+    parser = new BatCaveParser()
+    
+    RETRIES = 2 
+
+    constructor(private cheerio: any) {}
 
     requestManager = App.createRequestManager({
-        requestsPerSecond: 2,
+        requestsPerSecond: 4,
         requestTimeout: 20000,
         interceptor: {
-            interceptRequest: async (request: Request): Promise<Request> => {
+            interceptRequest: async (request: any) => {
                 request.headers = {
                     ...(request.headers ?? {}),
-                    Referer: `${BATCAVE_DOMAIN}/`,
-                    'User-Agent': BATCAVE_USER_AGENT,
-                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'accept-language': 'en-US,en;q=0.9'
+                    'Referer': `${DOMAIN}/`,
+                    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
                 }
                 return request
             },
-            interceptResponse: async (response: Response): Promise<Response> => response
+            interceptResponse: async (response: any) => {
+                return response
+            }
         }
     })
 
-    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(BATCAVE_DOMAIN)
-        const items = this.parser.parseFeaturedHomeItems($).slice(0, 16)
-        if (items.length === 0) return
-
-        sectionCallback(App.createHomeSection({
-            id: 'featured',
-            title: 'Featured Comics',
-            type: 'singleRowLarge',
-            containsMoreItems: false,
-            items: items.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
-        }))
-    }
-
-    async getViewMoreItems(_homepageSectionId: string, _metadata: unknown): Promise<PagedResults> {
-        return App.createPagedResults({ results: [], metadata: undefined })
+    getMangaShareUrl(mangaId: string): string {
+        return `${this.baseUrl}/${mangaId}`
     }
 
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        return App.createSourceManga({
-            id: mangaId,
-            mangaInfo: App.createMangaInfo({
-                image: BATCAVE_PLACEHOLDER_IMAGE,
-                titles: [mangaId],
-                desc: '',
-                status: 'UNKNOWN',
-                artist: '',
-                author: '',
-                tags: []
-            })
+        const request = App.createRequest({
+            url: `${this.baseUrl}/${mangaId}`,
+            method: 'GET'
         })
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        // Qui serve Cheerio per i metadati (titolo, desc, ecc.)
+        const $ = this.cheerio.load(response.data)
+        return this.parser.parseMangaDetails($, mangaId)
     }
 
-    async getChapters(_mangaId: string): Promise<Chapter[]> { return [] }
+    async getChapters(mangaId: string): Promise<Chapter[]> {
+        const request = App.createRequest({
+            url: `${this.baseUrl}/${mangaId}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        // OTTIMIZZAZIONE: Passiamo direttamente la stringa, niente Cheerio load inutile!
+        return this.parser.parseChapters(response.data as string)
+    }
 
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        return App.createChapterDetails({ id: chapterId, mangaId, pages: [] })
+        const mangaNumericId = mangaId.split('-')[0]
+        const request = App.createRequest({
+            url: `${this.baseUrl}/reader/${mangaNumericId}/${chapterId}`,
+            method: 'GET'
+        })
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        // OTTIMIZZAZIONE: Passiamo direttamente la stringa
+        return this.parser.parseChapterDetails(response.data as string, mangaId, chapterId)
     }
 
-    async getSearchResults(_query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
-        return App.createPagedResults({ results: [], metadata: undefined })
-    }
+    async getSearchResults(query: SearchRequest, metadata: any): Promise<PagedResults> {
+        const page = metadata?.page ?? 1
+        
+        const request = App.createRequest({
+            url: `${this.baseUrl}/index.php?do=search&subaction=search&story=${encodeURIComponent(query.title ?? '')}&search_start=${page}`,
+            method: 'GET'
+        })
 
-    async supportsSearchOperators(): Promise<boolean> { return false }
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        const $ = this.cheerio.load(response.data)
+        const manga = this.parser.parseSearchResults($)
+        
+        // Se non ci sono risultati, fermiamo la paginazione
+        const nextPage = manga.length > 0 ? page + 1 : undefined
 
-    async supportsTagExclusion(): Promise<boolean> { return false }
-
-    async getCloudflareBypassRequestAsync(): Promise<Request> {
-        return App.createRequest({
-            url: BATCAVE_DOMAIN,
-            method: 'GET',
-            headers: {
-                Referer: `${BATCAVE_DOMAIN}/`,
-                'User-Agent': BATCAVE_USER_AGENT
-            }
+        return App.createPagedResults({
+            results: manga,
+            metadata: nextPage ? { page: nextPage } : undefined
         })
     }
 
-    getMangaShareUrl(mangaId: string): string { return `${BATCAVE_DOMAIN}/${mangaId}` }
+    async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
+        const request = App.createRequest({
+            url: this.baseUrl,
+            method: 'GET'
+        })
 
-    private async getCheerio(url: string): Promise<CheerioAPI> {
-        const response = await this.requestManager.schedule(App.createRequest({ url, method: 'GET' }), 2)
-        const data = typeof response.data === 'string' ? response.data : String(response.data)
-        return this.cheerio.load(data)
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        const $ = this.cheerio.load(response.data)
+        this.parser.parseHomeSections($, sectionCallback)
     }
 
-    private createPartialSourceManga(item: BatCaveHomeItem): PartialSourceManga {
-        return App.createPartialSourceManga({
-            mangaId: item.comicId,
-            title: item.title,
-            image: item.image ?? BATCAVE_PLACEHOLDER_IMAGE,
-            subtitle: item.subtitle
+    async getViewMoreItems(homepageSectionId: string, metadata: any): Promise<PagedResults> {
+        const page = metadata?.page ?? 1
+        let url = ''
+
+        if (homepageSectionId === 'latest') {
+            if (page === 1) url = this.baseUrl
+            else url = `${this.baseUrl}/page/${page}/`
+        } else {
+            return App.createPagedResults({ results: [] })
+        }
+
+        const request = App.createRequest({
+            url: url,
+            method: 'GET'
+        })
+
+        const response = await this.requestManager.schedule(request, this.RETRIES)
+        const $ = this.cheerio.load(response.data)
+        
+        let manga = this.parser.parseGridItems($, '.sect--latest .latest, .content .short', '.latest__chapter')
+
+        if (manga.length === 0) {
+             manga = this.parser.parseSearchResults($)
+        }
+
+        const nextPage = manga.length > 0 ? page + 1 : undefined
+
+        return App.createPagedResults({
+            results: manga,
+            metadata: nextPage ? { page: nextPage } : undefined
+        })
+    }
+    
+    async getCloudflareBypassRequestAsync() {
+        return App.createRequest({
+            url: this.baseUrl,
+            method: 'GET',
+            headers: {
+                'Referer': `${this.baseUrl}/`,
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+            }
         })
     }
 }
