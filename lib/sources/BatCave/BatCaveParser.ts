@@ -215,11 +215,12 @@ export class BatCaveParser {
         series?.hasPart?.itemListElement?.forEach((element: { item?: JsonLdGraphNode }) => {
             const item = element.item
             const id = this.extractChapterId(item?.url)
-            const name = this.cleanText(item?.name) || id
 
             if (!id || seen.has(id)) {
                 return
             }
+
+            const name = this.cleanText(item?.name) || id
 
             seen.add(id)
             chapters.push({
@@ -233,11 +234,14 @@ export class BatCaveParser {
         $('a[href*="/reader/"]').each((_: number, element: any) => {
             const href = $(element).attr('href')
             const id = this.extractChapterId(href)
-            const name = this.cleanText($(element).text()) || this.cleanText($(element).attr('title')) || id
 
-            if (!id || seen.has(id) || !name) {
+            if (!id || seen.has(id)) {
                 return
             }
+
+            const name = this.cleanText($(element).text())
+                || this.cleanText($(element).attr('title'))
+                || id
 
             seen.add(id)
             chapters.push({
