@@ -17,8 +17,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/`
 Error: `None`
 Title: `Read All Comics Online - ReadAllComics`
-Raw chars: `129038`
-Clean chars: `43210`
+Raw chars: `135698`
+Clean chars: `43217`
 Blocked: `False`
 Block reasons: ``
 
@@ -30,9 +30,24 @@ Block reasons: ``
 - `a.latest-chapter`: **20**
 - `pinbin-category`: **0**
 - `img tags`: **22**
-- `reader image urls`: **15**
+- `reader image urls`: **20**
 
 ### First series
+- `grimm-fairy-tales-animated-one-shot` — Grimm Fairy Tales: Animated One-Shot — https://readallcomics.com/category/grimm-fairy-tales-animated-one-shot/
+- `the-bogie-man-the-manhattan-project` — The Bogie Man The Manhattan Project — https://readallcomics.com/category/the-bogie-man-the-manhattan-project/
+- `speed-racer-publisher-mad-cave-studios` — Speed Racer (Publisher: Mad Cave Studios) — https://readallcomics.com/category/speed-racer-publisher-mad-cave-studios/
+- `flash-gordon` — Flash Gordon (Publisher: Mad Cave Studios) — https://readallcomics.com/category/flash-gordon/
+- `dog-tag` — Dog Tag — https://readallcomics.com/category/dog-tag/
+- `astro-quantum` — Astro Quantum — https://readallcomics.com/category/astro-quantum/
+- `opting-out` — Opting Out — https://readallcomics.com/category/opting-out/
+- `voltron-defender-of-the-universe` — Voltron: Defender of the Universe — https://readallcomics.com/category/voltron-defender-of-the-universe/
+- `max-a-little-axolotl` — Max - A Little Axolotl — https://readallcomics.com/category/max-a-little-axolotl/
+- `savage-sword-of-conan-publisher-titan-comics` — The Savage Sword of Conan (Publisher: Titan Comics) — https://readallcomics.com/category/savage-sword-of-conan-publisher-titan-comics/
+- `comics-giveaway-day` — Comics Giveaway Day — https://readallcomics.com/category/comics-giveaway-day/
+- `fall-of-the-house-of-slaughter` — Fall of the House of Slaughter — https://readallcomics.com/category/fall-of-the-house-of-slaughter/
+- `the-center-holds` — The Center Holds — https://readallcomics.com/category/the-center-holds/
+- `ghoul` — Ghoul — https://readallcomics.com/category/ghoul/
+- `the-autumn-kingdom-the-wraithbound-queen` — The Autumn Kingdom - The Wraithbound Queen — https://readallcomics.com/category/the-autumn-kingdom-the-wraithbound-queen/
 
 ### First chapters
 - `full-2013` — Full (2013) — https://readallcomics.com/full-2013/
@@ -54,6 +69,8 @@ Block reasons: ``
 ### First images
 - https://2.bp.blogspot.com/pw/AP1GczOhRivnXzuRNMSEgLvlUsiD13jTfbPS-ev8cpNbnvejdzHuFwKl2Gf60IV2YmqK00uo8MQTP1FPUoBfkh6t7ZFQiGtuy_drgzQNtQX5rTDpzjG4ciA=s0
 - https://2.bp.blogspot.com/pw/AP1GczNqp-3P9xVyW78I2IRdESU5OVdfPS8CUKW3MxW4RmrAWCCcgydSlxL2AHEA_ywkv7KGuCiYs5Y3jymvbwUZ5pn3TZ9sbJhH8iX_itoXjcyod22BLFY=s0?rhlupa=MTU3LjI0NS41Ny4yNDcuNS83LzIwMjYgNzowNzozOSBQTS0wLXIxLXMtYzM0NTQy&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0Ny4wLjAuMCBTYWZhcmkvNTM3LjM2
+- https://s3.amazonaws.com/comicgeeks/comics/covers/large-3236908.jpg?1747628412
+- https://s3.amazonaws.com/comicgeeks/comics/covers/large-9990492.jpg?1713556125
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyiZpF0p5ECBBERv4Akdf_6aSn5Qm5OrXCACJRrsDzajNNUW7XRCqk5Jfg3TjvYNKBpHRosWi6je2CYl5DkCcmxaOwnK361xh1c31B5zShY82_ztoBtOvHu8NCUgph96Z6V2LXx4AeWIjmOxYu8js13wn31laCjnsRil4Niu7MleQr_iMO8TWdDm7aRqo/s0/Dog%20Tag%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCeAFdbw0T0l09af2kStxWosRkoExbUdGQtdaaI652ZWJAt27C5DD3UGylKtEIrU4SS1EOaAiWs0A5PZ-H0iD5ralKfto8JwyzGhoCvo-eexwh1vmSaMn0-AnbWc4HkSqfprvZ7LOdb2SAPn1PHAdDAr1-FiL9rPGH7bqlGcymYPLtstFcXzwiY7NGsH4J/s0/Astro%20Quantum%20001%20%282026%29%20%28Limited%20Series%29%20%28Mad%20Cave%20Studios%29%20%28Digital-HD%29%20%28LeDuch%29-000.jpg
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjMj8KNgq6Qf_GT9AiyST6Jc__V6RJe99kUG3J-oRB4jV1ivHlR80847zY_hr4JcZJdl90C105WBs0SXM8WN5TFe0NkhKpqxKbFZfDAc5MVIFHb-sFFwVfg37YcNy1sLJauq54rXk9QByhG2vS5u80_LAXduDs-SI9ZNyeLHGttfCnTS46qyp5a3f7hjJq2/s0/Opting%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholastic%29%20%28Digital%29%20%28LeDuch%29-000.jpg
@@ -65,8 +82,6 @@ Block reasons: ``
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh_bBeyqpYhoj83kdSmO6p0ZGE1l1-A2h2B3D6KEyn83NQIMQpnUX8yV0mbgXf1n8ObiPtc4PUSwu7PImNruWzTcD8utoaXg2U_GYqJFlsGQFB6bwZ-27SrZ2_Dt5XWC8Br4I33HqtnoN0mrAhcGo0pHUYvupuvBBkHHdbNQidBIkp2ynr1XSpFaijBM7BC/s0/The%20Center%20Holds%200%20%28of%200%29%20%282026%29%20%28Digital%20Rip%29%20%28Hourman-DCP%29-000.jpg
 - https://2.bp.blogspot.com/pw/AP1GczMyjpQf5BpX481a4rzGpdrD7EFnytwF1oKWsfSzFFpJVdx_KlX4JPyFL-cYCaGm4ZXtZkv0pvmKysYzlzxdtV_eAWR5f2Y7tRBvuiXzUZqu0HgynLg=s0
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBaY8-lCinSYG4h2BSRRxVpUVA8QnNPuwY2IYYspqSoET0wbP6I2_gdEgA2JPu0niJpwQmjYGwvo29khzlNmZ-57LxETHFUel1dYhlZxlEsIr4HUb6Kd9ajl4nGe5004qMbe9BCazNAzeUcye4aTIz90wgAeq_VodEhWmPZdp47yo5Q6nmGFjEZbHojGLa/s0/The%20Autumn%20Kingdom%20-%20The%20Wraithbound%20Queen%20001%20%282026%29%20%28Digital%29%20%28Mephisto-Empire%29-000.jpg
-- https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjso0KQmvIFQ4FWtWMCozIV5jZWsy5vh6XKrxJFiciMJWvc90CePGT9w1n7WUH0hIkGpy_GW76Lu2usPD0bOcK4f_Ku-z0llCb_5hPcbym_t_AwTX5BsxDUgYphIOxBOn_B9uMqBlSzeO9MAzyiSgWupMjzqTQpMSPnvIksTKLYsXss__wZdnDHIKeiK8A/s0/Tales%20of%20the%20Green%20Lantern%20Corps%20-%20Guy%20Gardner%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg
-- https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh82xiqYFVpL4nFYjpYApFs4iYbWxGEa7y9JU81WGjExgDolsujEEwadlSpiEnBz7NxT2so9SGDh-DWZvG1v1f9kbT2BQMARPZHuv9mBdhgFkNMbcKxm_TlvPDh4Ju9otv3j6Pcxr64Hi1N6OpMAzZfIHqFNVunLO7IL2uPkW7La4wUsaD897of_pQh72k/s0/Sleepy%20Hollow%20-%20The%20Witches%20of%20the%20Western%20Wood%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg
 
 ## home_page_2
 
@@ -75,8 +90,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/page/2/`
 Error: `None`
 Title: `Read All Comics Online - Page 2 of 18717 - ReadAllComics`
-Raw chars: `152691`
-Clean chars: `42571`
+Raw chars: `123578`
+Clean chars: `42610`
 Blocked: `False`
 Block reasons: ``
 
@@ -88,9 +103,24 @@ Block reasons: ``
 - `a.latest-chapter`: **20**
 - `pinbin-category`: **0**
 - `img tags`: **22**
-- `reader image urls`: **17**
+- `reader image urls`: **20**
 
 ### First series
+- `jsa` — JSA — https://readallcomics.com/category/jsa/
+- `godzilla-idw-publishing` — Godzilla (Publisher: IDW Publishing) — https://readallcomics.com/category/godzilla-idw-publishing/
+- `dc-x-sonic-the-hedgehog-metal-legion` — DC x Sonic the Hedgehog - Metal Legion — https://readallcomics.com/category/dc-x-sonic-the-hedgehog-metal-legion/
+- `batman-static-beyond` — Batman / Static: Beyond — https://readallcomics.com/category/batman-static-beyond/
+- `batman` — Batman — https://readallcomics.com/category/batman/
+- `batgirl` — Batgirl — https://readallcomics.com/category/batgirl/
+- `adventures-of-superman-the-book-of-el` — Adventures of Superman: The Book of El — https://readallcomics.com/category/adventures-of-superman-the-book-of-el/
+- `x-men` — X-Men — https://readallcomics.com/category/x-men/
+- `wade-wilson-deadpool` — Wade Wilson - Deadpool — https://readallcomics.com/category/wade-wilson-deadpool/
+- `storm-earths-mightiest-mutant` — Storm: Earth's Mightiest Mutant — https://readallcomics.com/category/storm-earths-mightiest-mutant/
+- `star-wars-rogue-one-cassian-andor` — Star Wars - Rogue One - Cassian Andor — https://readallcomics.com/category/star-wars-rogue-one-cassian-andor/
+- `star-wars-hyperspace-stories-the-bad-batch-rogue-agents` — Star Wars: Hyperspace Stories - The Bad Batch: Rogue Agents — https://readallcomics.com/category/star-wars-hyperspace-stories-the-bad-batch-rogue-agents/
+- `marc-spector-moon-knight` — Marc Spector Moon Knight — https://readallcomics.com/category/marc-spector-moon-knight/
+- `jubilee-deadly-reunion` — Jubilee - Deadly Reunion — https://readallcomics.com/category/jubilee-deadly-reunion/
+- `fantastic-four` — Fantastic Four — https://readallcomics.com/category/fantastic-four/
 
 ### First chapters
 - `v2-019-2026` — v2 019 (2026) — https://readallcomics.com/v2-019-2026/
@@ -113,18 +143,18 @@ Block reasons: ``
 - https://3.bp.blogspot.com/-oTBBHbI3XYc/XJSFRDWnazI/AAAAAAAAfkk/jozChQ30Y84bYLR0nlvGRc1IsqUus8-7QCLcBGAs/s1600/001_000.jpg
 - https://2.bp.blogspot.com/-p3GZsTbY3S4/VtVYeQ8vutI/AAAAAAAAMvk/3FFDfSVy5uA/s0-Ic42/RCO001.jpg
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAw_kH3lEfVu-Rehxa6gmPlSSD0DhTxEyvUKcDlPRJtytCRlWa8w4crj8nrRntNlmu5SYISgB3999yjaQxa6_YXYAy8wIdvRMP_FeGhxyOiS_jhtjhBN_hExA5uq9c490m7SVWlIOXt1QivvoZEslN7xZLyqZG7JYp4pGg-QsVTzHgE7G4Ly83bQ-abLM/s0/DC%20x%20Sonic%20the%20Hedgehog%20-%20Metal%20Legion%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg
+- https://s3.amazonaws.com/comicgeeks/comics/covers/large-9334684.jpg?1762356895
 - https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2
 - https://2.bp.blogspot.com/-nIOw878FB6I/VI1FMBlKYyI/AAAAAAAGiJQ/50UhYYEjTFo/s0/p1_0%2Bcopy.jpg
+- https://s3.amazonaws.com/comicgeeks/comics/covers/large-9147918.jpg?1755875514
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQ9s-pFYUu18E4qvEDOn2S9Wouk5sz_oJFwzae0-jmaL0xea4yGZqNLt641cDsQFsfwWbmBoSaRLAxFNimKE3Dj7ntaMv_Ag2JLCbWbLnyee3Lr2nkqUycErkhNTxIPc4sfT40Iw-q05ILSokG_hyphenhyphenih8zOUHWdUhUK3qBHY8nzHR60Z4vhVkwqZcdVSJ8/s0/Uncanny%20X-Men%20001%20%281963%29%20%28digital%29%20%28Minutemen-Bluntman%29-000.jpg
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibxTs1hgH2G91XImi2HrGhBZerqUCTmthLjI6MytyEnaXgkoU-jwhvkqXpKMOxx8lvCA8T0wXhQhXy0TIBa964NDGTCc9xMCmE0Gxo8oLI53et7IN790873uwuN32f7ujFQQ9hUFd9NRM7FbGlpu0J289NIirlH6vQOS68t5Lws6xUlRt0Rga0n02X0Wg5/s0/Wade%20Wilson%20-%20Deadpool%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg
+- https://s3.amazonaws.com/comicgeeks/comics/covers/large-5847753.jpg?1769804509
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWWtObYs8GkrJAsh5eYR2DnFoRm415RnVM0fQDa3qt5TSTkDMwEc2bGHUPaq-ZookSa9ZBg8luyG5w2K6y31KcxAHCEywE3XURDRxXJwlxuV2jqNyojskoTwxukfTKErXHGSt6HUYWyEt6kIdSODdc_MLaAjwO1NCXsE6U6LPDEZpvGga70yZJfG6WmXw/s0/Star%20Wars%20-%20Rogue%20One%20-%20Cassian%20Andor%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirz7RCsG9YOLAijS4al7RGzAcaVP0TH1a9hmjQnJPwyQWU_NwJmRTfcLFRhFzPGMyvzbacivKYdKWF7tNzQsSO1nkDaaJeZvdV4-YysA8CvRTDk39wNTzNzRSkKderN6jMj0EJ7_ZR8pXxKdA5YiQi6eyLWpzaA3EpE91Doq49ZNbmoNydexxV7Owv4CM/s0/Star%20Wars%20-%20Hyperspace%20Stories%20-%20The%20Bad%20Batch%20-%20Rogue%20Agents%20001%20%282025%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg
 - https://2.bp.blogspot.com/3Rtt31tYZ_jMDPqqHnHz2lqml_zcJSJpW6vK1Xth8LD3UyRjG3HAYIfLB5srE5al3xfgrCM7eZ9L=s1600
 - https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHPdD7pxkDa1Suv5D6YSmw0-vFJnPbcB5zWvBfWvospT2Du-Hb9COIWRdeCNlzpDZVCkwkWc4WJEborjZzLqKFCk5e-BdwVIp6ZjVGWRbyoHZbwRQU-XC5m4vUVoCj16dwmd_LtJNh9ShhvoU2wBduW5X_gHdotKblOBz8QHcbaKkmdxbNwWx5ytMkwLE/s0/Jubilee%20-%20Deadly%20Reunion%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg
 - https://2.bp.blogspot.com/sAidST2But6_5xGENprGcdplh30OCCIF5aZvTeFFQbVaxY4MYW0LBb_hk3Jfu3HlyFuSpOdB7q_n=s0
-- https://2.bp.blogspot.com/-6uFaHJLBB_I/Vj1NZ27fe7I/AAAAAAAAX4g/cs9HvSPfY_4/s0-Ic42/Daredevil%25252001-000.jpg
-- https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3rJoeJTgrhAK5-vq7W8WFHcrjEs2Jg0Xo7nWvTp9PryULZ2ij7yHaeuuyplyZ00y2SDKoiozhv6e9phAe5AOtX_VPeVDgxiNW-VW5TyJWHqZ0CO0Qd7ThtUgwpUHQt9HyS8kUnw-OuJdzg-fmKQcazboU-0FLk3niTF6YFLjp6JqXtxeV2VIja-yik19u/s0/Cyclops%20Vol.%201%20001-000.jpg
-- https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiJpiyVDe6K71P8W6DyiT11hjz9vF0MB3-g86jtyRIw-2-dZLEZg7qf7dku7TWLjG1TO7c5Eh8lbX_eUMdmPYQAr4lVWh0UpKzZT8Sqwuekw-FpRxFiMtO-iLeKXjbQoauupizIsVxvTfotrYquMlRSVxDy1odmLgDAOcPdpqnzwwdlHpi9BSPfGvKC8zE/s0/Civl%20War%20-%20Unmasked%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg
 
 ## search_batman
 
@@ -133,8 +163,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/?story=Batman&s=&type=comic`
 Error: `None`
 Title: `- Read All Comics Online`
-Raw chars: `143016`
-Clean chars: `43238`
+Raw chars: `143472`
+Clean chars: `43235`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -146,9 +176,24 @@ Block reasons: `cloudflare`
 - `a.latest-chapter`: **20**
 - `pinbin-category`: **0**
 - `img tags`: **22**
-- `reader image urls`: **18**
+- `reader image urls`: **19**
 
 ### First series
+- `batman` — Batman — https://readallcomics.com/category/batman/
+- `batman-66` — Batman '66 — https://readallcomics.com/category/batman-66/
+- `batman-89` — Batman '89 — https://readallcomics.com/category/batman-89/
+- `batman-89-echoes` — Batman '89 - Echoes — https://readallcomics.com/category/batman-89-echoes/
+- `batman-80-page-giant` — Batman 80-Page Giant — https://readallcomics.com/category/batman-80-page-giant/
+- `batman-80-page-giant-2010` — Batman 80-Page Giant 2010 — https://readallcomics.com/category/batman-80-page-giant-2010/
+- `batman-80-page-giant-2011` — Batman 80-Page Giant 2011 — https://readallcomics.com/category/batman-80-page-giant-2011/
+- `batman-66-the-lost-episode` — Batman '66: The Lost Episode — https://readallcomics.com/category/batman-66-the-lost-episode/
+- `batman-66-meets-wonder-woman-77` — Batman '66 Meets Wonder Woman '77 — https://readallcomics.com/category/batman-66-meets-wonder-woman-77/
+- `batman-66-meets-the-green-hornet` — Batman '66 Meets The Green Hornet — https://readallcomics.com/category/batman-66-meets-the-green-hornet/
+- `batman-66-meets-steed-and-mrs-peel` — Batman '66 Meets Steed and Mrs Peel — https://readallcomics.com/category/batman-66-meets-steed-and-mrs-peel/
+- `batman-66-meets-the-man-from-u-n-c-l-e` — Batman '66 Meets the Man From U.N.C.L.E. — https://readallcomics.com/category/batman-66-meets-the-man-from-u-n-c-l-e/
+- `batman-66-meets-the-legion-of-super-heroes` — Batman '66 Meets the Legion of Super-Heroes — https://readallcomics.com/category/batman-66-meets-the-legion-of-super-heroes/
+- `batman-3-d` — Batman 3-D — https://readallcomics.com/category/batman-3-d/
+- `batman-plus` — Batman Plus — https://readallcomics.com/category/batman-plus/
 
 ### First chapters
 - `v4-009-2026` — v4 009 (2026) — https://readallcomics.com/v4-009-2026/
@@ -191,8 +236,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/category/batman/`
 Error: `None`
 Title: `Read Batman Comic Book Online Free`
-Raw chars: `240577`
-Clean chars: `109644`
+Raw chars: `243279`
+Clean chars: `109646`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -235,7 +280,7 @@ Status: `200`
 Final URL: `https://readallcomics.com/batman-v1-annual-001/`
 Error: `None`
 Title: `Batman v1 .Annual 001 | Read All Comics Online`
-Raw chars: `353374`
+Raw chars: `342323`
 Clean chars: `4538`
 Blocked: `True`
 Block reasons: `cloudflare, captcha`

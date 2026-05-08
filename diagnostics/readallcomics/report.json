@@ -7,8 +7,8 @@
       "final_url": "https://readallcomics.com/",
       "error": null,
       "title": "Read All Comics Online - ReadAllComics",
-      "raw_chars": 129038,
-      "clean_chars": 43210,
+      "raw_chars": 135698,
+      "clean_chars": 43217,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -19,9 +19,130 @@
         "a.latest-chapter": 20,
         "pinbin-category": 0,
         "img tags": 22,
-        "reader image urls": 15
+        "reader image urls": 20
       },
-      "series": [],
+      "series": [
+        {
+          "id": "grimm-fairy-tales-animated-one-shot",
+          "title": "Grimm Fairy Tales: Animated One-Shot",
+          "href": "https://readallcomics.com/category/grimm-fairy-tales-animated-one-shot/",
+          "image": "https://2.bp.blogspot.com/pw/AP1GczOhRivnXzuRNMSEgLvlUsiD13jTfbPS-ev8cpNbnvejdzHuFwKl2Gf60IV2YmqK00uo8MQTP1FPUoBfkh6t7ZFQiGtuy_drgzQNtQX5rTDpzjG4ciA=s0"
+        },
+        {
+          "id": "the-bogie-man-the-manhattan-project",
+          "title": "The Bogie Man The Manhattan Project",
+          "href": "https://readallcomics.com/category/the-bogie-man-the-manhattan-project/",
+          "image": "https://2.bp.blogspot.com/pw/AP1GczNqp-3P9xVyW78I2IRdESU5OVdfPS8CUKW3MxW4RmrAWCCcgydSlxL2AHEA_ywkv7KGuCiYs5Y3jymvbwUZ5pn3TZ9sbJhH8iX_itoXjcyod22BLFY=s0?rhlupa=MTU3LjI0NS41Ny4yNDcuNS83LzIwMjYgNzowNzozOSBQTS0wLXIxLXMtYzM0NTQy&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0Ny4wLjAuMCBTYWZhcmkvNTM3LjM2"
+        },
+        {
+          "id": "speed-racer-publisher-mad-cave-studios",
+          "title": "Speed Racer (Publisher: Mad Cave Studios)",
+          "href": "https://readallcomics.com/category/speed-racer-publisher-mad-cave-studios/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-3236908.jpg?1747628412"
+        },
+        {
+          "id": "flash-gordon",
+          "title": "Flash Gordon (Publisher: Mad Cave Studios)",
+          "href": "https://readallcomics.com/category/flash-gordon/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9990492.jpg?1713556125"
+        },
+        {
+          "id": "dog-tag",
+          "title": "Dog Tag",
+          "href": "https://readallcomics.com/category/dog-tag/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyiZpF0p5ECBBERv4Akdf_6aSn5Qm5OrXCACJRrsDzajNNUW7XRCqk5Jfg3TjvYNKBpHRosWi6je2CYl5DkCcmxaOwnK361xh1c31B5zShY82_ztoBtOvHu8NCUgph96Z6V2LXx4AeWIjmOxYu8js13wn31laCjnsRil4Niu7MleQr_iMO8TWdDm7aRqo/s0/Dog%20Tag%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+        },
+        {
+          "id": "astro-quantum",
+          "title": "Astro Quantum",
+          "href": "https://readallcomics.com/category/astro-quantum/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCeAFdbw0T0l09af2kStxWosRkoExbUdGQtdaaI652ZWJAt27C5DD3UGylKtEIrU4SS1EOaAiWs0A5PZ-H0iD5ralKfto8JwyzGhoCvo-eexwh1vmSaMn0-AnbWc4HkSqfprvZ7LOdb2SAPn1PHAdDAr1-FiL9rPGH7bqlGcymYPLtstFcXzwiY7NGsH4J/s0/Astro%20Quantum%20001%20%282026%29%20%28Limited%20Series%29%20%28Mad%20Cave%20Studios%29%20%28Digital-HD%29%20%28LeDuch%29-000.jpg"
+        },
+        {
+          "id": "opting-out",
+          "title": "Opting Out",
+          "href": "https://readallcomics.com/category/opting-out/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjMj8KNgq6Qf_GT9AiyST6Jc__V6RJe99kUG3J-oRB4jV1ivHlR80847zY_hr4JcZJdl90C105WBs0SXM8WN5TFe0NkhKpqxKbFZfDAc5MVIFHb-sFFwVfg37YcNy1sLJauq54rXk9QByhG2vS5u80_LAXduDs-SI9ZNyeLHGttfCnTS46qyp5a3f7hjJq2/s0/Opting%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholastic%29%20%28Digital%29%20%28LeDuch%29-000.jpg"
+        },
+        {
+          "id": "voltron-defender-of-the-universe",
+          "title": "Voltron: Defender of the Universe",
+          "href": "https://readallcomics.com/category/voltron-defender-of-the-universe/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh7BJJixzqmO0Zcc6t2wbW2SuiU4vC3W1RPnDxiNBvR1UmdmDBRyLkO-UpR0kkH2UPDvPVCSfHXVMMzk2sc9k_lugMrpxCwW05rvp2pdR08L-yEXl0ccoGFhFRqQ_qLfw3i9xStwToijTdFmoZ1qTvhY0eaJ0spP86ka_qkxVT7D81YILIwR43u6BdKB5XL/s0/Voltron%20-%20Defender%20of%20the%20Universe%20v1%20%23000-000.jpg"
+        },
+        {
+          "id": "max-a-little-axolotl",
+          "title": "Max - A Little Axolotl",
+          "href": "https://readallcomics.com/category/max-a-little-axolotl/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiEZQGl7Ugk01GeVdI0Deh5hROA1Jud2Cdzz_tg0xVevMX3TePOiy6ZerDjVkXKeBRPSvHgJe3ObKNx11rTImCE9mV_13qoAVl5CHGJb2AoqMWSPKJCOp8VUrxUzBjWOAqA4s56DyxdxeJ1UQW09hHkN-o8WMUR07zTHYBpIVyTxAcPm78VNy8ZvYDujAnB/s0/Max%20-%20A%20Little%20Axolotl%20-%20Breaking%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholasitc%29%20%28Digital%29%20%28LeDuch%29-000.jpg"
+        },
+        {
+          "id": "savage-sword-of-conan-publisher-titan-comics",
+          "title": "The Savage Sword of Conan (Publisher: Titan Comics)",
+          "href": "https://readallcomics.com/category/savage-sword-of-conan-publisher-titan-comics/",
+          "image": "https://2.bp.blogspot.com/-zRPQ3mUNQiU/Zd99tcy77UI/AAAAAAAEmcg/_28aoDP3nXwKLP3eUXjzQJampV6-QVWCgCNcBGAsYHQ/h0/The%2BSavage%2BSword%2Bof%2BConan%2B001%2B%25282024%2529%2B%25283%2Bcovers%2529%2B%2528Digital%2529%2B%2528Mephisto-Empire%2529-000.jpg"
+        },
+        {
+          "id": "comics-giveaway-day",
+          "title": "Comics Giveaway Day",
+          "href": "https://readallcomics.com/category/comics-giveaway-day/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWUW4owqTs6DfTAmnnc3nwOGIh62_rKL5xMc_iNe2Y5LvyTt8HjVZ2wKhjgAkfWMy7Lq5o7wi6mekGk-vdH6moyTzU1NGC26zSo9O6_sIEtkpvAVkow0-xk5iaJbBECt37yX6AB3KBbsliDzZDkGdrMQrdTJuCI1sGpmFHjfFxkxf9EbON9kFGy_mY7zA/s0/Comics%20Giveaway%20Day.JPG"
+        },
+        {
+          "id": "fall-of-the-house-of-slaughter",
+          "title": "Fall of the House of Slaughter",
+          "href": "https://readallcomics.com/category/fall-of-the-house-of-slaughter/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjUKd9HOmcVq72qvIE4xOmgT2PKdm-XnV2UEnVJrkj4_BIHWHsLYtq0swUA_p9a1J5CafqQ0dSNDEn4znd1BaQwYqqM53TRKffR3vwheuKKtjtFqoMC7d0bfNpTQRC5gH6Ks-kPrxC7fVB230aAgrSdQltcU-1dvDAipYhmI30UEC-eGzmnBXz9Gj5HoyI/s0/Fall%20of%20the%20House%20of%20Slaughter%20001%20%28of%20004%29%20%282026%29%20%28Limited%20Series%29%20%28Boom!%20Studios%29%20%28Digital%29%20%28LeDuch%29-000.jpg"
+        },
+        {
+          "id": "the-center-holds",
+          "title": "The Center Holds",
+          "href": "https://readallcomics.com/category/the-center-holds/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh_bBeyqpYhoj83kdSmO6p0ZGE1l1-A2h2B3D6KEyn83NQIMQpnUX8yV0mbgXf1n8ObiPtc4PUSwu7PImNruWzTcD8utoaXg2U_GYqJFlsGQFB6bwZ-27SrZ2_Dt5XWC8Br4I33HqtnoN0mrAhcGo0pHUYvupuvBBkHHdbNQidBIkp2ynr1XSpFaijBM7BC/s0/The%20Center%20Holds%200%20%28of%200%29%20%282026%29%20%28Digital%20Rip%29%20%28Hourman-DCP%29-000.jpg"
+        },
+        {
+          "id": "ghoul",
+          "title": "Ghoul",
+          "href": "https://readallcomics.com/category/ghoul/",
+          "image": "https://2.bp.blogspot.com/pw/AP1GczMyjpQf5BpX481a4rzGpdrD7EFnytwF1oKWsfSzFFpJVdx_KlX4JPyFL-cYCaGm4ZXtZkv0pvmKysYzlzxdtV_eAWR5f2Y7tRBvuiXzUZqu0HgynLg=s0"
+        },
+        {
+          "id": "the-autumn-kingdom-the-wraithbound-queen",
+          "title": "The Autumn Kingdom - The Wraithbound Queen",
+          "href": "https://readallcomics.com/category/the-autumn-kingdom-the-wraithbound-queen/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBaY8-lCinSYG4h2BSRRxVpUVA8QnNPuwY2IYYspqSoET0wbP6I2_gdEgA2JPu0niJpwQmjYGwvo29khzlNmZ-57LxETHFUel1dYhlZxlEsIr4HUb6Kd9ajl4nGe5004qMbe9BCazNAzeUcye4aTIz90wgAeq_VodEhWmPZdp47yo5Q6nmGFjEZbHojGLa/s0/The%20Autumn%20Kingdom%20-%20The%20Wraithbound%20Queen%20001%20%282026%29%20%28Digital%29%20%28Mephisto-Empire%29-000.jpg"
+        },
+        {
+          "id": "godzilla-infinity-roar",
+          "title": "Godzilla: Infinity Roar",
+          "href": "https://readallcomics.com/category/godzilla-infinity-roar/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-4520126.jpg?1769805918"
+        },
+        {
+          "id": "teenage-mutant-ninja-turtles-tmnt-journeys",
+          "title": "Teenage Mutant Ninja Turtles (TMNT): Journeys",
+          "href": "https://readallcomics.com/category/teenage-mutant-ninja-turtles-tmnt-journeys/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-8177068.jpg?1748445175"
+        },
+        {
+          "id": "tales-of-the-green-lantern-corps-guy-gardner",
+          "title": "Tales of the Green Lantern Corps - Guy Gardner",
+          "href": "https://readallcomics.com/category/tales-of-the-green-lantern-corps-guy-gardner/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjso0KQmvIFQ4FWtWMCozIV5jZWsy5vh6XKrxJFiciMJWvc90CePGT9w1n7WUH0hIkGpy_GW76Lu2usPD0bOcK4f_Ku-z0llCb_5hPcbym_t_AwTX5BsxDUgYphIOxBOn_B9uMqBlSzeO9MAzyiSgWupMjzqTQpMSPnvIksTKLYsXss__wZdnDHIKeiK8A/s0/Tales%20of%20the%20Green%20Lantern%20Corps%20-%20Guy%20Gardner%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+        },
+        {
+          "id": "sleepy-hollow-the-witches-of-the-western-wood",
+          "title": "Sleepy Hollow - The Witches of the Western Wood",
+          "href": "https://readallcomics.com/category/sleepy-hollow-the-witches-of-the-western-wood/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh82xiqYFVpL4nFYjpYApFs4iYbWxGEa7y9JU81WGjExgDolsujEEwadlSpiEnBz7NxT2so9SGDh-DWZvG1v1f9kbT2BQMARPZHuv9mBdhgFkNMbcKxm_TlvPDh4Ju9otv3j6Pcxr64Hi1N6OpMAzZfIHqFNVunLO7IL2uPkW7La4wUsaD897of_pQh72k/s0/Sleepy%20Hollow%20-%20The%20Witches%20of%20the%20Western%20Wood%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+        },
+        {
+          "id": "poison-ivy",
+          "title": "Poison Ivy",
+          "href": "https://readallcomics.com/category/poison-ivy/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-1357693.jpg?1647745833"
+        }
+      ],
       "chapters": [
         {
           "id": "full-2013",
@@ -142,6 +263,8 @@
       "images": [
         "https://2.bp.blogspot.com/pw/AP1GczOhRivnXzuRNMSEgLvlUsiD13jTfbPS-ev8cpNbnvejdzHuFwKl2Gf60IV2YmqK00uo8MQTP1FPUoBfkh6t7ZFQiGtuy_drgzQNtQX5rTDpzjG4ciA=s0",
         "https://2.bp.blogspot.com/pw/AP1GczNqp-3P9xVyW78I2IRdESU5OVdfPS8CUKW3MxW4RmrAWCCcgydSlxL2AHEA_ywkv7KGuCiYs5Y3jymvbwUZ5pn3TZ9sbJhH8iX_itoXjcyod22BLFY=s0?rhlupa=MTU3LjI0NS41Ny4yNDcuNS83LzIwMjYgNzowNzozOSBQTS0wLXIxLXMtYzM0NTQy&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0Ny4wLjAuMCBTYWZhcmkvNTM3LjM2",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-3236908.jpg?1747628412",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9990492.jpg?1713556125",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyiZpF0p5ECBBERv4Akdf_6aSn5Qm5OrXCACJRrsDzajNNUW7XRCqk5Jfg3TjvYNKBpHRosWi6je2CYl5DkCcmxaOwnK361xh1c31B5zShY82_ztoBtOvHu8NCUgph96Z6V2LXx4AeWIjmOxYu8js13wn31laCjnsRil4Niu7MleQr_iMO8TWdDm7aRqo/s0/Dog%20Tag%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCeAFdbw0T0l09af2kStxWosRkoExbUdGQtdaaI652ZWJAt27C5DD3UGylKtEIrU4SS1EOaAiWs0A5PZ-H0iD5ralKfto8JwyzGhoCvo-eexwh1vmSaMn0-AnbWc4HkSqfprvZ7LOdb2SAPn1PHAdDAr1-FiL9rPGH7bqlGcymYPLtstFcXzwiY7NGsH4J/s0/Astro%20Quantum%20001%20%282026%29%20%28Limited%20Series%29%20%28Mad%20Cave%20Studios%29%20%28Digital-HD%29%20%28LeDuch%29-000.jpg",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjMj8KNgq6Qf_GT9AiyST6Jc__V6RJe99kUG3J-oRB4jV1ivHlR80847zY_hr4JcZJdl90C105WBs0SXM8WN5TFe0NkhKpqxKbFZfDAc5MVIFHb-sFFwVfg37YcNy1sLJauq54rXk9QByhG2vS5u80_LAXduDs-SI9ZNyeLHGttfCnTS46qyp5a3f7hjJq2/s0/Opting%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholastic%29%20%28Digital%29%20%28LeDuch%29-000.jpg",
@@ -153,8 +276,11 @@
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh_bBeyqpYhoj83kdSmO6p0ZGE1l1-A2h2B3D6KEyn83NQIMQpnUX8yV0mbgXf1n8ObiPtc4PUSwu7PImNruWzTcD8utoaXg2U_GYqJFlsGQFB6bwZ-27SrZ2_Dt5XWC8Br4I33HqtnoN0mrAhcGo0pHUYvupuvBBkHHdbNQidBIkp2ynr1XSpFaijBM7BC/s0/The%20Center%20Holds%200%20%28of%200%29%20%282026%29%20%28Digital%20Rip%29%20%28Hourman-DCP%29-000.jpg",
         "https://2.bp.blogspot.com/pw/AP1GczMyjpQf5BpX481a4rzGpdrD7EFnytwF1oKWsfSzFFpJVdx_KlX4JPyFL-cYCaGm4ZXtZkv0pvmKysYzlzxdtV_eAWR5f2Y7tRBvuiXzUZqu0HgynLg=s0",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBaY8-lCinSYG4h2BSRRxVpUVA8QnNPuwY2IYYspqSoET0wbP6I2_gdEgA2JPu0niJpwQmjYGwvo29khzlNmZ-57LxETHFUel1dYhlZxlEsIr4HUb6Kd9ajl4nGe5004qMbe9BCazNAzeUcye4aTIz90wgAeq_VodEhWmPZdp47yo5Q6nmGFjEZbHojGLa/s0/The%20Autumn%20Kingdom%20-%20The%20Wraithbound%20Queen%20001%20%282026%29%20%28Digital%29%20%28Mephisto-Empire%29-000.jpg",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-4520126.jpg?1769805918",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-8177068.jpg?1748445175",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjso0KQmvIFQ4FWtWMCozIV5jZWsy5vh6XKrxJFiciMJWvc90CePGT9w1n7WUH0hIkGpy_GW76Lu2usPD0bOcK4f_Ku-z0llCb_5hPcbym_t_AwTX5BsxDUgYphIOxBOn_B9uMqBlSzeO9MAzyiSgWupMjzqTQpMSPnvIksTKLYsXss__wZdnDHIKeiK8A/s0/Tales%20of%20the%20Green%20Lantern%20Corps%20-%20Guy%20Gardner%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
-        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh82xiqYFVpL4nFYjpYApFs4iYbWxGEa7y9JU81WGjExgDolsujEEwadlSpiEnBz7NxT2so9SGDh-DWZvG1v1f9kbT2BQMARPZHuv9mBdhgFkNMbcKxm_TlvPDh4Ju9otv3j6Pcxr64Hi1N6OpMAzZfIHqFNVunLO7IL2uPkW7La4wUsaD897of_pQh72k/s0/Sleepy%20Hollow%20-%20The%20Witches%20of%20the%20Western%20Wood%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh82xiqYFVpL4nFYjpYApFs4iYbWxGEa7y9JU81WGjExgDolsujEEwadlSpiEnBz7NxT2so9SGDh-DWZvG1v1f9kbT2BQMARPZHuv9mBdhgFkNMbcKxm_TlvPDh4Ju9otv3j6Pcxr64Hi1N6OpMAzZfIHqFNVunLO7IL2uPkW7La4wUsaD897of_pQh72k/s0/Sleepy%20Hollow%20-%20The%20Witches%20of%20the%20Western%20Wood%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-1357693.jpg?1647745833"
       ],
       "raw_file": "diagnostics\\readallcomics\\home.raw.html",
       "clean_file": "diagnostics\\readallcomics\\home.clean.html"
@@ -166,8 +292,8 @@
       "final_url": "https://readallcomics.com/page/2/",
       "error": null,
       "title": "Read All Comics Online - Page 2 of 18717 - ReadAllComics",
-      "raw_chars": 152691,
-      "clean_chars": 42571,
+      "raw_chars": 123578,
+      "clean_chars": 42610,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -178,9 +304,130 @@
         "a.latest-chapter": 20,
         "pinbin-category": 0,
         "img tags": 22,
-        "reader image urls": 17
+        "reader image urls": 20
       },
-      "series": [],
+      "series": [
+        {
+          "id": "jsa",
+          "title": "JSA",
+          "href": "https://readallcomics.com/category/jsa/",
+          "image": "https://3.bp.blogspot.com/-oTBBHbI3XYc/XJSFRDWnazI/AAAAAAAAfkk/jozChQ30Y84bYLR0nlvGRc1IsqUus8-7QCLcBGAs/s1600/001_000.jpg"
+        },
+        {
+          "id": "godzilla-idw-publishing",
+          "title": "Godzilla (Publisher: IDW Publishing)",
+          "href": "https://readallcomics.com/category/godzilla-idw-publishing/",
+          "image": "https://2.bp.blogspot.com/-p3GZsTbY3S4/VtVYeQ8vutI/AAAAAAAAMvk/3FFDfSVy5uA/s0-Ic42/RCO001.jpg"
+        },
+        {
+          "id": "dc-x-sonic-the-hedgehog-metal-legion",
+          "title": "DC x Sonic the Hedgehog - Metal Legion",
+          "href": "https://readallcomics.com/category/dc-x-sonic-the-hedgehog-metal-legion/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAw_kH3lEfVu-Rehxa6gmPlSSD0DhTxEyvUKcDlPRJtytCRlWa8w4crj8nrRntNlmu5SYISgB3999yjaQxa6_YXYAy8wIdvRMP_FeGhxyOiS_jhtjhBN_hExA5uq9c490m7SVWlIOXt1QivvoZEslN7xZLyqZG7JYp4pGg-QsVTzHgE7G4Ly83bQ-abLM/s0/DC%20x%20Sonic%20the%20Hedgehog%20-%20Metal%20Legion%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+        },
+        {
+          "id": "batman-static-beyond",
+          "title": "Batman / Static: Beyond",
+          "href": "https://readallcomics.com/category/batman-static-beyond/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9334684.jpg?1762356895"
+        },
+        {
+          "id": "batman",
+          "title": "Batman",
+          "href": "https://readallcomics.com/category/batman/",
+          "image": "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+        },
+        {
+          "id": "batgirl",
+          "title": "Batgirl",
+          "href": "https://readallcomics.com/category/batgirl/",
+          "image": "https://2.bp.blogspot.com/-nIOw878FB6I/VI1FMBlKYyI/AAAAAAAGiJQ/50UhYYEjTFo/s0/p1_0%2Bcopy.jpg"
+        },
+        {
+          "id": "adventures-of-superman-the-book-of-el",
+          "title": "Adventures of Superman: The Book of El",
+          "href": "https://readallcomics.com/category/adventures-of-superman-the-book-of-el/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9147918.jpg?1755875514"
+        },
+        {
+          "id": "x-men",
+          "title": "X-Men",
+          "href": "https://readallcomics.com/category/x-men/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQ9s-pFYUu18E4qvEDOn2S9Wouk5sz_oJFwzae0-jmaL0xea4yGZqNLt641cDsQFsfwWbmBoSaRLAxFNimKE3Dj7ntaMv_Ag2JLCbWbLnyee3Lr2nkqUycErkhNTxIPc4sfT40Iw-q05ILSokG_hyphenhyphenih8zOUHWdUhUK3qBHY8nzHR60Z4vhVkwqZcdVSJ8/s0/Uncanny%20X-Men%20001%20%281963%29%20%28digital%29%20%28Minutemen-Bluntman%29-000.jpg"
+        },
+        {
+          "id": "wade-wilson-deadpool",
+          "title": "Wade Wilson - Deadpool",
+          "href": "https://readallcomics.com/category/wade-wilson-deadpool/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibxTs1hgH2G91XImi2HrGhBZerqUCTmthLjI6MytyEnaXgkoU-jwhvkqXpKMOxx8lvCA8T0wXhQhXy0TIBa964NDGTCc9xMCmE0Gxo8oLI53et7IN790873uwuN32f7ujFQQ9hUFd9NRM7FbGlpu0J289NIirlH6vQOS68t5Lws6xUlRt0Rga0n02X0Wg5/s0/Wade%20Wilson%20-%20Deadpool%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg"
+        },
+        {
+          "id": "storm-earths-mightiest-mutant",
+          "title": "Storm: Earth's Mightiest Mutant",
+          "href": "https://readallcomics.com/category/storm-earths-mightiest-mutant/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-5847753.jpg?1769804509"
+        },
+        {
+          "id": "star-wars-rogue-one-cassian-andor",
+          "title": "Star Wars - Rogue One - Cassian Andor",
+          "href": "https://readallcomics.com/category/star-wars-rogue-one-cassian-andor/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWWtObYs8GkrJAsh5eYR2DnFoRm415RnVM0fQDa3qt5TSTkDMwEc2bGHUPaq-ZookSa9ZBg8luyG5w2K6y31KcxAHCEywE3XURDRxXJwlxuV2jqNyojskoTwxukfTKErXHGSt6HUYWyEt6kIdSODdc_MLaAjwO1NCXsE6U6LPDEZpvGga70yZJfG6WmXw/s0/Star%20Wars%20-%20Rogue%20One%20-%20Cassian%20Andor%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg"
+        },
+        {
+          "id": "star-wars-hyperspace-stories-the-bad-batch-rogue-agents",
+          "title": "Star Wars: Hyperspace Stories - The Bad Batch: Rogue Agents",
+          "href": "https://readallcomics.com/category/star-wars-hyperspace-stories-the-bad-batch-rogue-agents/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirz7RCsG9YOLAijS4al7RGzAcaVP0TH1a9hmjQnJPwyQWU_NwJmRTfcLFRhFzPGMyvzbacivKYdKWF7tNzQsSO1nkDaaJeZvdV4-YysA8CvRTDk39wNTzNzRSkKderN6jMj0EJ7_ZR8pXxKdA5YiQi6eyLWpzaA3EpE91Doq49ZNbmoNydexxV7Owv4CM/s0/Star%20Wars%20-%20Hyperspace%20Stories%20-%20The%20Bad%20Batch%20-%20Rogue%20Agents%20001%20%282025%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg"
+        },
+        {
+          "id": "marc-spector-moon-knight",
+          "title": "Marc Spector Moon Knight",
+          "href": "https://readallcomics.com/category/marc-spector-moon-knight/",
+          "image": "https://2.bp.blogspot.com/3Rtt31tYZ_jMDPqqHnHz2lqml_zcJSJpW6vK1Xth8LD3UyRjG3HAYIfLB5srE5al3xfgrCM7eZ9L=s1600"
+        },
+        {
+          "id": "jubilee-deadly-reunion",
+          "title": "Jubilee - Deadly Reunion",
+          "href": "https://readallcomics.com/category/jubilee-deadly-reunion/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHPdD7pxkDa1Suv5D6YSmw0-vFJnPbcB5zWvBfWvospT2Du-Hb9COIWRdeCNlzpDZVCkwkWc4WJEborjZzLqKFCk5e-BdwVIp6ZjVGWRbyoHZbwRQU-XC5m4vUVoCj16dwmd_LtJNh9ShhvoU2wBduW5X_gHdotKblOBz8QHcbaKkmdxbNwWx5ytMkwLE/s0/Jubilee%20-%20Deadly%20Reunion%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg"
+        },
+        {
+          "id": "fantastic-four",
+          "title": "Fantastic Four",
+          "href": "https://readallcomics.com/category/fantastic-four/",
+          "image": "https://2.bp.blogspot.com/sAidST2But6_5xGENprGcdplh30OCCIF5aZvTeFFQbVaxY4MYW0LBb_hk3Jfu3HlyFuSpOdB7q_n=s0"
+        },
+        {
+          "id": "daredevil",
+          "title": "Daredevil",
+          "href": "https://readallcomics.com/category/daredevil/",
+          "image": "https://2.bp.blogspot.com/-6uFaHJLBB_I/Vj1NZ27fe7I/AAAAAAAAX4g/cs9HvSPfY_4/s0-Ic42/Daredevil%25252001-000.jpg"
+        },
+        {
+          "id": "cyclops-marvel-comics",
+          "title": "Cyclops (Marvel Comics)",
+          "href": "https://readallcomics.com/category/cyclops-marvel-comics/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3rJoeJTgrhAK5-vq7W8WFHcrjEs2Jg0Xo7nWvTp9PryULZ2ij7yHaeuuyplyZ00y2SDKoiozhv6e9phAe5AOtX_VPeVDgxiNW-VW5TyJWHqZ0CO0Qd7ThtUgwpUHQt9HyS8kUnw-OuJdzg-fmKQcazboU-0FLk3niTF6YFLjp6JqXtxeV2VIja-yik19u/s0/Cyclops%20Vol.%201%20001-000.jpg"
+        },
+        {
+          "id": "civil-war-unmasked",
+          "title": "Civil War - Unmasked",
+          "href": "https://readallcomics.com/category/civil-war-unmasked/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiJpiyVDe6K71P8W6DyiT11hjz9vF0MB3-g86jtyRIw-2-dZLEZg7qf7dku7TWLjG1TO7c5Eh8lbX_eUMdmPYQAr4lVWh0UpKzZT8Sqwuekw-FpRxFiMtO-iLeKXjbQoauupizIsVxvTfotrYquMlRSVxDy1odmLgDAOcPdpqnzwwdlHpi9BSPfGvKC8zE/s0/Civl%20War%20-%20Unmasked%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg"
+        },
+        {
+          "id": "captain-marvel-dark-past",
+          "title": "Captain Marvel - Dark Past",
+          "href": "https://readallcomics.com/category/captain-marvel-dark-past/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi_ZineIU8Re2UagW4DtSC7V74RnjJQRGxfeiDrl45YjLP1B0BBJBovv0QhTJWkIdgSvA4WfQqL2Fi2wBxJ3Hp2LA3-E9mxHsr64XRVf38jwkH4jLpupqzOI5tEvokgcJrOzCCdXUrIQ6O6TB1e1A_SyHAD-Mw9qa9KZjRRyHBk-GEsTnFQAEP6O4yJkmpi/s0/Captain%20Marvel%20-%20Dark%20Past%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg"
+        },
+        {
+          "id": "astonishing-miles-morales-spider-man-the-art-of-thwip",
+          "title": "Astonishing Miles Morales - Spider-Man - The Art Of Thwip",
+          "href": "https://readallcomics.com/category/astonishing-miles-morales-spider-man-the-art-of-thwip/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgzbBNt0TUArGbyZJJLEPhNzkAlHigKQOu6ZCT4qAXvUhhG9gkf-7W6y4CRTI78lwNvNLWDb6HiezMDme4x9vocPDZkE1EJvHOhjtvR9n42cniE-zVmFsy0Y_IG18wjT4qol4wi6YXUai20jh0-Z268z38cVf1NadM5zi_9LkpNe5mnF1TT5cdNATGMmD8/s0/Astonishing%20Miles%20Morales%20-%20Spider-Man%20-%20The%20Art%20Of%20Thwip%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg"
+        }
+      ],
       "chapters": [
         {
           "id": "v2-019-2026",
@@ -302,10 +549,13 @@
         "https://3.bp.blogspot.com/-oTBBHbI3XYc/XJSFRDWnazI/AAAAAAAAfkk/jozChQ30Y84bYLR0nlvGRc1IsqUus8-7QCLcBGAs/s1600/001_000.jpg",
         "https://2.bp.blogspot.com/-p3GZsTbY3S4/VtVYeQ8vutI/AAAAAAAAMvk/3FFDfSVy5uA/s0-Ic42/RCO001.jpg",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAw_kH3lEfVu-Rehxa6gmPlSSD0DhTxEyvUKcDlPRJtytCRlWa8w4crj8nrRntNlmu5SYISgB3999yjaQxa6_YXYAy8wIdvRMP_FeGhxyOiS_jhtjhBN_hExA5uq9c490m7SVWlIOXt1QivvoZEslN7xZLyqZG7JYp4pGg-QsVTzHgE7G4Ly83bQ-abLM/s0/DC%20x%20Sonic%20the%20Hedgehog%20-%20Metal%20Legion%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9334684.jpg?1762356895",
         "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2",
         "https://2.bp.blogspot.com/-nIOw878FB6I/VI1FMBlKYyI/AAAAAAAGiJQ/50UhYYEjTFo/s0/p1_0%2Bcopy.jpg",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-9147918.jpg?1755875514",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQ9s-pFYUu18E4qvEDOn2S9Wouk5sz_oJFwzae0-jmaL0xea4yGZqNLt641cDsQFsfwWbmBoSaRLAxFNimKE3Dj7ntaMv_Ag2JLCbWbLnyee3Lr2nkqUycErkhNTxIPc4sfT40Iw-q05ILSokG_hyphenhyphenih8zOUHWdUhUK3qBHY8nzHR60Z4vhVkwqZcdVSJ8/s0/Uncanny%20X-Men%20001%20%281963%29%20%28digital%29%20%28Minutemen-Bluntman%29-000.jpg",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibxTs1hgH2G91XImi2HrGhBZerqUCTmthLjI6MytyEnaXgkoU-jwhvkqXpKMOxx8lvCA8T0wXhQhXy0TIBa964NDGTCc9xMCmE0Gxo8oLI53et7IN790873uwuN32f7ujFQQ9hUFd9NRM7FbGlpu0J289NIirlH6vQOS68t5Lws6xUlRt0Rga0n02X0Wg5/s0/Wade%20Wilson%20-%20Deadpool%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-5847753.jpg?1769804509",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWWtObYs8GkrJAsh5eYR2DnFoRm415RnVM0fQDa3qt5TSTkDMwEc2bGHUPaq-ZookSa9ZBg8luyG5w2K6y31KcxAHCEywE3XURDRxXJwlxuV2jqNyojskoTwxukfTKErXHGSt6HUYWyEt6kIdSODdc_MLaAjwO1NCXsE6U6LPDEZpvGga70yZJfG6WmXw/s0/Star%20Wars%20-%20Rogue%20One%20-%20Cassian%20Andor%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirz7RCsG9YOLAijS4al7RGzAcaVP0TH1a9hmjQnJPwyQWU_NwJmRTfcLFRhFzPGMyvzbacivKYdKWF7tNzQsSO1nkDaaJeZvdV4-YysA8CvRTDk39wNTzNzRSkKderN6jMj0EJ7_ZR8pXxKdA5YiQi6eyLWpzaA3EpE91Doq49ZNbmoNydexxV7Owv4CM/s0/Star%20Wars%20-%20Hyperspace%20Stories%20-%20The%20Bad%20Batch%20-%20Rogue%20Agents%20001%20%282025%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
         "https://2.bp.blogspot.com/3Rtt31tYZ_jMDPqqHnHz2lqml_zcJSJpW6vK1Xth8LD3UyRjG3HAYIfLB5srE5al3xfgrCM7eZ9L=s1600",
@@ -327,8 +577,8 @@
       "final_url": "https://readallcomics.com/?story=Batman&s=&type=comic",
       "error": null,
       "title": "- Read All Comics Online",
-      "raw_chars": 143016,
-      "clean_chars": 43238,
+      "raw_chars": 143472,
+      "clean_chars": 43235,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -341,9 +591,130 @@
         "a.latest-chapter": 20,
         "pinbin-category": 0,
         "img tags": 22,
-        "reader image urls": 18
+        "reader image urls": 19
       },
-      "series": [],
+      "series": [
+        {
+          "id": "batman",
+          "title": "Batman",
+          "href": "https://readallcomics.com/category/batman/",
+          "image": "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+        },
+        {
+          "id": "batman-66",
+          "title": "Batman '66",
+          "href": "https://readallcomics.com/category/batman-66/",
+          "image": "https://2.bp.blogspot.com/kn9m0W0N6ttur3MczZHIt5P7ZQ-dtji90ibBcYHw3eI3Znn1yzg0CZOnWWim5tu_TOi6xSL3zz-n=s0"
+        },
+        {
+          "id": "batman-89",
+          "title": "Batman '89",
+          "href": "https://readallcomics.com/category/batman-89/",
+          "image": "https://2.bp.blogspot.com/-ntVDsskhcas/YhTSkObdIHI/AAAAAAABhQA/aD_4fmOuRFkl-sPcthGBJ1qpUi_F7CKaQCNcBGAsYHQ/h16000/Batman%2B%252789%2B001%2B%25282021%2529%2B%2528Webrip%2529%2B%2528The%2BLast%2BKryptonian-DCP%2529-000.jpg"
+        },
+        {
+          "id": "batman-89-echoes",
+          "title": "Batman '89 - Echoes",
+          "href": "https://readallcomics.com/category/batman-89-echoes/",
+          "image": "https://2.bp.blogspot.com/-l6G9c222xqo/ZWW9lTtrpII/AAAAAAAEIVM/u3IffXmQxAIJqFyfj_Jzz8DBo3m4QX8zACNcBGAsYHQ/h0/Batman%2B%252789%2B-%2BEchoes%2B001%2B%25282024%2529_001.jpg"
+        },
+        {
+          "id": "batman-80-page-giant",
+          "title": "Batman 80-Page Giant",
+          "href": "https://readallcomics.com/category/batman-80-page-giant/",
+          "image": "https://2.bp.blogspot.com/pw/AIL4fc_R0c7d3piamaNwN6M9Ein27584ekGY_Gtsua8uO8Tu3IoosmYLVxpJgCzdb51oFKYHUSuPLAtNkZda_cXgzIdWKq5vByY4GLlQu5TZK_XIllUuRz4=s0"
+        },
+        {
+          "id": "batman-80-page-giant-2010",
+          "title": "Batman 80-Page Giant 2010",
+          "href": "https://readallcomics.com/category/batman-80-page-giant-2010/",
+          "image": "https://2.bp.blogspot.com/PGiytu5TFaVveFUdkd2Kc5xZ5WT03awt7QLJvUcsACkm0ny7VcHf5w0ApStz3jMUcY2yuiZZTxZEMdXwvKme4KjMMCPCfZAuoPDSHP7-O-UY5znIsnEvsRxPMQ5ZRhNDGsruAfO18A=s1600"
+        },
+        {
+          "id": "batman-80-page-giant-2011",
+          "title": "Batman 80-Page Giant 2011",
+          "href": "https://readallcomics.com/category/batman-80-page-giant-2011/",
+          "image": "https://2.bp.blogspot.com/vaMFFuUrhpBClut8lyURqfrgLuWZ2la7cDgR4KPfA1tDmd8GYxDAOcZtMrXtgu89GuUDgIg8RweQXzm9WeLIyboYwhBVStgRzrmd8_n8hb5T4r__xMeWGx-ZPwaR23oJJEcXhPSwow=s1600"
+        },
+        {
+          "id": "batman-66-the-lost-episode",
+          "title": "Batman '66: The Lost Episode",
+          "href": "https://readallcomics.com/category/batman-66-the-lost-episode/",
+          "image": "https://4.bp.blogspot.com/-pzjpA7WJ7F8/VHFs38kA-zI/AAAAAAAGEPQ/VlkY7uixIcQ/s1600/p4_0%2Bcopy.jpg"
+        },
+        {
+          "id": "batman-66-meets-wonder-woman-77",
+          "title": "Batman '66 Meets Wonder Woman '77",
+          "href": "https://readallcomics.com/category/batman-66-meets-wonder-woman-77/",
+          "image": "https://2.bp.blogspot.com/-UUIIpwPGPQI/WOJ8HMK5JEI/AAAAAAACtiM/cvIB62Mkv0QwuXzcDX4SdoPTS1NFSZ89ACLcB/s1600/095_00.jpg"
+        },
+        {
+          "id": "batman-66-meets-the-green-hornet",
+          "title": "Batman '66 Meets The Green Hornet",
+          "href": "https://readallcomics.com/category/batman-66-meets-the-green-hornet/",
+          "image": "https://vignette.wikia.nocookie.net/marvel_dc/images/8/87/Batman_%2766_Meets_The_Green_Hornet_Vol_1_1.jpg/revision/latest/scale-to-width-down/200?cb=20140628125829"
+        },
+        {
+          "id": "batman-66-meets-steed-and-mrs-peel",
+          "title": "Batman '66 Meets Steed and Mrs Peel",
+          "href": "https://readallcomics.com/category/batman-66-meets-steed-and-mrs-peel/",
+          "image": "https://3.bp.blogspot.com/-FUYLrz_La80/V1hWNECLrGI/AAAAAAAUvrY/y1AXjBT57FsNMhPFwEZ_BH_qzpnG1xWTgCLcB/s1600/19_00.jpg"
+        },
+        {
+          "id": "batman-66-meets-the-man-from-u-n-c-l-e",
+          "title": "Batman '66 Meets the Man From U.N.C.L.E.",
+          "href": "https://readallcomics.com/category/batman-66-meets-the-man-from-u-n-c-l-e/",
+          "image": "https://1.bp.blogspot.com/-zJbyvlM9iQw/VlWCPhEGAXI/AAAAAAATH4Q/4meLTTEoAU4/s1600/1_00.jpg"
+        },
+        {
+          "id": "batman-66-meets-the-legion-of-super-heroes",
+          "title": "Batman '66 Meets the Legion of Super-Heroes",
+          "href": "https://readallcomics.com/category/batman-66-meets-the-legion-of-super-heroes/",
+          "image": "https://2.bp.blogspot.com/-KeGlW-MCQ5g/WT9YL_QRaRI/AAAAAAAEEyg/KgbpMZRuttYjM_R7MVaF9__ni9Uk_OHwgCLcB/s1600/001_000.jpg"
+        },
+        {
+          "id": "batman-3-d",
+          "title": "Batman 3-D",
+          "href": "https://readallcomics.com/category/batman-3-d/",
+          "image": "https://2.bp.blogspot.com/QfqkUV-LRg3NZgcXEBvxv2dEaMTPS0qAWO4UZlAJXBlJsMn43euk1b-osuewV-qtvO-IVJnCQlQcF053DfDy_eWI0S00TPGce3ucXxkBpEzsnr7CjavWq17W9v9orffN5-hi1Q9YrA=s1600"
+        },
+        {
+          "id": "batman-plus",
+          "title": "Batman Plus",
+          "href": "https://readallcomics.com/category/batman-plus/",
+          "image": "https://2.bp.blogspot.com/vmmdRST77UmxPJsWD1VrqQm5xP3kUsxvJ-acPjtbUF6y2yRI4-fz6I3qRlygDl9O_0b5ykvNskvzrcFjFU82ataHdAxIGs6SFgkUOKOXHo1CDVkf8qFZi3PmXMTUDiMxETs_oq97uw=s1600"
+        },
+        {
+          "id": "batman-giant",
+          "title": "Batman Giant",
+          "href": "https://readallcomics.com/category/batman-giant/",
+          "image": "https://2.bp.blogspot.com/fxFe_SVWtheXzJitxvS7S9ViyS8Ty6-gTZ0Xnu7NaP4x-XDgBA0tT62TMxsNRbQFi20_UJA2OBlcVCpjNGFYDDJlgd-t3TPvQRePEog653EiIRl1ng0ofRp2rhnqfjpj75hDSbQvhA=s0"
+        },
+        {
+          "id": "batman-me",
+          "title": "Batman and Me",
+          "href": "https://readallcomics.com/category/batman-me/",
+          "image": "https://2.bp.blogspot.com/pF3VX8ZdZAzeKfAZLUeYQbuqBvNV8zBT0hx97UZ5AONR_tb0CBXoPHtIZsR0fxz0aV9LM0_8sM3AjyHWCdeBT1BlwvU9lRiE7zrwJMvAk525NQYH9BF6nugi298PKUbXp0KtpgGFAQ=s1600"
+        },
+        {
+          "id": "batman-beyond",
+          "title": "Batman Beyond",
+          "href": "https://readallcomics.com/category/batman-beyond/",
+          "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgP0f6U0fLLE6WjJ3Cv-ZstH9MATNg0mhoDWtob7k1a_BN2aIY8oR0mduhoB3DZ8idUnWzLuQPAJuyYkphBJ-hI4vyWDqSESqpSSRzAXpXKS-Fnuh1Ff28Kd4tYNf4UAuy7W3qgu-A8nyYq-lh8M9xgHVW-trNT3RufYkk3yfsb8QPvWRk7pfv54-8tqoM/s0/Batman%20Beyond%20v1%20001-000.jpg"
+        },
+        {
+          "id": "batman-forever",
+          "title": "Batman Forever",
+          "href": "https://readallcomics.com/category/batman-forever/",
+          "image": "https://2.bp.blogspot.com/yLydS2DB1mqoN-QJ4HAnk7MpNJlTS15dtUtFZNJjl_vOQGNEzbgX4M26auTCZTVP3JTTeJqai_o-xcVbdKodx2UBN9JVo1hylP7oWxVH4u6du5GmqjcwRl33gofjCo6gCC3mnyO8SiU=s1600?rhlupa=MTA3LjE4MS4xNzcuMTM1&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+        },
+        {
+          "id": "batman-spawn",
+          "title": "Batman / Spawn",
+          "href": "https://readallcomics.com/category/batman-spawn/",
+          "image": "https://s3.amazonaws.com/comicgeeks/comics/covers/large-4124836.jpg?1666477435"
+        }
+      ],
       "chapters": [
         {
           "id": "v4-009-2026",
@@ -479,7 +850,8 @@
         "https://2.bp.blogspot.com/fxFe_SVWtheXzJitxvS7S9ViyS8Ty6-gTZ0Xnu7NaP4x-XDgBA0tT62TMxsNRbQFi20_UJA2OBlcVCpjNGFYDDJlgd-t3TPvQRePEog653EiIRl1ng0ofRp2rhnqfjpj75hDSbQvhA=s0",
         "https://2.bp.blogspot.com/pF3VX8ZdZAzeKfAZLUeYQbuqBvNV8zBT0hx97UZ5AONR_tb0CBXoPHtIZsR0fxz0aV9LM0_8sM3AjyHWCdeBT1BlwvU9lRiE7zrwJMvAk525NQYH9BF6nugi298PKUbXp0KtpgGFAQ=s1600",
         "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgP0f6U0fLLE6WjJ3Cv-ZstH9MATNg0mhoDWtob7k1a_BN2aIY8oR0mduhoB3DZ8idUnWzLuQPAJuyYkphBJ-hI4vyWDqSESqpSSRzAXpXKS-Fnuh1Ff28Kd4tYNf4UAuy7W3qgu-A8nyYq-lh8M9xgHVW-trNT3RufYkk3yfsb8QPvWRk7pfv54-8tqoM/s0/Batman%20Beyond%20v1%20001-000.jpg",
-        "https://2.bp.blogspot.com/yLydS2DB1mqoN-QJ4HAnk7MpNJlTS15dtUtFZNJjl_vOQGNEzbgX4M26auTCZTVP3JTTeJqai_o-xcVbdKodx2UBN9JVo1hylP7oWxVH4u6du5GmqjcwRl33gofjCo6gCC3mnyO8SiU=s1600?rhlupa=MTA3LjE4MS4xNzcuMTM1&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+        "https://2.bp.blogspot.com/yLydS2DB1mqoN-QJ4HAnk7MpNJlTS15dtUtFZNJjl_vOQGNEzbgX4M26auTCZTVP3JTTeJqai_o-xcVbdKodx2UBN9JVo1hylP7oWxVH4u6du5GmqjcwRl33gofjCo6gCC3mnyO8SiU=s1600?rhlupa=MTA3LjE4MS4xNzcuMTM1&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2",
+        "https://s3.amazonaws.com/comicgeeks/comics/covers/large-4124836.jpg?1666477435"
       ],
       "raw_file": "diagnostics\\readallcomics\\search-batman.raw.html",
       "clean_file": "diagnostics\\readallcomics\\search-batman.clean.html"
@@ -491,8 +863,8 @@
       "final_url": "https://readallcomics.com/category/batman/",
       "error": null,
       "title": "Read Batman Comic Book Online Free",
-      "raw_chars": 240577,
-      "clean_chars": 109644,
+      "raw_chars": 243279,
+      "clean_chars": 109646,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -1023,7 +1395,7 @@
       "final_url": "https://readallcomics.com/batman-v1-annual-001/",
       "error": null,
       "title": "Batman v1 .Annual 001 | Read All Comics Online",
-      "raw_chars": 353374,
+      "raw_chars": 342323,
       "clean_chars": 4538,
       "blocked": true,
       "block_reasons": [
