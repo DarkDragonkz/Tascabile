@@ -10,7 +10,7 @@ export interface BatCaveHomeItem {
 
 export class BatCaveParser {
     parseFeaturedHomeItems($: CheerioAPI): BatCaveHomeItem[] {
-        return this.parsePosterItems($, '.sect--popular a.poster, #owl-carou a.poster')
+        return this.parsePosterItems($, '.owl-stage a.poster, .owl-stage-outer a.poster, .sect--popular a.poster, #owl-carou a.poster, a.poster.grid-item.has-overlay')
     }
 
     parsePosterItems($: CheerioAPI, selector: string): BatCaveHomeItem[] {
