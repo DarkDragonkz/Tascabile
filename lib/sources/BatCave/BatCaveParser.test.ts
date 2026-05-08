@@ -1,33 +1,42 @@
 import { strict as assert } from 'assert'
-import * as cheerio from 'cheerio'
-import type { CheerioAPI } from 'cheerio'
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { BatCaveHomeItem, BatCaveParser } from './BatCaveParser'
+import { before, describe, it } from 'mocha'
 
-function loadFixture(fileName: string): CheerioAPI {
-    const fixturePath = join(process.cwd(), 'fixtures', 'batcave', fileName)
-    const html = readFileSync(fixturePath, 'utf8')
+import { BatCaveParser } from './BatCaveParser'
 
-    return cheerio.load(html)
-}
+describe('BatCaveParser', () => {
+    before(() => {
+        ;(global as any).App = {
+            createChapter: (chapter: any) => chapter,
+            createChapterDetails: (details: any) => details,
+            createHomeSection: (section: any) => ({ ...section, items: section.items ?? [] }),
+            createMangaInfo: (info: any) => info,
+            createPagedResults: (results: any) => results,
+            createPartialSourceManga: (manga: any) => manga,
+            createSourceManga: (manga: any) => manga,
+            createTag: (tag: any) => tag,
+            createTagSection: (section: any) => section,
+        }
+    })
 
-describe('BatCaveParser homepage', () => {
-    const parser = new BatCaveParser()
+    it('parses chapters from window.__DATA__ payload', () => {
+        const parser = new BatCaveParser()
+        const html = `
+        <h1>Sample Series (2024)</h1>
+        <script>
+          window.__DATA__ = {
+            "chapters": [
+              {"id": 10, "title": "Sample Series #10", "posi": "10", "date": "01.01.2025"},
+              {"id": 9, "title": "Sample Series #9", "posi": "9", "date": "31.12.2024"}
+            ]
+          };
+        </script>
+        `
 
-    it('parses featured carousel posters from homepage fixture', () => {
-        const $ = loadFixture('home.html')
-        const items = parser.parseFeaturedHomeItems($)
+        const chapters = parser.parseChapters(html)
 
-        assert.ok(items.length >= 10)
-        assert.deepEqual(items[0], {
-            comicId: '34141-lobo-2026.html',
-            title: 'Lobo (2026-)',
-            image: 'https://batcave.biz/uploads/mini/142x212/9b/6225819f07865b76adbbfbedbd9727.jpg',
-            subtitle: 'DC Comics • 2026'
-        })
-        assert.ok(items.some((item: BatCaveHomeItem) => item.comicId === '34170-daredevil-2026.html' && item.title === 'Daredevil (2026-)'))
-        assert.ok(items.every((item: BatCaveHomeItem) => item.comicId.endsWith('.html')))
-        assert.ok(items.every((item: BatCaveHomeItem) => item.image === undefined || item.image.startsWith('https://batcave.biz/')))
+        assert.equal(chapters.length, 2)
+        assert.equal(chapters[0].id, '10')
+        assert.equal(chapters[0].chapNum, 10)
+        assert.equal(chapters[1].chapNum, 9)
     })
 })
