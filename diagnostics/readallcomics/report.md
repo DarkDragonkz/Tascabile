@@ -17,8 +17,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/`
 Error: `None`
 Title: `Read All Comics Online - ReadAllComics`
-Raw chars: `124932`
-Clean chars: `43193`
+Raw chars: `129038`
+Clean chars: `43210`
 Blocked: `False`
 Block reasons: ``
 
@@ -75,8 +75,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/page/2/`
 Error: `None`
 Title: `Read All Comics Online - Page 2 of 18717 - ReadAllComics`
-Raw chars: `123582`
-Clean chars: `42592`
+Raw chars: `152691`
+Clean chars: `42571`
 Blocked: `False`
 Block reasons: ``
 
@@ -133,8 +133,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/?story=Batman&s=&type=comic`
 Error: `None`
 Title: `- Read All Comics Online`
-Raw chars: `149620`
-Clean chars: `43233`
+Raw chars: `143016`
+Clean chars: `43238`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -191,8 +191,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/category/batman/`
 Error: `None`
 Title: `Read Batman Comic Book Online Free`
-Raw chars: `244915`
-Clean chars: `109657`
+Raw chars: `240577`
+Clean chars: `109644`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -235,7 +235,7 @@ Status: `200`
 Final URL: `https://readallcomics.com/batman-v1-annual-001/`
 Error: `None`
 Title: `Batman v1 .Annual 001 | Read All Comics Online`
-Raw chars: `342252`
+Raw chars: `353374`
 Clean chars: `4538`
 Blocked: `True`
 Block reasons: `cloudflare, captcha`
