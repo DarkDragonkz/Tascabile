@@ -2,13 +2,13 @@
 
 ## Paperback repository check
 
-Repo URL: `None`
-Checked: `False`
-Versioning URL: `None`
-Status: `None`
+Repo URL: `https://darkdragonkz.github.io/Tascabile/0.8`
+Checked: `True`
+Versioning URL: `https://darkdragonkz.github.io/Tascabile/0.8/versioning.json`
+Status: `200`
 Error: `None`
-Sources: ``
-ReadAllComics present: `False`
+Sources: `BatCave, MangaWorld, ReadAllComics`
+ReadAllComics present: `True`
 
 ## home
 
@@ -17,8 +17,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/`
 Error: `None`
 Title: `Read All Comics Online - ReadAllComics`
-Raw chars: `136351`
-Clean chars: `43228`
+Raw chars: `124932`
+Clean chars: `43193`
 Blocked: `False`
 Block reasons: ``
 
@@ -75,8 +75,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/page/2/`
 Error: `None`
 Title: `Read All Comics Online - Page 2 of 18717 - ReadAllComics`
-Raw chars: `122852`
-Clean chars: `42590`
+Raw chars: `123582`
+Clean chars: `42592`
 Blocked: `False`
 Block reasons: ``
 
@@ -133,8 +133,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/?story=Batman&s=&type=comic`
 Error: `None`
 Title: `- Read All Comics Online`
-Raw chars: `142646`
-Clean chars: `43237`
+Raw chars: `149620`
+Clean chars: `43233`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -191,8 +191,8 @@ Status: `200`
 Final URL: `https://readallcomics.com/category/batman/`
 Error: `None`
 Title: `Read Batman Comic Book Online Free`
-Raw chars: `238765`
-Clean chars: `109643`
+Raw chars: `244915`
+Clean chars: `109657`
 Blocked: `True`
 Block reasons: `cloudflare`
 
@@ -235,7 +235,7 @@ Status: `200`
 Final URL: `https://readallcomics.com/batman-v1-annual-001/`
 Error: `None`
 Title: `Batman v1 .Annual 001 | Read All Comics Online`
-Raw chars: `347026`
+Raw chars: `342252`
 Clean chars: `4538`
 Blocked: `True`
 Block reasons: `cloudflare, captcha`

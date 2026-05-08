@@ -7,8 +7,8 @@
       "final_url": "https://readallcomics.com/",
       "error": null,
       "title": "Read All Comics Online - ReadAllComics",
-      "raw_chars": 136351,
-      "clean_chars": 43228,
+      "raw_chars": 124932,
+      "clean_chars": 43193,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -166,8 +166,8 @@
       "final_url": "https://readallcomics.com/page/2/",
       "error": null,
       "title": "Read All Comics Online - Page 2 of 18717 - ReadAllComics",
-      "raw_chars": 122852,
-      "clean_chars": 42590,
+      "raw_chars": 123582,
+      "clean_chars": 42592,
       "blocked": false,
       "block_reasons": [],
       "selector_counts": {
@@ -327,8 +327,8 @@
       "final_url": "https://readallcomics.com/?story=Batman&s=&type=comic",
       "error": null,
       "title": "- Read All Comics Online",
-      "raw_chars": 142646,
-      "clean_chars": 43237,
+      "raw_chars": 149620,
+      "clean_chars": 43233,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -491,8 +491,8 @@
       "final_url": "https://readallcomics.com/category/batman/",
       "error": null,
       "title": "Read Batman Comic Book Online Free",
-      "raw_chars": 238765,
-      "clean_chars": 109643,
+      "raw_chars": 244915,
+      "clean_chars": 109657,
       "blocked": true,
       "block_reasons": [
         "cloudflare"
@@ -1023,7 +1023,7 @@
       "final_url": "https://readallcomics.com/batman-v1-annual-001/",
       "error": null,
       "title": "Batman v1 .Annual 001 | Read All Comics Online",
-      "raw_chars": 347026,
+      "raw_chars": 342252,
       "clean_chars": 4538,
       "blocked": true,
       "block_reasons": [
@@ -1166,13 +1166,17 @@
     }
   ],
   "paperback_repo": {
-    "repo_url": null,
-    "checked": false,
-    "versioning_url": null,
-    "status": null,
+    "repo_url": "https://darkdragonkz.github.io/Tascabile/0.8",
+    "checked": true,
+    "versioning_url": "https://darkdragonkz.github.io/Tascabile/0.8/versioning.json",
+    "status": 200,
     "error": null,
-    "sources": [],
-    "readallcomics_present": false,
+    "sources": [
+      "BatCave",
+      "MangaWorld",
+      "ReadAllComics"
+    ],
+    "readallcomics_present": true,
     "source_file_checks": []
   }
 }
