@@ -218,6 +218,13 @@ export class BatCave
         )
     }
 
+    async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
+        return App.createPagedResults({
+            results: [],
+            metadata: undefined
+        })
+    }
+
     private async getGenreResults(genreId: string, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
         const url = buildUrl(BATCAVE_DOMAIN, `/genres/${encodeURIComponent(genreId)}/`, { page })
