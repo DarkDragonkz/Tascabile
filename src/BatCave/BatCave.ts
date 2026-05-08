@@ -20,7 +20,6 @@ import {
     TagSection
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
-import { buildUrl } from '../../lib/core/url'
 import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
 import {
     BatCaveChapter,
@@ -31,16 +30,13 @@ import {
 } from '../../lib/sources/BatCave/BatCaveParser'
 
 const SECTION_IDS = {
-    POPULAR: 'popular',
-    HOT: 'hot',
-    NEWEST: 'newest',
-    ALL: 'all'
+    LATEST: 'latest'
 } as const
 
 const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.1',
+    version: '0.1.2',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -177,75 +173,51 @@ export class BatCave
     }
 
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
-        const $ = await this.getCheerio(BATCAVE_DOMAIN)
-
-        const allItems = this.parser
-            .parseHomeSectionItems($, 'body')
-            .slice(0, 20)
-
-        const popularItems = this.parser
-            .parseHomeSectionItems($, '.sect--popular')
-            .slice(0, 12)
-
-        const hotItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Hot new releases in comics', 'Hot new releases'])
-            .slice(0, 12)
-
-        const newestItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Newest comic releases', 'New comics', 'Latest updates'])
-            .slice(0, 12)
+        const $ = await this.getCheerio(`${BATCAVE_DOMAIN}/comix/`)
+        const items = this.parser.parseSearchResults($).slice(0, 20)
 
         this.emitHomeSection(
             sectionCallback,
-            SECTION_IDS.POPULAR,
-            'Popular comics',
-            'singleRowLarge',
-            false,
-            popularItems.length > 0 ? popularItems : allItems.slice(0, 12)
-        )
-
-        this.emitHomeSection(
-            sectionCallback,
-            SECTION_IDS.HOT,
-            'Hot new releases',
+            SECTION_IDS.LATEST,
+            'Latest comics',
             'singleRowNormal',
-            false,
-            hotItems
+            true,
+            items
         )
-
-        this.emitHomeSection(
-            sectionCallback,
-            SECTION_IDS.NEWEST,
-            'Newest releases',
-            'singleRowNormal',
-            false,
-            newestItems
-        )
-
-        if (popularItems.length === 0 && hotItems.length === 0 && newestItems.length === 0) {
-            this.emitHomeSection(
-                sectionCallback,
-                SECTION_IDS.ALL,
-                'Comics',
-                'singleRowNormal',
-                false,
-                allItems
-            )
-        }
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
+        if (homepageSectionId !== SECTION_IDS.LATEST) {
+            return App.createPagedResults({
+                results: [],
+                metadata: undefined
+            })
+        }
+
+        const page = this.getPageFromMetadata(metadata)
+        const url = page <= 1
+            ? `${BATCAVE_DOMAIN}/comix/`
+            : `${BATCAVE_DOMAIN}/comix/page/${page}/`
+
+        const $ = await this.getCheerio(url)
+        const results = this.parser.parseSearchResults($)
+
         return App.createPagedResults({
-            results: [],
-            metadata: undefined
+            results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
+            metadata: results.length > 0
+                ? { page: page + 1 }
+                : undefined
         })
     }
 
     private async getGenreResults(genreId: string, metadata: unknown): Promise<PagedResults> {
         const page = this.getPageFromMetadata(metadata)
-        const url = buildUrl(BATCAVE_DOMAIN, `/genres/${encodeURIComponent(genreId)}/`, { page })
+        const url = page <= 1
+            ? `${BATCAVE_DOMAIN}/genres/${encodeURIComponent(genreId)}/`
+            : `${BATCAVE_DOMAIN}/genres/${encodeURIComponent(genreId)}/page/${page}/`
+
         const $ = await this.getCheerio(url)
-        const results = this.parser.parseHomeSectionItems($, '#dle-content, .col-main, body')
+        const results = this.parser.parseSearchResults($)
 
         return App.createPagedResults({
             results: results.map((result: BatCaveSourceComic) => this.createPartialSourceManga(result)),
@@ -392,6 +364,6 @@ export class BatCave
 
         return typeof page === 'number' && Number.isFinite(page)
             ? page
-            : 1
+            : 2
     }
 }
