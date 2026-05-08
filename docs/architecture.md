@@ -102,14 +102,31 @@ src/sources/MangaDex/
 3. MangaWorld
 4. ReadComicsOnline
 5. ReadAllComics
-6. BatCave
-7. Comix
+6. Comix
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+7. XoxoComic
+8. WeebCentral
+9. NineManga IT
+10. MangaPark
+11. MangaPark IT
+12. MangaBall
+=======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 8. XoxoComic
 9. WeebCentral
 10. NineManga IT
 11. MangaPark
 12. MangaPark IT
 13. MangaBall
+>>>>>>> theirs
 
 ## Regola di migrazione
 
