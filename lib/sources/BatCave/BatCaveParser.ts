@@ -269,43 +269,54 @@ export class BatCaveParser {
     }
 
     private parseChaptersFromWindowData(data: BatCaveWindowData, comicId: string): BatCaveChapter[] {
-        const chapters = data.chapters ?? []
+        const chapters: BatCaveChapter[] = []
 
-        return this.dedupeChapters(chapters
-            .filter((chapter) => chapter.id !== undefined)
-            .map((chapter) => {
-                const name = this.cleanText(chapter.title_en) || this.cleanText(chapter.title) || `Chapter ${chapter.posi ?? chapter.id}`
+        for (const chapter of data.chapters ?? []) {
+            if (chapter.id === undefined) continue
 
-                return {
-                    id: String(chapter.id),
-                    comicId,
-                    name,
-                    chapNum: chapter.posi ?? this.parseChapterNumber(name),
-                    time: this.parseBatCaveDate(chapter.date)
-                }
-            }))
+            const name = this.cleanText(chapter.title_en) || this.cleanText(chapter.title) || `Chapter ${chapter.posi ?? chapter.id}`
+            const parsedChapter: BatCaveChapter = {
+                id: String(chapter.id),
+                comicId,
+                name
+            }
+            const chapterNumber = chapter.posi ?? this.parseChapterNumber(name)
+            const chapterDate = this.parseBatCaveDate(chapter.date)
+
+            if (chapterNumber !== undefined) parsedChapter.chapNum = chapterNumber
+            if (chapterDate !== undefined) parsedChapter.time = chapterDate
+
+            chapters.push(parsedChapter)
+        }
+
+        return this.dedupeChapters(chapters)
     }
 
     private parseChaptersFromSeries(series: JsonLdNode | undefined, comicId: string): BatCaveChapter[] {
-        const elements = series?.hasPart?.itemListElement ?? []
+        const chapters: BatCaveChapter[] = []
 
-        return this.dedupeChapters(elements
-            .map((element) => {
-                const item = element.item
-                const parsed = this.extractReaderIds(item?.url)
-                const name = this.cleanText(item?.name)
+        for (const element of series?.hasPart?.itemListElement ?? []) {
+            const item = element.item
+            const parsed = this.extractReaderIds(item?.url)
+            const name = this.cleanText(item?.name)
 
-                if (!item || !parsed || !name) return undefined
+            if (!item || !parsed || !name) continue
 
-                return {
-                    id: parsed.chapterId,
-                    comicId,
-                    name,
-                    chapNum: this.parseChapterNumber(name),
-                    time: this.parseDate(item.datePublished)
-                }
-            })
-            .filter((chapter): chapter is BatCaveChapter => chapter !== undefined))
+            const chapter: BatCaveChapter = {
+                id: parsed.chapterId,
+                comicId,
+                name
+            }
+            const chapterNumber = this.parseChapterNumber(name)
+            const chapterDate = this.parseDate(item.datePublished)
+
+            if (chapterNumber !== undefined) chapter.chapNum = chapterNumber
+            if (chapterDate !== undefined) chapter.time = chapterDate
+
+            chapters.push(chapter)
+        }
+
+        return this.dedupeChapters(chapters)
     }
 
     private parseWindowData($: CheerioAPI): BatCaveWindowData {
