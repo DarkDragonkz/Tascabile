@@ -45,8 +45,8 @@ describe('ReadAllComicsParser', () => {
         assert.ok(chapters.every((chapter: ReadAllComicsChapter) => chapter.mangaId === 'batman'))
     })
 
-    it('parses reader page images from the real diagnostic HTML', () => {
-        const $ = loadDiagnostic('chapter-batman-v1-annual-001.clean.html')
+    it('parses reader page images from the real diagnostic raw HTML', () => {
+        const $ = loadDiagnostic('chapter-batman-v1-annual-001.raw.html')
         const details = parser.parseChapterDetails($, 'batman', 'batman-v1-annual-001')
 
         assert.equal(details.mangaId, 'batman')
