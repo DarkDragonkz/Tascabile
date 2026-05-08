@@ -40,7 +40,7 @@ const SECTION_IDS = {
 const MANGA_WORLD_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.3',
+    version: '0.2.4',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
