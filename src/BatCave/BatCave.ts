@@ -1,14 +1,21 @@
 import {
     BadgeColor,
+    Chapter,
+    ChapterDetails,
     ContentRating,
     HomePageSectionsProviding,
     HomeSection,
+    MangaProviding,
+    PagedResults,
     PartialSourceManga,
     Request,
     Response,
+    SearchRequest,
+    SearchResultsProviding,
     Source,
     SourceInfo,
-    SourceIntents
+    SourceIntents,
+    SourceManga
 } from '@paperback/types'
 import type { CheerioAPI } from 'cheerio'
 import { BATCAVE_DOMAIN, BATCAVE_PLACEHOLDER_IMAGE } from '../../lib/sources/BatCave/constants'
@@ -19,7 +26,7 @@ const SECTION_IDS = {
 } as const
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.1',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -33,7 +40,7 @@ export const BatCaveInfo: SourceInfo = {
     intents: SourceIntents.HOMEPAGE_SECTIONS
 }
 
-export class BatCave extends Source implements HomePageSectionsProviding {
+export class BatCave extends Source implements MangaProviding, HomePageSectionsProviding, SearchResultsProviding {
     private readonly parser = new BatCaveParser()
 
     requestManager = App.createRequestManager({
@@ -56,6 +63,40 @@ export class BatCave extends Source implements HomePageSectionsProviding {
         }
     })
 
+    async getMangaDetails(mangaId: string): Promise<SourceManga> {
+        return App.createSourceManga({
+            id: mangaId,
+            mangaInfo: App.createMangaInfo({
+                image: BATCAVE_PLACEHOLDER_IMAGE,
+                titles: [mangaId],
+                desc: '',
+                status: 'UNKNOWN',
+                artist: '',
+                author: '',
+                tags: []
+            })
+        })
+    }
+
+    async getChapters(_mangaId: string): Promise<Chapter[]> {
+        return []
+    }
+
+    async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+        return App.createChapterDetails({
+            id: chapterId,
+            mangaId,
+            pages: []
+        })
+    }
+
+    async getSearchResults(_query: SearchRequest, _metadata: unknown): Promise<PagedResults> {
+        return App.createPagedResults({
+            results: [],
+            metadata: undefined
+        })
+    }
+
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
         const featuredItems = this.parser.parseFeaturedHomeItems($).slice(0, 16)
@@ -69,6 +110,25 @@ export class BatCave extends Source implements HomePageSectionsProviding {
             containsMoreItems: false,
             items: featuredItems.map((item: BatCaveHomeItem) => this.createPartialSourceManga(item))
         }))
+    }
+
+    async getViewMoreItems(_homepageSectionId: string, _metadata: unknown): Promise<PagedResults> {
+        return App.createPagedResults({
+            results: [],
+            metadata: undefined
+        })
+    }
+
+    async supportsSearchOperators(): Promise<boolean> {
+        return false
+    }
+
+    async supportsTagExclusion(): Promise<boolean> {
+        return false
+    }
+
+    getMangaShareUrl(mangaId: string): string {
+        return `${BATCAVE_DOMAIN}/${mangaId}`
     }
 
     private async getCheerio(url: string): Promise<CheerioAPI> {
