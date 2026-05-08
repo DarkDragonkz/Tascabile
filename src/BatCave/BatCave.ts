@@ -33,13 +33,14 @@ import {
 const SECTION_IDS = {
     POPULAR: 'popular',
     HOT: 'hot',
-    NEWEST: 'newest'
+    NEWEST: 'newest',
+    ALL: 'all'
 } as const
 
 const BATCAVE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const BatCaveInfo: SourceInfo = {
-    version: '0.1.0',
+    version: '0.1.1',
     name: 'BatCave',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -178,16 +179,20 @@ export class BatCave
     async getHomePageSections(sectionCallback: (section: HomeSection) => void): Promise<void> {
         const $ = await this.getCheerio(BATCAVE_DOMAIN)
 
+        const allItems = this.parser
+            .parseHomeSectionItems($, 'body')
+            .slice(0, 20)
+
         const popularItems = this.parser
             .parseHomeSectionItems($, '.sect--popular')
             .slice(0, 12)
 
         const hotItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Hot new releases in comics'])
+            .parseHomeSectionItemsByHeading($, ['Hot new releases in comics', 'Hot new releases'])
             .slice(0, 12)
 
         const newestItems = this.parser
-            .parseHomeSectionItemsByHeading($, ['Newest comic releases', 'New comics'])
+            .parseHomeSectionItemsByHeading($, ['Newest comic releases', 'New comics', 'Latest updates'])
             .slice(0, 12)
 
         this.emitHomeSection(
@@ -196,7 +201,7 @@ export class BatCave
             'Popular comics',
             'singleRowLarge',
             false,
-            popularItems
+            popularItems.length > 0 ? popularItems : allItems.slice(0, 12)
         )
 
         this.emitHomeSection(
@@ -216,6 +221,17 @@ export class BatCave
             false,
             newestItems
         )
+
+        if (popularItems.length === 0 && hotItems.length === 0 && newestItems.length === 0) {
+            this.emitHomeSection(
+                sectionCallback,
+                SECTION_IDS.ALL,
+                'Comics',
+                'singleRowNormal',
+                false,
+                allItems
+            )
+        }
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
