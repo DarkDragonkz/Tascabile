@@ -5,8 +5,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import {
     ReadAllComicsChapter,
-    ReadAllComicsParser,
-    ReadAllComicsSeries
+    ReadAllComicsParser
 } from './ReadAllComicsParser'
 
 function loadDiagnostic(fileName: string): CheerioAPI {
@@ -38,7 +37,7 @@ describe('ReadAllComicsParser', () => {
     })
 
     it('parses Batman category chapter links from the real diagnostic HTML', () => {
-        const $ = loadDiagnostic('category_batman.clean.html')
+        const $ = loadDiagnostic('category-batman.clean.html')
         const chapters = parser.parseChapters($, 'batman')
 
         assert.ok(chapters.length > 0)
@@ -47,7 +46,7 @@ describe('ReadAllComicsParser', () => {
     })
 
     it('parses reader page images from the real diagnostic HTML', () => {
-        const $ = loadDiagnostic('chapter_batman-v1-annual-001.clean.html')
+        const $ = loadDiagnostic('chapter-batman-v1-annual-001.clean.html')
         const details = parser.parseChapterDetails($, 'batman', 'batman-v1-annual-001')
 
         assert.equal(details.mangaId, 'batman')
