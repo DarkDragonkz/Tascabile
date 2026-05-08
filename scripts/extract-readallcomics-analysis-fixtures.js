@@ -40,6 +40,22 @@ function extractFirstNListItems(html, count = 5) {
   return `<ul class="list-story categories">\n${items.slice(0, count).join('\n')}\n</ul>`
 }
 
+function extractIssueLinks(html, count = 30) {
+  const links = html.match(/<a\b[^>]+href=["']https:\/\/readallcomics\.com\/(?!category\/|page\/|tag\/|author\/|wp-|report-error|request-comics|vip-ad-free|new-comments)[^"']+\/["'][\s\S]*?<\/a>/gi) || []
+  const seen = new Set()
+  const unique = []
+
+  for (const link of links) {
+    const href = link.match(/href=["']([^"']+)["']/i)?.[1]
+    if (!href || seen.has(href)) continue
+    seen.add(href)
+    unique.push(link)
+    if (unique.length >= count) break
+  }
+
+  return unique.join('\n')
+}
+
 function extractPagination(html) {
   const matches = html.match(/<a[^>]+href=["'][^"']*(?:\/page\/\d+\/|paged=\d+)[^"']*["'][\s\S]*?<\/a>/gi) || []
   const rels = html.match(/<link[^>]+rel=["'](?:next|prev)["'][^>]*>/gi) || []
@@ -72,6 +88,7 @@ const home = stripNoise(read('clean-home.html'))
 const page2 = stripNoise(read('clean-page-2.html'))
 const search = stripNoise(read('clean-search-batman.html'))
 const reader = stripNoise(read('clean-comic-reader.html'))
+const categoryBatman = stripNoise(read('clean-category-batman.html'))
 
 write('analysis-home-list.html', [
   extractFirstNListItems(home, 8),
@@ -89,6 +106,13 @@ write('analysis-search-batman-list.html', [
   extractFirstNListItems(search, 12),
   '<!-- pagination -->',
   extractPagination(search)
+].join('\n'))
+
+write('analysis-category-batman-issues.html', [
+  '<!-- first issue links -->',
+  extractIssueLinks(categoryBatman, 50),
+  '<!-- pagination -->',
+  extractPagination(categoryBatman)
 ].join('\n'))
 
 write('analysis-comic-reader-core.html', extractReaderCore(reader))
