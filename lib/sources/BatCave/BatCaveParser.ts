@@ -22,11 +22,12 @@ export class BatCaveParser {
 
     parseGridItems($: any, selector: string, subtitleSelector?: string): PartialSourceManga[] {
         const items: PartialSourceManga[] = []
+        const seen = new Set<string>()
         
         $(selector).each((_: any, item: any) => {
             const link = $(item).is('a') ? $(item) : $('a', item).first()
             const href = link.attr('href')
-            const id = href?.split('/').pop()
+            const id = this.extractMangaId(href)
             
             const title = $('.poster__title, .latest__title a, .readed__title a, .popular__title', item).first().text().trim() || link.text().trim()
             const rawImage = $('img', item).attr('data-src') ?? $('img', item).attr('src')
@@ -35,11 +36,14 @@ export class BatCaveParser {
             let subtitle: string | undefined = undefined
             if (subtitleSelector) {
                 const subText = $(subtitleSelector, item).text().trim()
-                // UX Fix: Se il sottotitolo è vuoto o sporco, mostriamo "Comic"
                 subtitle = subText ? subText.replace(/chapter\s*/i, 'Ch. ').trim() : 'Comic'
+            } else {
+                const posterSubtitle = $('.poster__subtitle li', item).map((__: any, li: any) => $(li).text().trim()).get().filter(Boolean).join(' • ')
+                subtitle = posterSubtitle || undefined
             }
 
-            if (id && title) {
+            if (id && title && !seen.has(id)) {
+                seen.add(id)
                 items.push(App.createPartialSourceManga({
                     mangaId: id,
                     image: image,
@@ -50,6 +54,17 @@ export class BatCaveParser {
         })
 
         return items
+    }
+
+    private extractMangaId(href: string | undefined): string | undefined {
+        if (!href) return undefined
+
+        const cleanHref = href.split('#')[0]?.split('?')[0] ?? ''
+        const lastPathPart = cleanHref.split('/').filter(Boolean).pop()
+
+        if (!lastPathPart || !lastPathPart.endsWith('.html')) return undefined
+
+        return lastPathPart
     }
 
     parseMangaDetails($: any, mangaId: string): SourceManga {
@@ -72,7 +87,6 @@ export class BatCaveParser {
             if (text.includes('Artist:')) {
                 artist = text.replace('Artist:', '').trim()
             }
-            // UX Fix: Rilevamento stato più robusto
             if (text.includes('Release type:')) {
                 if (lowerText.includes('completed') || lowerText.includes('finished')) {
                     status = 'Completed'
@@ -105,7 +119,6 @@ export class BatCaveParser {
         })
     }
 
-    // Helper per l'escape delle regex
     private escapeRegExp(string: string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
@@ -127,7 +140,6 @@ export class BatCaveParser {
                     const id = String(chap.id)
                     let rawTitle = (chap.title || '').trim()
                     
-                    // --- 1. NUMERO CAPITOLO ---
                     let chapNum = 0
                     if (chap.posi) {
                         chapNum = parseFloat(chap.posi)
@@ -136,14 +148,12 @@ export class BatCaveParser {
                         if (numMatch) chapNum = parseFloat(numMatch[numMatch.length - 1] ?? '0')
                     }
 
-                    // --- 2. VOLUME ---
                     let volNum: string | undefined = undefined
                     const volMatch = rawTitle.match(/(?:Vol\.?|TPB|Book)[_\s]*(\d+)/i)
                     if (volMatch) {
                         volNum = volMatch[1]
                     }
 
-                    // --- 3. PULIZIA TITOLO ---
                     let cleanTitle = ''
                     if (rawTitle.includes('#')) {
                         const parts = rawTitle.split('#')
@@ -164,14 +174,11 @@ export class BatCaveParser {
                             .trim()
                     }
 
-                    // --- 4. COSTRUZIONE NOME ---
                     let finalName = ''
                     if (cleanTitle.length > 0 && cleanTitle !== String(chapNum)) {
                          finalName = cleanTitle
                     }
                     
-                    // --- 5. AGGIUNTA PAGINE AL TITOLO ---
-                    // Sicuro e compatibile con tutti i sistemi
                     const pagesCount = chap.pages || chap.count
                     if (pagesCount) {
                         if (finalName.length > 0) {
@@ -181,7 +188,6 @@ export class BatCaveParser {
                         }
                     }
 
-                    // --- DATA ---
                     let time = new Date()
                     if (chap.date) {
                         const parts = chap.date.split('.')
@@ -199,7 +205,7 @@ export class BatCaveParser {
                         chapNum: chapNum,
                         volume: volNum ? parseFloat(volNum) : undefined,
                         time: time,
-                        langCode: 'en' // SICUREZZA: Sempre 'en' per evitare 403 o errori app
+                        langCode: 'en'
                     }))
                 }
             }
@@ -240,50 +246,50 @@ export class BatCaveParser {
     }
 
     parseHomeSections($: any, sectionCallback: (section: HomeSection) => void): void {
-        const featuredSection = App.createHomeSection({ 
+        const featuredItems = this.parseGridItems($, '.sect--popular a.poster, #owl-carou a.poster')
+        sectionCallback(App.createHomeSection({ 
             id: 'featured', 
             title: 'Featured Comics 🔥', 
             containsMoreItems: false, 
-            type: HomeSectionType.singleRowLarge 
-        })
-        featuredSection.items = this.parseGridItems($, '.sect--popular .poster')
-        sectionCallback(featuredSection)
+            type: HomeSectionType.singleRowLarge,
+            items: featuredItems
+        }))
 
-        const hotSection = App.createHomeSection({ 
+        const hotItems = this.parseGridItems($, '.sect--hot a.poster')
+        sectionCallback(App.createHomeSection({ 
             id: 'hot', 
             title: 'Hot New Releases ⚡', 
             containsMoreItems: false, 
-            type: HomeSectionType.singleRowNormal 
-        })
-        hotSection.items = this.parseGridItems($, '.sect--hot .poster')
-        sectionCallback(hotSection)
+            type: HomeSectionType.singleRowNormal,
+            items: hotItems
+        }))
         
-        const topRatedSection = App.createHomeSection({ 
+        const topRatedItems = this.parseGridItems($, 'div.side-block:has(h2:contains("Top-rated")) a.popular, div.side-block:has(.side-block__title:contains("Top-rated")) a.popular')
+        sectionCallback(App.createHomeSection({ 
             id: 'top_rated', 
             title: 'Top Rated ⭐', 
             containsMoreItems: false, 
-            type: HomeSectionType.singleRowNormal 
-        })
-        topRatedSection.items = this.parseGridItems($, 'div.side-block:has(h2:contains("Top-rated")) a.popular')
-        sectionCallback(topRatedSection)
+            type: HomeSectionType.singleRowNormal,
+            items: topRatedItems
+        }))
 
-        const justAddedSection = App.createHomeSection({ 
+        const justAddedItems = this.parseGridItems($, 'div.side-block:has(h2:contains("Just added")) a.popular, div.side-block:has(.side-block__title:contains("Just added")) a.popular')
+        sectionCallback(App.createHomeSection({ 
             id: 'just_added', 
             title: 'Just Added 🆕', 
             containsMoreItems: false, 
-            type: HomeSectionType.singleRowNormal 
-        })
-        justAddedSection.items = this.parseGridItems($, 'div.side-block:has(h2:contains("Just added")) a.popular')
-        sectionCallback(justAddedSection)
+            type: HomeSectionType.singleRowNormal,
+            items: justAddedItems
+        }))
 
-        const latestSection = App.createHomeSection({ 
+        const latestItems = this.parseGridItems($, '.sect--latest .latest, .content .short', '.latest__chapter')
+        sectionCallback(App.createHomeSection({ 
             id: 'latest', 
             title: 'Latest Updates 🆙', 
             containsMoreItems: true, 
-            type: HomeSectionType.doubleRow
-        })
-        latestSection.items = this.parseGridItems($, '.sect--latest .latest', '.latest__chapter')
-        sectionCallback(latestSection)
+            type: HomeSectionType.doubleRow,
+            items: latestItems
+        }))
     }
 
     parseSearchResults($: any): PartialSourceManga[] {
