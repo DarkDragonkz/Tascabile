@@ -24,6 +24,16 @@ function stripNoise(html) {
     .replace(/\n{3,}/g, '\n\n')
 }
 
+function decodeHtmlEntities(value) {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&#038;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
 function extractBetween(html, startPattern, endPattern) {
   const start = html.search(startPattern)
   if (start < 0) return ''
@@ -40,16 +50,19 @@ function extractFirstNListItems(html, count = 5) {
   return `<ul class="list-story categories">\n${items.slice(0, count).join('\n')}\n</ul>`
 }
 
-function extractIssueLinks(html, count = 30) {
-  const links = html.match(/<a\b[^>]+href=["']https:\/\/readallcomics\.com\/(?!category\/|page\/|tag\/|author\/|wp-|report-error|request-comics|vip-ad-free|new-comments)[^"']+\/["'][\s\S]*?<\/a>/gi) || []
+function extractIssueLinks(html, count = 60) {
+  const candidates = html.match(/<a\b[^>]+href=["']https:\/\/readallcomics\.com\/(?!category\/|page\/|tag\/|author\/|wp-|report-error|request-comics|vip-ad-free|new-comments|wp-json|xmlrpc\.php)[^"']+\/["'][\s\S]*?<\/a>/gi) || []
   const seen = new Set()
   const unique = []
 
-  for (const link of links) {
-    const href = link.match(/href=["']([^"']+)["']/i)?.[1]
-    if (!href || seen.has(href)) continue
+  for (const link of candidates) {
+    const href = decodeHtmlEntities(link.match(/href=["']([^"']+)["']/i)?.[1] || '')
+    const label = link.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+
+    if (!href || !label || seen.has(href)) continue
+
     seen.add(href)
-    unique.push(link)
+    unique.push(`<a href="${href}">${label}</a>`)
     if (unique.length >= count) break
   }
 
@@ -62,15 +75,35 @@ function extractPagination(html) {
   return [...rels, ...matches].join('\n')
 }
 
-function extractReaderCore(html) {
-  const category = html.match(/<div[^>]+class=["'][^"']*pinbin-category[^"']*["'][\s\S]*?<\/div>/i)?.[0] || ''
-  const title = html.match(/<h[1-6][^>]*>\s*<strong>[\s\S]*?<\/strong>\s*<\/h[1-6]>/i)?.[0]
-    || html.match(/<h1[^>]*>[\s\S]*?<\/h1>/i)?.[0]
-    || html.match(/<h3[^>]*>[\s\S]*?<\/h3>/i)?.[0]
+function extractReaderCore(cleanHtml, originalHtml) {
+  const category = cleanHtml.match(/<div[^>]+class=["'][^"']*pinbin-category[^"']*["'][\s\S]*?<\/div>/i)?.[0] || ''
+  const title = cleanHtml.match(/<h[1-6][^>]*>\s*<strong>[\s\S]*?<\/strong>\s*<\/h[1-6]>/i)?.[0]
+    || cleanHtml.match(/<h1[^>]*>[\s\S]*?<\/h1>/i)?.[0]
+    || cleanHtml.match(/<h3[^>]*>[\s\S]*?<\/h3>/i)?.[0]
     || ''
-  const entryContent = html.match(/<div[^>]+class=["'][^"']*(?:entry-content|post-content|postarea|single-content)[^"']*["'][\s\S]*?<\/div>/i)?.[0] || ''
-  const allImages = html.match(/<img\b[^>]*>/gi) || []
-  const pageImages = allImages.filter(img => /(?:blogspot|blogger|googleusercontent|bp\.blogspot|lh\d+\.googleusercontent)/i.test(img))
+  const entryContent = cleanHtml.match(/<div[^>]+class=["'][^"']*(?:entry-content|post-content|postarea|single-content)[^"']*["'][\s\S]*?<\/div>/i)?.[0] || ''
+
+  const imgTags = originalHtml.match(/<img\b[^>]*>/gi) || []
+  const imgUrlsFromTags = imgTags
+    .map((img) => img.match(/(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/i)?.[1])
+    .filter(Boolean)
+
+  const rawUrls = originalHtml.match(/https?:\\?\/\\?\/[^"'<>\s)]+/gi) || []
+  const normalizedUrls = rawUrls.map((url) => decodeHtmlEntities(url.replace(/\\\//g, '/')))
+
+  const pageUrls = [...imgUrlsFromTags, ...normalizedUrls]
+    .map((url) => decodeHtmlEntities(url || ''))
+    .filter((url) => /(?:blogspot|blogger|googleusercontent|bp\.blogspot|lh\d+\.googleusercontent)/i.test(url))
+    .filter((url) => !/logo|icon|avatar|readallcomics-1|cropped-logo/i.test(url))
+
+  const seen = new Set()
+  const uniquePageUrls = []
+  for (const url of pageUrls) {
+    if (seen.has(url)) continue
+    seen.add(url)
+    uniquePageUrls.push(url)
+    if (uniquePageUrls.length >= 80) break
+  }
 
   return [
     '<!-- category -->',
@@ -79,16 +112,20 @@ function extractReaderCore(html) {
     title,
     '<!-- entry content candidate -->',
     entryContent,
-    '<!-- first 30 candidate page images -->',
-    ...pageImages.slice(0, 30)
+    '<!-- first 80 candidate page image urls from original HTML -->',
+    ...uniquePageUrls
   ].join('\n')
 }
 
 const home = stripNoise(read('clean-home.html'))
 const page2 = stripNoise(read('clean-page-2.html'))
 const search = stripNoise(read('clean-search-batman.html'))
-const reader = stripNoise(read('clean-comic-reader.html'))
-const categoryBatman = stripNoise(read('clean-category-batman.html'))
+const readerClean = stripNoise(read('clean-comic-reader.html'))
+const readerOriginal = read('comic-reader.html')
+const categoryBatmanClean = fs.existsSync(path.join(fixtureDir, 'clean-category-batman.html'))
+  ? stripNoise(read('clean-category-batman.html'))
+  : stripNoise(read('category-batman.html'))
+const categoryBatmanOriginal = read('category-batman.html')
 
 write('analysis-home-list.html', [
   extractFirstNListItems(home, 8),
@@ -109,10 +146,12 @@ write('analysis-search-batman-list.html', [
 ].join('\n'))
 
 write('analysis-category-batman-issues.html', [
-  '<!-- first issue links -->',
-  extractIssueLinks(categoryBatman, 50),
+  '<!-- first issue links from clean category -->',
+  extractIssueLinks(categoryBatmanClean, 60),
+  '<!-- first issue links from original category -->',
+  extractIssueLinks(categoryBatmanOriginal, 60),
   '<!-- pagination -->',
-  extractPagination(categoryBatman)
+  extractPagination(categoryBatmanOriginal)
 ].join('\n'))
 
-write('analysis-comic-reader-core.html', extractReaderCore(reader))
+write('analysis-comic-reader-core.html', extractReaderCore(readerClean, readerOriginal))
