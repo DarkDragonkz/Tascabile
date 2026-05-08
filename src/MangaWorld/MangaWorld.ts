@@ -40,7 +40,7 @@ const SECTION_IDS = {
 const MANGA_WORLD_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
 
 export const MangaWorldInfo: SourceInfo = {
-    version: '0.2.5',
+    version: '0.2.6',
     name: 'MangaWorld',
     icon: 'icon.png',
     author: 'DarkDragonkz',
@@ -232,17 +232,6 @@ export class MangaWorld
             true,
             newestItems
         )
-
-        const mostReadItems = await this.getArchiveItems('most_read', 12)
-
-        this.emitHomeSection(
-            sectionCallback,
-            SECTION_IDS.MOST_READ,
-            'Più letti',
-            'singleRowNormal',
-            true,
-            mostReadItems
-        )
     }
 
     async getViewMoreItems(homepageSectionId: string, metadata: unknown): Promise<PagedResults> {
@@ -270,13 +259,6 @@ export class MangaWorld
                 ? { page: page + 1 }
                 : undefined
         })
-    }
-
-    private async getArchiveItems(sort: string, limit: number): Promise<MangaWorldSourceManga[]> {
-        const url = buildUrl(MANGA_WORLD_DOMAIN, '/archive', { sort })
-        const $ = await this.getCheerio(url)
-
-        return this.parser.parseSearchResults($).slice(0, limit)
     }
 
     private async getCheerio(url: string): Promise<CheerioAPI> {
