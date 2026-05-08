@@ -88,45 +88,17 @@ export class BatCaveParser {
     }
 
     parseSearchResults($: CheerioAPI): BatCaveSourceComic[] {
-        const results: BatCaveSourceComic[] = []
-        const seen = new Set<string>()
+        const domItems = this.parseSearchResultsFromDom($)
+        const rawItems = this.parseSearchResultsFromRawHtml($)
 
-        $('.readed.d-flex.short').each((_: number, element: any) => {
-            const link = $(element).find('.readed__title a[href]').first()
-            const href = link.attr('href') || $(element).find('a[href$=".html"]').first().attr('href')
-            const comicId = this.extractComicId(href)
-            const title = this.cleanText(link.text()) || this.cleanText($(element).find('img').first().attr('alt'))
-
-            if (!comicId || !title || seen.has(comicId)) {
-                return
-            }
-
-            const meta = $(element)
-                .find('.readed__meta-item')
-                .map((__: number, metaElement: any) => this.cleanText($(metaElement).text()))
-                .get()
-                .filter(Boolean)
-
-            const lastIssue = this.cleanText($(element).find('.readed__info li').last().text().replace(/^Last issue:\s*/i, ''))
-            const imageElement = $(element).find('img').first()
-
-            seen.add(comicId)
-            results.push({
-                comicId,
-                title,
-                image: this.extractImageUrl(imageElement),
-                subtitle: lastIssue || meta.join(' • ') || undefined
-            })
-        })
-
-        return results
+        return this.dedupeSourceComics([...domItems, ...rawItems])
     }
 
     parseTags($: CheerioAPI): { publishers: BatCaveTag[]; years: BatCaveTag[] } {
         const publishers = new Map<string, BatCaveTag>()
         const years = new Map<string, BatCaveTag>()
 
-        $('a.poster, a.popular, .readed.d-flex.short').each((_: number, element: any) => {
+        $('a.poster, a.popular, .readed.d-flex.short, .readed.short').each((_: number, element: any) => {
             const metaItems = $(element)
                 .find('.poster__subtitle li, .readed__meta-item')
                 .map((__: number, item: any) => this.cleanText($(item).text()))
@@ -241,6 +213,72 @@ export class BatCaveParser {
             comicId,
             pages
         }
+    }
+
+    private parseSearchResultsFromDom($: CheerioAPI): BatCaveSourceComic[] {
+        const results: BatCaveSourceComic[] = []
+        const seen = new Set<string>()
+
+        $('.readed.d-flex.short, .readed.short, div[class*="readed"][class*="short"]').each((_: number, element: any) => {
+            const link = $(element).find('.readed__title a[href], h2 a[href], a[href$=".html"]').first()
+            const href = link.attr('href') || $(element).find('a[href$=".html"]').first().attr('href')
+            const comicId = this.extractComicId(href)
+            const imageElement = $(element).find('img').first()
+            const title = this.cleanText(link.text()) || this.cleanText(imageElement.attr('alt'))
+
+            if (!comicId || !title || seen.has(comicId)) {
+                return
+            }
+
+            const meta = $(element)
+                .find('.readed__meta-item')
+                .map((__: number, metaElement: any) => this.cleanText($(metaElement).text()))
+                .get()
+                .filter(Boolean)
+
+            const lastIssue = this.cleanText($(element).find('.readed__info li').last().text().replace(/^Last issue:\s*/i, ''))
+
+            seen.add(comicId)
+            results.push({
+                comicId,
+                title,
+                image: this.extractImageUrl(imageElement),
+                subtitle: lastIssue || meta.join(' • ') || undefined
+            })
+        })
+
+        return results
+    }
+
+    private parseSearchResultsFromRawHtml($: CheerioAPI): BatCaveSourceComic[] {
+        const html = $.root().html() ?? ''
+        const results: BatCaveSourceComic[] = []
+        const seen = new Set<string>()
+        const cardRegex = /<div\b[^>]*class=["'][^"']*\breaded\b[^"']*\bshort\b[^"']*["'][^>]*>([\s\S]*?)(?=<div\b[^>]*class=["'][^"']*\breaded\b[^"']*\bshort\b|<style\b|<div\b[^>]*class=["'][^"']*\bpagination\b|<aside\b|<\/main>)/gi
+        let match: RegExpExecArray | null
+
+        while ((match = cardRegex.exec(html)) !== null) {
+            const block = match[1]
+            const hrefMatch = block.match(/<h2\b[^>]*class=["'][^"']*readed__title[^"']*["'][^>]*>\s*<a\b[^>]*href=["']([^"']+\.html)["'][^>]*>([\s\S]*?)<\/a>/i)
+                || block.match(/<a\b[^>]*href=["']([^"']+\.html)["'][^>]*>([\s\S]*?)<\/a>/i)
+            const href = hrefMatch?.[1]
+            const comicId = this.extractComicId(href)
+            const title = this.cleanText(this.stripHtml(hrefMatch?.[2])) || this.extractRawAlt(block)
+
+            if (!comicId || !title || seen.has(comicId)) {
+                continue
+            }
+
+            seen.add(comicId)
+            results.push({
+                comicId,
+                title,
+                image: this.extractRawImage(block),
+                subtitle: this.extractRawLastIssue(block) || this.extractRawReadedMeta(block)
+            })
+        }
+
+        return results
     }
 
     private parseHomeAnchors($: CheerioAPI, selector: string): BatCaveSourceComic[] {
@@ -551,6 +589,13 @@ export class BatCaveParser {
         return title || undefined
     }
 
+    private extractRawAlt(block: string): string | undefined {
+        const altMatch = block.match(/<img\b[^>]*alt=["']([^"']+)["']/i)
+        const title = this.cleanText(altMatch?.[1])
+
+        return title || undefined
+    }
+
     private extractRawImage(block: string): string | undefined {
         const dataSrcMatch = block.match(/<img\b[^>]*data-src=["']([^"']+)["']/i)
         const srcMatch = block.match(/<img\b[^>]*src=["']([^"']+)["']/i)
@@ -580,6 +625,32 @@ export class BatCaveParser {
         }
 
         return subtitles.length > 0 ? subtitles.join(' • ') : undefined
+    }
+
+    private extractRawReadedMeta(block: string): string | undefined {
+        const meta: string[] = []
+        const metaRegex = /<div\b[^>]*class=["'][^"']*readed__meta-item[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi
+        let match: RegExpExecArray | null
+
+        while ((match = metaRegex.exec(block)) !== null) {
+            const value = this.cleanText(this.stripHtml(match[1]))
+
+            if (value) {
+                meta.push(value)
+            }
+        }
+
+        return meta.length > 0 ? meta.join(' • ') : undefined
+    }
+
+    private extractRawLastIssue(block: string): string | undefined {
+        const issueMatches = Array.from(block.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi))
+        const lastIssue = issueMatches
+            .map((match) => this.cleanText(this.stripHtml(match[1])).replace(/^Last issue:\s*/i, ''))
+            .filter(Boolean)
+            .pop()
+
+        return lastIssue || undefined
     }
 
     private isUsableImageUrl(url: string): boolean {
