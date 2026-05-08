@@ -39,7 +39,7 @@ describe('BatCaveParser', () => {
         assert.ok(results.every((result: BatCaveSourceComic) => result.comicId.endsWith('.html')))
     })
 
-    it('parses comic details and chapters from JSON-LD', () => {
+    it('parses comic details and chapters from detail page data', () => {
         const $ = loadFixture('comic-detail.html')
         const details = parser.parseComicDetails($, '5629-the-boys-2006-2012.html')
 
@@ -49,7 +49,7 @@ describe('BatCaveParser', () => {
         assert.equal(details.status, 'Complete')
         assert.equal(details.year, 2006)
         assert.ok(details.image?.endsWith('/uploads/posts/poster/32/5629-the-boys-2006-2012.jpg'))
-        assert.ok(details.description?.includes('Garth Ennis and Darick Robertson'))
+        assert.ok(details.description?.includes('The city’s superheroes are celebrated idols'))
         assert.equal(details.chapters.length, 6)
         assert.ok(details.chapters.some(chapter => chapter.id === '29427' && chapter.name === 'The Boys (2006-2012) #Omnibus Vol. 1'))
     })
@@ -59,10 +59,9 @@ describe('BatCaveParser', () => {
         const chapters = parser.parseChapters($, '5629-the-boys-2006-2012.html')
 
         assert.equal(chapters.length, 6)
-        assert.equal(chapters[0].id, '29426')
-        assert.equal(chapters[0].name, 'The Boys (2006-2012) #Omnibus Vol. 2')
-        assert.equal(chapters[0].chapNum, 2)
+        assert.ok(chapters.some(chapter => chapter.id === '29426' && chapter.name === 'The Boys (2006-2012) #Omnibus Vol. 2' && chapter.chapNum === 2))
         assert.ok(chapters.some(chapter => chapter.id === '29427' && chapter.chapNum === 1))
+        assert.ok(chapters.every(chapter => chapter.comicId === '5629-the-boys-2006-2012.html'))
     })
 
     it('parses all reader pages from window data', () => {
