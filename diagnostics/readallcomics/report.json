@@ -1,0 +1,1178 @@
+{
+  "pages": [
+    {
+      "name": "home",
+      "url": "https://readallcomics.com/",
+      "status": 200,
+      "final_url": "https://readallcomics.com/",
+      "error": null,
+      "title": "Read All Comics Online - ReadAllComics",
+      "raw_chars": 136351,
+      "clean_chars": 43228,
+      "blocked": false,
+      "block_reasons": [],
+      "selector_counts": {
+        "#post-area": 0,
+        "post class approx": 0,
+        "ul.list-story.categories": 1,
+        "a.cat-title": 20,
+        "a.latest-chapter": 20,
+        "pinbin-category": 0,
+        "img tags": 22,
+        "reader image urls": 15
+      },
+      "series": [],
+      "chapters": [
+        {
+          "id": "full-2013",
+          "title": "Full (2013)",
+          "href": "https://readallcomics.com/full-2013/"
+        },
+        {
+          "id": "full-1992",
+          "title": "Full (1992)",
+          "href": "https://readallcomics.com/full-1992/"
+        },
+        {
+          "id": "08-2026",
+          "title": "#08 (2026)",
+          "href": "https://readallcomics.com/08-2026/"
+        },
+        {
+          "id": "016-2016",
+          "title": "#016 (2016)",
+          "href": "https://readallcomics.com/016-2016/"
+        },
+        {
+          "id": "001-2026-40",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-40/"
+        },
+        {
+          "id": "004-2026-26",
+          "title": "#004 (2026)",
+          "href": "https://readallcomics.com/004-2026-26/"
+        },
+        {
+          "id": "part-1-2026",
+          "title": "Part 1 (2026)",
+          "href": "https://readallcomics.com/part-1-2026/"
+        },
+        {
+          "id": "v2-012",
+          "title": "v2 #012",
+          "href": "https://readallcomics.com/v2-012/"
+        },
+        {
+          "id": "full-2026-17",
+          "title": "v2 – Breaking Out (2026)",
+          "href": "https://readallcomics.com/full-2026-17/"
+        },
+        {
+          "id": "014-2026-4",
+          "title": "#014 (2026)",
+          "href": "https://readallcomics.com/014-2026-4/"
+        },
+        {
+          "id": "year-2026-spidey-his-amazing-friends",
+          "title": "Year 2026 – Spidey & His Amazing Friends",
+          "href": "https://readallcomics.com/year-2026-spidey-his-amazing-friends/"
+        },
+        {
+          "id": "001-of-004-2026-2",
+          "title": "#001 (of 004) (2026)",
+          "href": "https://readallcomics.com/001-of-004-2026-2/"
+        },
+        {
+          "id": "03-of-04-2026-4",
+          "title": "#03 (of 04) (2026)",
+          "href": "https://readallcomics.com/03-of-04-2026-4/"
+        },
+        {
+          "id": "part-2-7",
+          "title": "Part 2",
+          "href": "https://readallcomics.com/part-2-7/"
+        },
+        {
+          "id": "4-2026-3",
+          "title": "#4 (2026)",
+          "href": "https://readallcomics.com/4-2026-3/"
+        },
+        {
+          "id": "004-2026-25",
+          "title": "#004 (2026)",
+          "href": "https://readallcomics.com/004-2026-25/"
+        },
+        {
+          "id": "009-2026-7",
+          "title": "#009 (2026)",
+          "href": "https://readallcomics.com/009-2026-7/"
+        },
+        {
+          "id": "001-2026-39",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-39/"
+        },
+        {
+          "id": "001-2026-38",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-38/"
+        },
+        {
+          "id": "44-2026",
+          "title": "#44 (2026)",
+          "href": "https://readallcomics.com/44-2026/"
+        },
+        {
+          "id": "privacy-policy",
+          "title": "Privacy Policy |",
+          "href": "https://readallcomics.com/privacy-policy/"
+        },
+        {
+          "id": "legal-disclamer",
+          "title": "Legal Disclamer |",
+          "href": "https://readallcomics.com/legal-disclamer/"
+        },
+        {
+          "id": "terms-of-service",
+          "title": "Terms of Service |",
+          "href": "https://readallcomics.com/terms-of-service/"
+        }
+      ],
+      "images": [
+        "https://2.bp.blogspot.com/pw/AP1GczOhRivnXzuRNMSEgLvlUsiD13jTfbPS-ev8cpNbnvejdzHuFwKl2Gf60IV2YmqK00uo8MQTP1FPUoBfkh6t7ZFQiGtuy_drgzQNtQX5rTDpzjG4ciA=s0",
+        "https://2.bp.blogspot.com/pw/AP1GczNqp-3P9xVyW78I2IRdESU5OVdfPS8CUKW3MxW4RmrAWCCcgydSlxL2AHEA_ywkv7KGuCiYs5Y3jymvbwUZ5pn3TZ9sbJhH8iX_itoXjcyod22BLFY=s0?rhlupa=MTU3LjI0NS41Ny4yNDcuNS83LzIwMjYgNzowNzozOSBQTS0wLXIxLXMtYzM0NTQy&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0Ny4wLjAuMCBTYWZhcmkvNTM3LjM2",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyiZpF0p5ECBBERv4Akdf_6aSn5Qm5OrXCACJRrsDzajNNUW7XRCqk5Jfg3TjvYNKBpHRosWi6je2CYl5DkCcmxaOwnK361xh1c31B5zShY82_ztoBtOvHu8NCUgph96Z6V2LXx4AeWIjmOxYu8js13wn31laCjnsRil4Niu7MleQr_iMO8TWdDm7aRqo/s0/Dog%20Tag%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCeAFdbw0T0l09af2kStxWosRkoExbUdGQtdaaI652ZWJAt27C5DD3UGylKtEIrU4SS1EOaAiWs0A5PZ-H0iD5ralKfto8JwyzGhoCvo-eexwh1vmSaMn0-AnbWc4HkSqfprvZ7LOdb2SAPn1PHAdDAr1-FiL9rPGH7bqlGcymYPLtstFcXzwiY7NGsH4J/s0/Astro%20Quantum%20001%20%282026%29%20%28Limited%20Series%29%20%28Mad%20Cave%20Studios%29%20%28Digital-HD%29%20%28LeDuch%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjMj8KNgq6Qf_GT9AiyST6Jc__V6RJe99kUG3J-oRB4jV1ivHlR80847zY_hr4JcZJdl90C105WBs0SXM8WN5TFe0NkhKpqxKbFZfDAc5MVIFHb-sFFwVfg37YcNy1sLJauq54rXk9QByhG2vS5u80_LAXduDs-SI9ZNyeLHGttfCnTS46qyp5a3f7hjJq2/s0/Opting%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholastic%29%20%28Digital%29%20%28LeDuch%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh7BJJixzqmO0Zcc6t2wbW2SuiU4vC3W1RPnDxiNBvR1UmdmDBRyLkO-UpR0kkH2UPDvPVCSfHXVMMzk2sc9k_lugMrpxCwW05rvp2pdR08L-yEXl0ccoGFhFRqQ_qLfw3i9xStwToijTdFmoZ1qTvhY0eaJ0spP86ka_qkxVT7D81YILIwR43u6BdKB5XL/s0/Voltron%20-%20Defender%20of%20the%20Universe%20v1%20%23000-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiEZQGl7Ugk01GeVdI0Deh5hROA1Jud2Cdzz_tg0xVevMX3TePOiy6ZerDjVkXKeBRPSvHgJe3ObKNx11rTImCE9mV_13qoAVl5CHGJb2AoqMWSPKJCOp8VUrxUzBjWOAqA4s56DyxdxeJ1UQW09hHkN-o8WMUR07zTHYBpIVyTxAcPm78VNy8ZvYDujAnB/s0/Max%20-%20A%20Little%20Axolotl%20-%20Breaking%20Out%20%282026%29%20%28Graphic%20Novel%29%20%28Scholasitc%29%20%28Digital%29%20%28LeDuch%29-000.jpg",
+        "https://2.bp.blogspot.com/-zRPQ3mUNQiU/Zd99tcy77UI/AAAAAAAEmcg/_28aoDP3nXwKLP3eUXjzQJampV6-QVWCgCNcBGAsYHQ/h0/The%2BSavage%2BSword%2Bof%2BConan%2B001%2B%25282024%2529%2B%25283%2Bcovers%2529%2B%2528Digital%2529%2B%2528Mephisto-Empire%2529-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWUW4owqTs6DfTAmnnc3nwOGIh62_rKL5xMc_iNe2Y5LvyTt8HjVZ2wKhjgAkfWMy7Lq5o7wi6mekGk-vdH6moyTzU1NGC26zSo9O6_sIEtkpvAVkow0-xk5iaJbBECt37yX6AB3KBbsliDzZDkGdrMQrdTJuCI1sGpmFHjfFxkxf9EbON9kFGy_mY7zA/s0/Comics%20Giveaway%20Day.JPG",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjUKd9HOmcVq72qvIE4xOmgT2PKdm-XnV2UEnVJrkj4_BIHWHsLYtq0swUA_p9a1J5CafqQ0dSNDEn4znd1BaQwYqqM53TRKffR3vwheuKKtjtFqoMC7d0bfNpTQRC5gH6Ks-kPrxC7fVB230aAgrSdQltcU-1dvDAipYhmI30UEC-eGzmnBXz9Gj5HoyI/s0/Fall%20of%20the%20House%20of%20Slaughter%20001%20%28of%20004%29%20%282026%29%20%28Limited%20Series%29%20%28Boom!%20Studios%29%20%28Digital%29%20%28LeDuch%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh_bBeyqpYhoj83kdSmO6p0ZGE1l1-A2h2B3D6KEyn83NQIMQpnUX8yV0mbgXf1n8ObiPtc4PUSwu7PImNruWzTcD8utoaXg2U_GYqJFlsGQFB6bwZ-27SrZ2_Dt5XWC8Br4I33HqtnoN0mrAhcGo0pHUYvupuvBBkHHdbNQidBIkp2ynr1XSpFaijBM7BC/s0/The%20Center%20Holds%200%20%28of%200%29%20%282026%29%20%28Digital%20Rip%29%20%28Hourman-DCP%29-000.jpg",
+        "https://2.bp.blogspot.com/pw/AP1GczMyjpQf5BpX481a4rzGpdrD7EFnytwF1oKWsfSzFFpJVdx_KlX4JPyFL-cYCaGm4ZXtZkv0pvmKysYzlzxdtV_eAWR5f2Y7tRBvuiXzUZqu0HgynLg=s0",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBaY8-lCinSYG4h2BSRRxVpUVA8QnNPuwY2IYYspqSoET0wbP6I2_gdEgA2JPu0niJpwQmjYGwvo29khzlNmZ-57LxETHFUel1dYhlZxlEsIr4HUb6Kd9ajl4nGe5004qMbe9BCazNAzeUcye4aTIz90wgAeq_VodEhWmPZdp47yo5Q6nmGFjEZbHojGLa/s0/The%20Autumn%20Kingdom%20-%20The%20Wraithbound%20Queen%20001%20%282026%29%20%28Digital%29%20%28Mephisto-Empire%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjso0KQmvIFQ4FWtWMCozIV5jZWsy5vh6XKrxJFiciMJWvc90CePGT9w1n7WUH0hIkGpy_GW76Lu2usPD0bOcK4f_Ku-z0llCb_5hPcbym_t_AwTX5BsxDUgYphIOxBOn_B9uMqBlSzeO9MAzyiSgWupMjzqTQpMSPnvIksTKLYsXss__wZdnDHIKeiK8A/s0/Tales%20of%20the%20Green%20Lantern%20Corps%20-%20Guy%20Gardner%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh82xiqYFVpL4nFYjpYApFs4iYbWxGEa7y9JU81WGjExgDolsujEEwadlSpiEnBz7NxT2so9SGDh-DWZvG1v1f9kbT2BQMARPZHuv9mBdhgFkNMbcKxm_TlvPDh4Ju9otv3j6Pcxr64Hi1N6OpMAzZfIHqFNVunLO7IL2uPkW7La4wUsaD897of_pQh72k/s0/Sleepy%20Hollow%20-%20The%20Witches%20of%20the%20Western%20Wood%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg"
+      ],
+      "raw_file": "diagnostics\\readallcomics\\home.raw.html",
+      "clean_file": "diagnostics\\readallcomics\\home.clean.html"
+    },
+    {
+      "name": "home_page_2",
+      "url": "https://readallcomics.com/page/2/",
+      "status": 200,
+      "final_url": "https://readallcomics.com/page/2/",
+      "error": null,
+      "title": "Read All Comics Online - Page 2 of 18717 - ReadAllComics",
+      "raw_chars": 122852,
+      "clean_chars": 42590,
+      "blocked": false,
+      "block_reasons": [],
+      "selector_counts": {
+        "#post-area": 0,
+        "post class approx": 0,
+        "ul.list-story.categories": 1,
+        "a.cat-title": 20,
+        "a.latest-chapter": 20,
+        "pinbin-category": 0,
+        "img tags": 22,
+        "reader image urls": 17
+      },
+      "series": [],
+      "chapters": [
+        {
+          "id": "v2-019-2026",
+          "title": "v2 019 (2026)",
+          "href": "https://readallcomics.com/v2-019-2026/"
+        },
+        {
+          "id": "v2-010-2026-2",
+          "title": "v2 010 (2026)",
+          "href": "https://readallcomics.com/v2-010-2026-2/"
+        },
+        {
+          "id": "001-2026-37",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-37/"
+        },
+        {
+          "id": "006-2026-13",
+          "title": "#006 (2026)",
+          "href": "https://readallcomics.com/006-2026-13/"
+        },
+        {
+          "id": "v4-009-2026",
+          "title": "v4 009 (2026)",
+          "href": "https://readallcomics.com/v4-009-2026/"
+        },
+        {
+          "id": "v6-019-2026",
+          "title": "v6 019 (2026)",
+          "href": "https://readallcomics.com/v6-019-2026/"
+        },
+        {
+          "id": "008-2026-7",
+          "title": "#008 (2026)",
+          "href": "https://readallcomics.com/008-2026-7/"
+        },
+        {
+          "id": "v7-029-2026",
+          "title": "v7 029 (2026)",
+          "href": "https://readallcomics.com/v7-029-2026/"
+        },
+        {
+          "id": "004-2026-24",
+          "title": "#004 (2026)",
+          "href": "https://readallcomics.com/004-2026-24/"
+        },
+        {
+          "id": "004-2026-23",
+          "title": "#004 (2026)",
+          "href": "https://readallcomics.com/004-2026-23/"
+        },
+        {
+          "id": "001-2026-36",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-36/"
+        },
+        {
+          "id": "003-2026-32",
+          "title": "#003 (2026)",
+          "href": "https://readallcomics.com/003-2026-32/"
+        },
+        {
+          "id": "v2-004-2026-2",
+          "title": "v2 004 (2026)",
+          "href": "https://readallcomics.com/v2-004-2026-2/"
+        },
+        {
+          "id": "001-2026-35",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-35/"
+        },
+        {
+          "id": "vol-8-010-2026",
+          "title": "Vol. 8 010 (2026)",
+          "href": "https://readallcomics.com/vol-8-010-2026/"
+        },
+        {
+          "id": "v9-002-2026",
+          "title": "v9 002 (2026)",
+          "href": "https://readallcomics.com/v9-002-2026/"
+        },
+        {
+          "id": "v4-004-2026-2",
+          "title": "v4 004 (2026)",
+          "href": "https://readallcomics.com/v4-004-2026-2/"
+        },
+        {
+          "id": "001-2026-34",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-34/"
+        },
+        {
+          "id": "2-2026-12",
+          "title": "#2 (2026)",
+          "href": "https://readallcomics.com/2-2026-12/"
+        },
+        {
+          "id": "001-2026-33",
+          "title": "#001 (2026)",
+          "href": "https://readallcomics.com/001-2026-33/"
+        },
+        {
+          "id": "privacy-policy",
+          "title": "Privacy Policy |",
+          "href": "https://readallcomics.com/privacy-policy/"
+        },
+        {
+          "id": "legal-disclamer",
+          "title": "Legal Disclamer |",
+          "href": "https://readallcomics.com/legal-disclamer/"
+        },
+        {
+          "id": "terms-of-service",
+          "title": "Terms of Service |",
+          "href": "https://readallcomics.com/terms-of-service/"
+        }
+      ],
+      "images": [
+        "https://3.bp.blogspot.com/-oTBBHbI3XYc/XJSFRDWnazI/AAAAAAAAfkk/jozChQ30Y84bYLR0nlvGRc1IsqUus8-7QCLcBGAs/s1600/001_000.jpg",
+        "https://2.bp.blogspot.com/-p3GZsTbY3S4/VtVYeQ8vutI/AAAAAAAAMvk/3FFDfSVy5uA/s0-Ic42/RCO001.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAw_kH3lEfVu-Rehxa6gmPlSSD0DhTxEyvUKcDlPRJtytCRlWa8w4crj8nrRntNlmu5SYISgB3999yjaQxa6_YXYAy8wIdvRMP_FeGhxyOiS_jhtjhBN_hExA5uq9c490m7SVWlIOXt1QivvoZEslN7xZLyqZG7JYp4pGg-QsVTzHgE7G4Ly83bQ-abLM/s0/DC%20x%20Sonic%20the%20Hedgehog%20-%20Metal%20Legion%20001%20%282026%29%20%28Digital%29%20%28Pyrate-DCP%29-000.jpg",
+        "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2",
+        "https://2.bp.blogspot.com/-nIOw878FB6I/VI1FMBlKYyI/AAAAAAAGiJQ/50UhYYEjTFo/s0/p1_0%2Bcopy.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQ9s-pFYUu18E4qvEDOn2S9Wouk5sz_oJFwzae0-jmaL0xea4yGZqNLt641cDsQFsfwWbmBoSaRLAxFNimKE3Dj7ntaMv_Ag2JLCbWbLnyee3Lr2nkqUycErkhNTxIPc4sfT40Iw-q05ILSokG_hyphenhyphenih8zOUHWdUhUK3qBHY8nzHR60Z4vhVkwqZcdVSJ8/s0/Uncanny%20X-Men%20001%20%281963%29%20%28digital%29%20%28Minutemen-Bluntman%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibxTs1hgH2G91XImi2HrGhBZerqUCTmthLjI6MytyEnaXgkoU-jwhvkqXpKMOxx8lvCA8T0wXhQhXy0TIBa964NDGTCc9xMCmE0Gxo8oLI53et7IN790873uwuN32f7ujFQQ9hUFd9NRM7FbGlpu0J289NIirlH6vQOS68t5Lws6xUlRt0Rga0n02X0Wg5/s0/Wade%20Wilson%20-%20Deadpool%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWWtObYs8GkrJAsh5eYR2DnFoRm415RnVM0fQDa3qt5TSTkDMwEc2bGHUPaq-ZookSa9ZBg8luyG5w2K6y31KcxAHCEywE3XURDRxXJwlxuV2jqNyojskoTwxukfTKErXHGSt6HUYWyEt6kIdSODdc_MLaAjwO1NCXsE6U6LPDEZpvGga70yZJfG6WmXw/s0/Star%20Wars%20-%20Rogue%20One%20-%20Cassian%20Andor%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirz7RCsG9YOLAijS4al7RGzAcaVP0TH1a9hmjQnJPwyQWU_NwJmRTfcLFRhFzPGMyvzbacivKYdKWF7tNzQsSO1nkDaaJeZvdV4-YysA8CvRTDk39wNTzNzRSkKderN6jMj0EJ7_ZR8pXxKdA5YiQi6eyLWpzaA3EpE91Doq49ZNbmoNydexxV7Owv4CM/s0/Star%20Wars%20-%20Hyperspace%20Stories%20-%20The%20Bad%20Batch%20-%20Rogue%20Agents%20001%20%282025%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
+        "https://2.bp.blogspot.com/3Rtt31tYZ_jMDPqqHnHz2lqml_zcJSJpW6vK1Xth8LD3UyRjG3HAYIfLB5srE5al3xfgrCM7eZ9L=s1600",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHPdD7pxkDa1Suv5D6YSmw0-vFJnPbcB5zWvBfWvospT2Du-Hb9COIWRdeCNlzpDZVCkwkWc4WJEborjZzLqKFCk5e-BdwVIp6ZjVGWRbyoHZbwRQU-XC5m4vUVoCj16dwmd_LtJNh9ShhvoU2wBduW5X_gHdotKblOBz8QHcbaKkmdxbNwWx5ytMkwLE/s0/Jubilee%20-%20Deadly%20Reunion%20001%20%282026%29%20%28Digital%29%20%28Kileko-Empire%29-000.jpg",
+        "https://2.bp.blogspot.com/sAidST2But6_5xGENprGcdplh30OCCIF5aZvTeFFQbVaxY4MYW0LBb_hk3Jfu3HlyFuSpOdB7q_n=s0",
+        "https://2.bp.blogspot.com/-6uFaHJLBB_I/Vj1NZ27fe7I/AAAAAAAAX4g/cs9HvSPfY_4/s0-Ic42/Daredevil%25252001-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3rJoeJTgrhAK5-vq7W8WFHcrjEs2Jg0Xo7nWvTp9PryULZ2ij7yHaeuuyplyZ00y2SDKoiozhv6e9phAe5AOtX_VPeVDgxiNW-VW5TyJWHqZ0CO0Qd7ThtUgwpUHQt9HyS8kUnw-OuJdzg-fmKQcazboU-0FLk3niTF6YFLjp6JqXtxeV2VIja-yik19u/s0/Cyclops%20Vol.%201%20001-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiJpiyVDe6K71P8W6DyiT11hjz9vF0MB3-g86jtyRIw-2-dZLEZg7qf7dku7TWLjG1TO7c5Eh8lbX_eUMdmPYQAr4lVWh0UpKzZT8Sqwuekw-FpRxFiMtO-iLeKXjbQoauupizIsVxvTfotrYquMlRSVxDy1odmLgDAOcPdpqnzwwdlHpi9BSPfGvKC8zE/s0/Civl%20War%20-%20Unmasked%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi_ZineIU8Re2UagW4DtSC7V74RnjJQRGxfeiDrl45YjLP1B0BBJBovv0QhTJWkIdgSvA4WfQqL2Fi2wBxJ3Hp2LA3-E9mxHsr64XRVf38jwkH4jLpupqzOI5tEvokgcJrOzCCdXUrIQ6O6TB1e1A_SyHAD-Mw9qa9KZjRRyHBk-GEsTnFQAEP6O4yJkmpi/s0/Captain%20Marvel%20-%20Dark%20Past%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgzbBNt0TUArGbyZJJLEPhNzkAlHigKQOu6ZCT4qAXvUhhG9gkf-7W6y4CRTI78lwNvNLWDb6HiezMDme4x9vocPDZkE1EJvHOhjtvR9n42cniE-zVmFsy0Y_IG18wjT4qol4wi6YXUai20jh0-Z268z38cVf1NadM5zi_9LkpNe5mnF1TT5cdNATGMmD8/s0/Astonishing%20Miles%20Morales%20-%20Spider-Man%20-%20The%20Art%20Of%20Thwip%20001%20%282026%29%20%28Digital%29%20%28Shan-Empire%29-000.jpg"
+      ],
+      "raw_file": "diagnostics\\readallcomics\\home-page-2.raw.html",
+      "clean_file": "diagnostics\\readallcomics\\home-page-2.clean.html"
+    },
+    {
+      "name": "search_batman",
+      "url": "https://readallcomics.com/?story=Batman&s=&type=comic",
+      "status": 200,
+      "final_url": "https://readallcomics.com/?story=Batman&s=&type=comic",
+      "error": null,
+      "title": "- Read All Comics Online",
+      "raw_chars": 142646,
+      "clean_chars": 43237,
+      "blocked": true,
+      "block_reasons": [
+        "cloudflare"
+      ],
+      "selector_counts": {
+        "#post-area": 0,
+        "post class approx": 0,
+        "ul.list-story.categories": 1,
+        "a.cat-title": 20,
+        "a.latest-chapter": 20,
+        "pinbin-category": 0,
+        "img tags": 22,
+        "reader image urls": 18
+      },
+      "series": [],
+      "chapters": [
+        {
+          "id": "v4-009-2026",
+          "title": "v4 009 (2026)",
+          "href": "https://readallcomics.com/v4-009-2026/"
+        },
+        {
+          "id": "batman-66-073-2015",
+          "title": "#073 (2015)",
+          "href": "https://readallcomics.com/batman-66-073-2015/"
+        },
+        {
+          "id": "batman-89-6-2022",
+          "title": "Batman ’89 #6 (2022)",
+          "href": "https://readallcomics.com/batman-89-6-2022/"
+        },
+        {
+          "id": "batman-89-echoes-006-2025",
+          "title": "#006 (2025)",
+          "href": "https://readallcomics.com/batman-89-echoes-006-2025/"
+        },
+        {
+          "id": "batman-80-page-giant-3",
+          "title": "Batman 80-Page Giant #3",
+          "href": "https://readallcomics.com/batman-80-page-giant-3/"
+        },
+        {
+          "id": "batman-80-page-giant-2010-v2",
+          "title": "Batman 80-Page Giant 2010 v2",
+          "href": "https://readallcomics.com/batman-80-page-giant-2010-v2/"
+        },
+        {
+          "id": "batman-80-page-giant-2011",
+          "title": "Full",
+          "href": "https://readallcomics.com/batman-80-page-giant-2011/"
+        },
+        {
+          "id": "batman-66-the-lost-episode-001-2015",
+          "title": "Batman '66 - The Lost Episode 001 (2015)",
+          "href": "https://readallcomics.com/batman-66-the-lost-episode-001-2015/"
+        },
+        {
+          "id": "batman-66-meets-wonder-woman-77-012-2017",
+          "title": "#012 (2017)",
+          "href": "https://readallcomics.com/batman-66-meets-wonder-woman-77-012-2017/"
+        },
+        {
+          "id": "batman-66-meets-the-green-hornet-012",
+          "title": "Batman ’66 Meets The Green Hornet 012",
+          "href": "https://readallcomics.com/batman-66-meets-the-green-hornet-012/"
+        },
+        {
+          "id": "batman-66-meets-steed-and-mrs-peel-012",
+          "title": "Batman ’66 Meets Steed and Mrs Peel 012",
+          "href": "https://readallcomics.com/batman-66-meets-steed-and-mrs-peel-012/"
+        },
+        {
+          "id": "batman-66-meets-the-man-from-u-n-c-l-e-012-2016",
+          "title": "Batman ’66 Meets the Man From U.N.C.L.E. 012 (2016)",
+          "href": "https://readallcomics.com/batman-66-meets-the-man-from-u-n-c-l-e-012-2016/"
+        },
+        {
+          "id": "batman-66-meets-the-legion-of-super-heroes-002-2017",
+          "title": "Batman ’66 Meets the Legion of Super-Heroes 002 (2017)",
+          "href": "https://readallcomics.com/batman-66-meets-the-legion-of-super-heroes-002-2017/"
+        },
+        {
+          "id": "batman-3-d-tpb",
+          "title": "Batman 3-D TPB",
+          "href": "https://readallcomics.com/batman-3-d-tpb/"
+        },
+        {
+          "id": "batman-plus",
+          "title": "Batman Plus",
+          "href": "https://readallcomics.com/batman-plus/"
+        },
+        {
+          "id": "batman-giant-001-2018",
+          "title": "Batman Giant 001 (2018)",
+          "href": "https://readallcomics.com/batman-giant-001-2018/"
+        },
+        {
+          "id": "batman-me-tpb-part-2",
+          "title": "Batman & Me TPB (Part 2)",
+          "href": "https://readallcomics.com/batman-me-tpb-part-2/"
+        },
+        {
+          "id": "batman-beyond-v6-050-2021",
+          "title": "v6 050 (2021)",
+          "href": "https://readallcomics.com/batman-beyond-v6-050-2021/"
+        },
+        {
+          "id": "batman-forever-the-official-comic-adaptation-of-the-warner-bros-motion-picture",
+          "title": "Batman Forever: The Official Comic Adaptation of the Warner Bros. Motion Picture",
+          "href": "https://readallcomics.com/batman-forever-the-official-comic-adaptation-of-the-warner-bros-motion-picture/"
+        },
+        {
+          "id": "batman-spawn-001-2023",
+          "title": "Batman - Spawn 001 (2023)",
+          "href": "https://readallcomics.com/batman-spawn-001-2023/"
+        },
+        {
+          "id": "privacy-policy",
+          "title": "Privacy Policy |",
+          "href": "https://readallcomics.com/privacy-policy/"
+        },
+        {
+          "id": "legal-disclamer",
+          "title": "Legal Disclamer |",
+          "href": "https://readallcomics.com/legal-disclamer/"
+        },
+        {
+          "id": "terms-of-service",
+          "title": "Terms of Service |",
+          "href": "https://readallcomics.com/terms-of-service/"
+        }
+      ],
+      "images": [
+        "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2",
+        "https://2.bp.blogspot.com/kn9m0W0N6ttur3MczZHIt5P7ZQ-dtji90ibBcYHw3eI3Znn1yzg0CZOnWWim5tu_TOi6xSL3zz-n=s0",
+        "https://2.bp.blogspot.com/-ntVDsskhcas/YhTSkObdIHI/AAAAAAABhQA/aD_4fmOuRFkl-sPcthGBJ1qpUi_F7CKaQCNcBGAsYHQ/h16000/Batman%2B%252789%2B001%2B%25282021%2529%2B%2528Webrip%2529%2B%2528The%2BLast%2BKryptonian-DCP%2529-000.jpg",
+        "https://2.bp.blogspot.com/-l6G9c222xqo/ZWW9lTtrpII/AAAAAAAEIVM/u3IffXmQxAIJqFyfj_Jzz8DBo3m4QX8zACNcBGAsYHQ/h0/Batman%2B%252789%2B-%2BEchoes%2B001%2B%25282024%2529_001.jpg",
+        "https://2.bp.blogspot.com/pw/AIL4fc_R0c7d3piamaNwN6M9Ein27584ekGY_Gtsua8uO8Tu3IoosmYLVxpJgCzdb51oFKYHUSuPLAtNkZda_cXgzIdWKq5vByY4GLlQu5TZK_XIllUuRz4=s0",
+        "https://2.bp.blogspot.com/PGiytu5TFaVveFUdkd2Kc5xZ5WT03awt7QLJvUcsACkm0ny7VcHf5w0ApStz3jMUcY2yuiZZTxZEMdXwvKme4KjMMCPCfZAuoPDSHP7-O-UY5znIsnEvsRxPMQ5ZRhNDGsruAfO18A=s1600",
+        "https://2.bp.blogspot.com/vaMFFuUrhpBClut8lyURqfrgLuWZ2la7cDgR4KPfA1tDmd8GYxDAOcZtMrXtgu89GuUDgIg8RweQXzm9WeLIyboYwhBVStgRzrmd8_n8hb5T4r__xMeWGx-ZPwaR23oJJEcXhPSwow=s1600",
+        "https://4.bp.blogspot.com/-pzjpA7WJ7F8/VHFs38kA-zI/AAAAAAAGEPQ/VlkY7uixIcQ/s1600/p4_0%2Bcopy.jpg",
+        "https://2.bp.blogspot.com/-UUIIpwPGPQI/WOJ8HMK5JEI/AAAAAAACtiM/cvIB62Mkv0QwuXzcDX4SdoPTS1NFSZ89ACLcB/s1600/095_00.jpg",
+        "https://3.bp.blogspot.com/-FUYLrz_La80/V1hWNECLrGI/AAAAAAAUvrY/y1AXjBT57FsNMhPFwEZ_BH_qzpnG1xWTgCLcB/s1600/19_00.jpg",
+        "https://1.bp.blogspot.com/-zJbyvlM9iQw/VlWCPhEGAXI/AAAAAAATH4Q/4meLTTEoAU4/s1600/1_00.jpg",
+        "https://2.bp.blogspot.com/-KeGlW-MCQ5g/WT9YL_QRaRI/AAAAAAAEEyg/KgbpMZRuttYjM_R7MVaF9__ni9Uk_OHwgCLcB/s1600/001_000.jpg",
+        "https://2.bp.blogspot.com/QfqkUV-LRg3NZgcXEBvxv2dEaMTPS0qAWO4UZlAJXBlJsMn43euk1b-osuewV-qtvO-IVJnCQlQcF053DfDy_eWI0S00TPGce3ucXxkBpEzsnr7CjavWq17W9v9orffN5-hi1Q9YrA=s1600",
+        "https://2.bp.blogspot.com/vmmdRST77UmxPJsWD1VrqQm5xP3kUsxvJ-acPjtbUF6y2yRI4-fz6I3qRlygDl9O_0b5ykvNskvzrcFjFU82ataHdAxIGs6SFgkUOKOXHo1CDVkf8qFZi3PmXMTUDiMxETs_oq97uw=s1600",
+        "https://2.bp.blogspot.com/fxFe_SVWtheXzJitxvS7S9ViyS8Ty6-gTZ0Xnu7NaP4x-XDgBA0tT62TMxsNRbQFi20_UJA2OBlcVCpjNGFYDDJlgd-t3TPvQRePEog653EiIRl1ng0ofRp2rhnqfjpj75hDSbQvhA=s0",
+        "https://2.bp.blogspot.com/pF3VX8ZdZAzeKfAZLUeYQbuqBvNV8zBT0hx97UZ5AONR_tb0CBXoPHtIZsR0fxz0aV9LM0_8sM3AjyHWCdeBT1BlwvU9lRiE7zrwJMvAk525NQYH9BF6nugi298PKUbXp0KtpgGFAQ=s1600",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgP0f6U0fLLE6WjJ3Cv-ZstH9MATNg0mhoDWtob7k1a_BN2aIY8oR0mduhoB3DZ8idUnWzLuQPAJuyYkphBJ-hI4vyWDqSESqpSSRzAXpXKS-Fnuh1Ff28Kd4tYNf4UAuy7W3qgu-A8nyYq-lh8M9xgHVW-trNT3RufYkk3yfsb8QPvWRk7pfv54-8tqoM/s0/Batman%20Beyond%20v1%20001-000.jpg",
+        "https://2.bp.blogspot.com/yLydS2DB1mqoN-QJ4HAnk7MpNJlTS15dtUtFZNJjl_vOQGNEzbgX4M26auTCZTVP3JTTeJqai_o-xcVbdKodx2UBN9JVo1hylP7oWxVH4u6du5GmqjcwRl33gofjCo6gCC3mnyO8SiU=s1600?rhlupa=MTA3LjE4MS4xNzcuMTM1&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+      ],
+      "raw_file": "diagnostics\\readallcomics\\search-batman.raw.html",
+      "clean_file": "diagnostics\\readallcomics\\search-batman.clean.html"
+    },
+    {
+      "name": "category_batman",
+      "url": "https://readallcomics.com/category/batman/",
+      "status": 200,
+      "final_url": "https://readallcomics.com/category/batman/",
+      "error": null,
+      "title": "Read Batman Comic Book Online Free",
+      "raw_chars": 238765,
+      "clean_chars": 109643,
+      "blocked": true,
+      "block_reasons": [
+        "cloudflare"
+      ],
+      "selector_counts": {
+        "#post-area": 0,
+        "post class approx": 0,
+        "ul.list-story.categories": 0,
+        "a.cat-title": 0,
+        "a.latest-chapter": 0,
+        "pinbin-category": 0,
+        "img tags": 3,
+        "reader image urls": 1
+      },
+      "series": [],
+      "chapters": [
+        {
+          "id": "v4-009-2026",
+          "title": "v4 009 (2026)",
+          "href": "https://readallcomics.com/v4-009-2026/"
+        },
+        {
+          "id": "v4-008-2026",
+          "title": "v4 008 (2026)",
+          "href": "https://readallcomics.com/v4-008-2026/"
+        },
+        {
+          "id": "batman-v4-007-2026",
+          "title": "v4 007 (2026)",
+          "href": "https://readallcomics.com/batman-v4-007-2026/"
+        },
+        {
+          "id": "batman-v4-006-2026",
+          "title": "v4 006 (2026)",
+          "href": "https://readallcomics.com/batman-v4-006-2026/"
+        },
+        {
+          "id": "batman-v4-005-2026",
+          "title": "v4 005 (2026)",
+          "href": "https://readallcomics.com/batman-v4-005-2026/"
+        },
+        {
+          "id": "batman-v4-004-2026",
+          "title": "v4 004 (2026)",
+          "href": "https://readallcomics.com/batman-v4-004-2026/"
+        },
+        {
+          "id": "batman-v4-003-2025",
+          "title": "v4 003 (2025)",
+          "href": "https://readallcomics.com/batman-v4-003-2025/"
+        },
+        {
+          "id": "batman-v4-002-2025",
+          "title": "v4 002 (2025)",
+          "href": "https://readallcomics.com/batman-v4-002-2025/"
+        },
+        {
+          "id": "batman-v4-001-2025",
+          "title": "v4 001 (2025)",
+          "href": "https://readallcomics.com/batman-v4-001-2025/"
+        },
+        {
+          "id": "batman-v3-162-2026",
+          "title": "v3 162 (2026)",
+          "href": "https://readallcomics.com/batman-v3-162-2026/"
+        },
+        {
+          "id": "batman-v3-161-2025",
+          "title": "v3 161 (2025)",
+          "href": "https://readallcomics.com/batman-v3-161-2025/"
+        },
+        {
+          "id": "batman-v3-160-2025",
+          "title": "v3 160 (2025)",
+          "href": "https://readallcomics.com/batman-v3-160-2025/"
+        },
+        {
+          "id": "batman-v3-159-2025",
+          "title": "v3 159 (2025)",
+          "href": "https://readallcomics.com/batman-v3-159-2025/"
+        },
+        {
+          "id": "batman-v3-158-2025",
+          "title": "v3 158 (2025)",
+          "href": "https://readallcomics.com/batman-v3-158-2025/"
+        },
+        {
+          "id": "batman-v3-157-2025",
+          "title": "v3 157 (2025)",
+          "href": "https://readallcomics.com/batman-v3-157-2025/"
+        },
+        {
+          "id": "batman-v3-156-2025",
+          "title": "v3 156 (2025)",
+          "href": "https://readallcomics.com/batman-v3-156-2025/"
+        },
+        {
+          "id": "batman-v3-155-2025",
+          "title": "v3 155 (2025)",
+          "href": "https://readallcomics.com/batman-v3-155-2025/"
+        },
+        {
+          "id": "batman-v3-154-2024",
+          "title": "v3 154 (2024)",
+          "href": "https://readallcomics.com/batman-v3-154-2024/"
+        },
+        {
+          "id": "batman-v3-153-2024",
+          "title": "v3 153 (2024)",
+          "href": "https://readallcomics.com/batman-v3-153-2024/"
+        },
+        {
+          "id": "batman-v3-152-2024",
+          "title": "v3 152 (2024)",
+          "href": "https://readallcomics.com/batman-v3-152-2024/"
+        },
+        {
+          "id": "batman-v3-151-2024",
+          "title": "v3 151 (2024)",
+          "href": "https://readallcomics.com/batman-v3-151-2024/"
+        },
+        {
+          "id": "batman-v3-150-2024",
+          "title": "v3 150 (2024)",
+          "href": "https://readallcomics.com/batman-v3-150-2024/"
+        },
+        {
+          "id": "batman-v3-149-2024",
+          "title": "v3 149 (2024)",
+          "href": "https://readallcomics.com/batman-v3-149-2024/"
+        },
+        {
+          "id": "batman-v3-148-2024",
+          "title": "v3 148 (2024)",
+          "href": "https://readallcomics.com/batman-v3-148-2024/"
+        },
+        {
+          "id": "batman-v3-147-2024",
+          "title": "v3 147 (2024)",
+          "href": "https://readallcomics.com/batman-v3-147-2024/"
+        },
+        {
+          "id": "batman-v3-146-2024",
+          "title": "v3 146 (2024)",
+          "href": "https://readallcomics.com/batman-v3-146-2024/"
+        },
+        {
+          "id": "batman-v3-145-2024",
+          "title": "v3 145 (2024)",
+          "href": "https://readallcomics.com/batman-v3-145-2024/"
+        },
+        {
+          "id": "batman-v3-144-2024",
+          "title": "v3 144 (2024)",
+          "href": "https://readallcomics.com/batman-v3-144-2024/"
+        },
+        {
+          "id": "batman-v3-143-2024",
+          "title": "v3 143 (2024)",
+          "href": "https://readallcomics.com/batman-v3-143-2024/"
+        },
+        {
+          "id": "batman-v3-142-2024",
+          "title": "v3 142 (2024)",
+          "href": "https://readallcomics.com/batman-v3-142-2024/"
+        },
+        {
+          "id": "batman-v3-141-2024",
+          "title": "v3 141 (2024)",
+          "href": "https://readallcomics.com/batman-v3-141-2024/"
+        },
+        {
+          "id": "batman-v3-140-2024",
+          "title": "v3 140 (2024)",
+          "href": "https://readallcomics.com/batman-v3-140-2024/"
+        },
+        {
+          "id": "batman-v3-139-2024",
+          "title": "v3 139 (2024)",
+          "href": "https://readallcomics.com/batman-v3-139-2024/"
+        },
+        {
+          "id": "batman-v3-138-2023",
+          "title": "v3 138 (2023)",
+          "href": "https://readallcomics.com/batman-v3-138-2023/"
+        },
+        {
+          "id": "batman-v3-137-2023",
+          "title": "v3 137 (2023)",
+          "href": "https://readallcomics.com/batman-v3-137-2023/"
+        },
+        {
+          "id": "batman-v3-136-2023",
+          "title": "v3 136 (2023)",
+          "href": "https://readallcomics.com/batman-v3-136-2023/"
+        },
+        {
+          "id": "batman-v3-135-2023",
+          "title": "v3 135 (2023)",
+          "href": "https://readallcomics.com/batman-v3-135-2023/"
+        },
+        {
+          "id": "batman-v3-134-2023",
+          "title": "v3 134 (2023)",
+          "href": "https://readallcomics.com/batman-v3-134-2023/"
+        },
+        {
+          "id": "batman-v3-133-2023",
+          "title": "v3 133 (2023)",
+          "href": "https://readallcomics.com/batman-v3-133-2023/"
+        },
+        {
+          "id": "batman-v3-132-2023",
+          "title": "v3 132 (2023)",
+          "href": "https://readallcomics.com/batman-v3-132-2023/"
+        },
+        {
+          "id": "batman-v3-131-2023",
+          "title": "v3 131 (2023)",
+          "href": "https://readallcomics.com/batman-v3-131-2023/"
+        },
+        {
+          "id": "batman-v3-130-2023",
+          "title": "v3 130 (2023)",
+          "href": "https://readallcomics.com/batman-v3-130-2023/"
+        },
+        {
+          "id": "batman-v3-129-2022",
+          "title": "v3 129 (2022)",
+          "href": "https://readallcomics.com/batman-v3-129-2022/"
+        },
+        {
+          "id": "batman-v3-128-2022",
+          "title": "v3 128 (2022)",
+          "href": "https://readallcomics.com/batman-v3-128-2022/"
+        },
+        {
+          "id": "batman-v3-127-2022",
+          "title": "v3 127 (2022)",
+          "href": "https://readallcomics.com/batman-v3-127-2022/"
+        },
+        {
+          "id": "batman-v3-126-2022",
+          "title": "v3 126 (2022)",
+          "href": "https://readallcomics.com/batman-v3-126-2022/"
+        },
+        {
+          "id": "batman-v3-125-2022",
+          "title": "v3 125 (2022)",
+          "href": "https://readallcomics.com/batman-v3-125-2022/"
+        },
+        {
+          "id": "batman-v3-124-2022",
+          "title": "v3 124 (2022)",
+          "href": "https://readallcomics.com/batman-v3-124-2022/"
+        },
+        {
+          "id": "batman-v3-123-2022",
+          "title": "v3 123 (2022)",
+          "href": "https://readallcomics.com/batman-v3-123-2022/"
+        },
+        {
+          "id": "batman-v3-122-2022",
+          "title": "v3 122 (2022)",
+          "href": "https://readallcomics.com/batman-v3-122-2022/"
+        },
+        {
+          "id": "batman-v3-121-2022",
+          "title": "v3 121 (2022)",
+          "href": "https://readallcomics.com/batman-v3-121-2022/"
+        },
+        {
+          "id": "batman-v3-120-2022",
+          "title": "v3 120 (2022)",
+          "href": "https://readallcomics.com/batman-v3-120-2022/"
+        },
+        {
+          "id": "batman-v3-119-2022",
+          "title": "v3 119 (2022)",
+          "href": "https://readallcomics.com/batman-v3-119-2022/"
+        },
+        {
+          "id": "batman-v3-118-2021",
+          "title": "v3 118 (2022)",
+          "href": "https://readallcomics.com/batman-v3-118-2021/"
+        },
+        {
+          "id": "batman-v3-117-2021",
+          "title": "v3 117 (2021)",
+          "href": "https://readallcomics.com/batman-v3-117-2021/"
+        },
+        {
+          "id": "batman-v3-116-2021",
+          "title": "v3 116 (2021)",
+          "href": "https://readallcomics.com/batman-v3-116-2021/"
+        },
+        {
+          "id": "batman-v3-115-2021",
+          "title": "v3 115 (2021)",
+          "href": "https://readallcomics.com/batman-v3-115-2021/"
+        },
+        {
+          "id": "batman-v3-114-2021",
+          "title": "v3 114 (2021)",
+          "href": "https://readallcomics.com/batman-v3-114-2021/"
+        },
+        {
+          "id": "batman-v3-113-2021",
+          "title": "v3 113 (2021)",
+          "href": "https://readallcomics.com/batman-v3-113-2021/"
+        },
+        {
+          "id": "batman-v3-112-2021",
+          "title": "v3 112 (2021)",
+          "href": "https://readallcomics.com/batman-v3-112-2021/"
+        },
+        {
+          "id": "batman-v3-111-2021",
+          "title": "v3 111 (2021)",
+          "href": "https://readallcomics.com/batman-v3-111-2021/"
+        },
+        {
+          "id": "batman-v3-110-2021",
+          "title": "v3 110 (2021)",
+          "href": "https://readallcomics.com/batman-v3-110-2021/"
+        },
+        {
+          "id": "batman-v3-109-2021",
+          "title": "v3 109 (2021)",
+          "href": "https://readallcomics.com/batman-v3-109-2021/"
+        },
+        {
+          "id": "batman-v3-108-2021",
+          "title": "v3 108 (2021)",
+          "href": "https://readallcomics.com/batman-v3-108-2021/"
+        },
+        {
+          "id": "batman-v3-107-2021",
+          "title": "v3 107 (2021)",
+          "href": "https://readallcomics.com/batman-v3-107-2021/"
+        },
+        {
+          "id": "batman-v3-106-2021",
+          "title": "v3 106 (2021)",
+          "href": "https://readallcomics.com/batman-v3-106-2021/"
+        },
+        {
+          "id": "batman-v3-105-2021",
+          "title": "v3 105 (2021)",
+          "href": "https://readallcomics.com/batman-v3-105-2021/"
+        },
+        {
+          "id": "batman-v3-104-2020",
+          "title": "v3 104 (2020)",
+          "href": "https://readallcomics.com/batman-v3-104-2020/"
+        },
+        {
+          "id": "batman-v3-103-2020",
+          "title": "v3 103 (2020)",
+          "href": "https://readallcomics.com/batman-v3-103-2020/"
+        },
+        {
+          "id": "batman-v3-102-2020",
+          "title": "v3 102 (2020)",
+          "href": "https://readallcomics.com/batman-v3-102-2020/"
+        },
+        {
+          "id": "batman-v3-101-2020",
+          "title": "v3 101 (2020)",
+          "href": "https://readallcomics.com/batman-v3-101-2020/"
+        },
+        {
+          "id": "batman-v3-100-2020",
+          "title": "v3 100 (2020)",
+          "href": "https://readallcomics.com/batman-v3-100-2020/"
+        },
+        {
+          "id": "batman-v3-099-2020",
+          "title": "v3 099 (2020)",
+          "href": "https://readallcomics.com/batman-v3-099-2020/"
+        },
+        {
+          "id": "batman-v3-098-2020",
+          "title": "v3 098 (2020)",
+          "href": "https://readallcomics.com/batman-v3-098-2020/"
+        },
+        {
+          "id": "batman-v3-097-2020",
+          "title": "v3 097 (2020)",
+          "href": "https://readallcomics.com/batman-v3-097-2020/"
+        },
+        {
+          "id": "batman-v3-096-2020",
+          "title": "v3 096 (2020)",
+          "href": "https://readallcomics.com/batman-v3-096-2020/"
+        },
+        {
+          "id": "batman-v3-095-2020",
+          "title": "v3 095 (2020)",
+          "href": "https://readallcomics.com/batman-v3-095-2020/"
+        },
+        {
+          "id": "batman-v3-094-2020",
+          "title": "v3 094 (2020)",
+          "href": "https://readallcomics.com/batman-v3-094-2020/"
+        },
+        {
+          "id": "batman-v3-093-2020",
+          "title": "v3 093 (2020)",
+          "href": "https://readallcomics.com/batman-v3-093-2020/"
+        },
+        {
+          "id": "batman-v3-092-2020",
+          "title": "v3 092 (2020)",
+          "href": "https://readallcomics.com/batman-v3-092-2020/"
+        },
+        {
+          "id": "batman-v3-091-2020",
+          "title": "v3 091 (2020)",
+          "href": "https://readallcomics.com/batman-v3-091-2020/"
+        },
+        {
+          "id": "batman-v3-090-2020",
+          "title": "v3 090 (2020)",
+          "href": "https://readallcomics.com/batman-v3-090-2020/"
+        },
+        {
+          "id": "batman-v3-089-2020",
+          "title": "v3 089 (2020)",
+          "href": "https://readallcomics.com/batman-v3-089-2020/"
+        },
+        {
+          "id": "batman-v3-088-2020",
+          "title": "v3 088 (2020)",
+          "href": "https://readallcomics.com/batman-v3-088-2020/"
+        },
+        {
+          "id": "batman-v3-087-2020",
+          "title": "v3 087 (2020)",
+          "href": "https://readallcomics.com/batman-v3-087-2020/"
+        },
+        {
+          "id": "batman-v3-086-2020",
+          "title": "v3 086 (2020)",
+          "href": "https://readallcomics.com/batman-v3-086-2020/"
+        },
+        {
+          "id": "batman-v3-085-2020",
+          "title": "v3 085 (2020)",
+          "href": "https://readallcomics.com/batman-v3-085-2020/"
+        },
+        {
+          "id": "batman-v3-084-2020",
+          "title": "v3 084 (2020)",
+          "href": "https://readallcomics.com/batman-v3-084-2020/"
+        },
+        {
+          "id": "batman-v3-083-2020",
+          "title": "v3 083 (2020)",
+          "href": "https://readallcomics.com/batman-v3-083-2020/"
+        },
+        {
+          "id": "batman-v3-082-2020",
+          "title": "v3 082 (2020)",
+          "href": "https://readallcomics.com/batman-v3-082-2020/"
+        },
+        {
+          "id": "batman-v3-081-2019",
+          "title": "v3 081 (2019)",
+          "href": "https://readallcomics.com/batman-v3-081-2019/"
+        },
+        {
+          "id": "batman-v3-080-2019",
+          "title": "v3 080 (2019)",
+          "href": "https://readallcomics.com/batman-v3-080-2019/"
+        },
+        {
+          "id": "batman-v3-079-2019",
+          "title": "v3 079 (2019)",
+          "href": "https://readallcomics.com/batman-v3-079-2019/"
+        },
+        {
+          "id": "batman-v3-078-2019",
+          "title": "v3 078 (2019)",
+          "href": "https://readallcomics.com/batman-v3-078-2019/"
+        },
+        {
+          "id": "batman-v3-077-2019",
+          "title": "v3 077 (2019)",
+          "href": "https://readallcomics.com/batman-v3-077-2019/"
+        },
+        {
+          "id": "batman-v3-076-2019",
+          "title": "v3 076 (2019)",
+          "href": "https://readallcomics.com/batman-v3-076-2019/"
+        },
+        {
+          "id": "batman-v3-075-2019",
+          "title": "v3 075 (2019)",
+          "href": "https://readallcomics.com/batman-v3-075-2019/"
+        },
+        {
+          "id": "batman-v3-074-2019",
+          "title": "v3 074 (2019)",
+          "href": "https://readallcomics.com/batman-v3-074-2019/"
+        },
+        {
+          "id": "batman-v3-073-2019",
+          "title": "v3 073 (2019)",
+          "href": "https://readallcomics.com/batman-v3-073-2019/"
+        },
+        {
+          "id": "batman-v3-072-2019",
+          "title": "v3 072 (2019)",
+          "href": "https://readallcomics.com/batman-v3-072-2019/"
+        }
+      ],
+      "images": [
+        "https://2.bp.blogspot.com/EN3fjhrUKL6J6UD6hysnwymMy3137zp0T__Rp7kxM654JVavyyrByISgOiXhfV1yrWt6ldpLlY5ye8R9vM8fpyq3X2tB8fH7UrNd6peVGMJ5c9Viq42ti-jN-LP3_zgqVIJ9JOM-2WY=s1600?rhlupa=MTQ2LjcwLjQ2LjMw&rnvuka=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEwNS4wLjAuMCBTYWZhcmkvNTM3LjM2"
+      ],
+      "raw_file": "diagnostics\\readallcomics\\category-batman.raw.html",
+      "clean_file": "diagnostics\\readallcomics\\category-batman.clean.html"
+    },
+    {
+      "name": "chapter_batman-v1-annual-001",
+      "url": "https://readallcomics.com/batman-v1-annual-001/",
+      "status": 200,
+      "final_url": "https://readallcomics.com/batman-v1-annual-001/",
+      "error": null,
+      "title": "Batman v1 .Annual 001 | Read All Comics Online",
+      "raw_chars": 347026,
+      "clean_chars": 4538,
+      "blocked": true,
+      "block_reasons": [
+        "cloudflare",
+        "captcha"
+      ],
+      "selector_counts": {
+        "#post-area": 0,
+        "post class approx": 4,
+        "ul.list-story.categories": 0,
+        "a.cat-title": 0,
+        "a.latest-chapter": 0,
+        "pinbin-category": 1,
+        "img tags": 88,
+        "reader image urls": 86
+      },
+      "series": [],
+      "chapters": [
+        {
+          "id": "batman-v1-1000000",
+          "title": "« Prev",
+          "href": "https://readallcomics.com/batman-v1-1000000/"
+        },
+        {
+          "id": "batman-v1-annual-002",
+          "title": "Next »",
+          "href": "https://readallcomics.com/batman-v1-annual-002/"
+        },
+        {
+          "id": "batman-v1-annual-001",
+          "title": "Refresh",
+          "href": "https://readallcomics.com/batman-v1-annual-001?page&name=batman-v1-annual-001"
+        },
+        {
+          "id": "privacy-policy",
+          "title": "Privacy Policy |",
+          "href": "https://readallcomics.com/privacy-policy/"
+        },
+        {
+          "id": "legal-disclamer",
+          "title": "Legal Disclamer |",
+          "href": "https://readallcomics.com/legal-disclamer/"
+        },
+        {
+          "id": "terms-of-service",
+          "title": "Terms of Service |",
+          "href": "https://readallcomics.com/terms-of-service/"
+        }
+      ],
+      "images": [
+        "https://2.bp.blogspot.com/k-V0F05fEW_8o-c-TSVs-bFcAJPe2nZIRtXD5mtvBhb9SCpDTR-QjXIvSBPnEyfROyt5u8QJDXHI=s0",
+        "https://2.bp.blogspot.com/aAknfFWjo06IxzpAUaTSwRz3z5Vf7lwKQWS3p_njs2vYZwiRjKPzAZkYC2q_ImTzU76kEsPf3GBo=s0",
+        "https://2.bp.blogspot.com/OVUCwjQZQNr5gCvTqgZ0InfRkg4Er_9JKez79LTBNqiKMtr9HL9-Y_2ZlAYlx_TVaqL-Znpen5N2=s0",
+        "https://2.bp.blogspot.com/K4l0hYCZYOeusTXnXi3AfGkDH_yx_yooMdwrq01qNZWve325uBrlXwYZMEh80bOwK1G3hZy4Qemv=s0",
+        "https://2.bp.blogspot.com/ISk0tOKdqqrYozI2Nf0gPmFs_piyBL8mNQbOVqqrik5IjC98MRXHWCTyJK_yiP0qwKB2ensosKiZ=s0",
+        "https://2.bp.blogspot.com/pqzmdj3SxSZ4c_4Q8LlRsnsAwV1XxPuvKn9-anUp3YefeAk0VPIrOHuErLwQ3MJXpd32iTAM0sXM=s0",
+        "https://2.bp.blogspot.com/-zf-0Li5wb2cphkxNONRWNxMyqHJRPIxQ2qVcHGaXSuGfEDBjCDrof02SpSn1ecrQI75KBPhpDvK=s0",
+        "https://2.bp.blogspot.com/EhEN5FkkkCl1iECKFJCkI6FdQD5PGhOfwcHfx3WJx3FelcPMPWjl_U3dGSom2zzwlSYv_jg33N0X=s0",
+        "https://2.bp.blogspot.com/PSlPytw12JxdQ6d3e4JpgDdZ8sS02zZBD1YUIHPwbA0WROIM1iF-ubYM-1hoL7I4Syrpb0TMvy6K=s0",
+        "https://2.bp.blogspot.com/m98sL1Bzka0jcwRKew7Kjh7pA2b8L7JeTrlOqYFLIvmEw_BT939UIQgamiK9D4yuIWBm6kp-HOyL=s0",
+        "https://2.bp.blogspot.com/Mmh2KPW1zWhm1-Jwrheba_clDNo7fHNcRn6Xf_U6WdTQwg8vVbuNq18QFVRitE0k0ki-tK_ij2oz=s0",
+        "https://2.bp.blogspot.com/BVSuCcUKg4M9PTgfA6vbkdcA9Jrs7ee__Hp39jkh0mAvblAlhh1S0d5aEHElzPVxpl-jpTLLL6Lx=s0",
+        "https://2.bp.blogspot.com/qJUorI56oYwBSqd1cBjwxHqEu0hjeKF6Fh5ZNtImXtCBZW9hR-g6-brG1fuf3lPzA6cwC63ZMmCa=s0",
+        "https://2.bp.blogspot.com/JB84xbJYKBQrVfLPZiJ8VN2LWtzQIsogtqedcTJsCBtrlbBBri6S6hiB749J_2mcTErdKxAtTsq3=s0",
+        "https://2.bp.blogspot.com/9PuhZJ09cmlRnAW1szyGBB2QYaLq1tplEU9j0WUkFMNOCkxUeZAwQamex27fH50k2NCJv22FT8Bf=s0",
+        "https://2.bp.blogspot.com/bCenf53iJi9bpsHIK7sjbS6lfmTnOumHrxNr745PzQpqXhvHmq-T7YDAjSwesPtc6J5Hlxh2dctK=s0",
+        "https://2.bp.blogspot.com/4VVaKfEJXD8UYKi3OOj0GRhF1K9cYiErpJvZJ7A8JEYK8dk5bxgeQLVzbxB2t08CoS18vOQmUj9T=s0",
+        "https://2.bp.blogspot.com/aPMFuBZ21PnbJHhVeT8UISvj378ijLMatJ1VLdL90K4M2nx-llqU9Yn4SAV4hPFn9EMnM7SQvn-d=s0",
+        "https://2.bp.blogspot.com/xzCogs5vr2V53dYUXuQWtkkPpo60az0IrH7NHft7nwiggWEIphywswg4BL-mh-PsPQcIFLC0-r2E=s0",
+        "https://2.bp.blogspot.com/-pQTZxYO_aSOOeSrptrEuKVEYSg_6hdCcdOIDgfJUHf8avUUiEspjc95OcCh8YxIPVoemwFPwkGF=s0",
+        "https://2.bp.blogspot.com/BHrw9emBr4cAfuvcIqVXNjW4_e322RqKtN3TSrFcw8scBhhat8YoFrUMC9eTrzd9-NsEszuULnSs=s0",
+        "https://2.bp.blogspot.com/pK4mecPkQS7wzVHqEc-LM9MJ2UsNimWmbR2DITeawhweCSSSOnnirvJ0ZUn9sgMc5L5Jk2CmEVzG=s0",
+        "https://2.bp.blogspot.com/VegYwA1mcGRTabOmqbX3FW8O7f5TrixoO991FW1OCIz1iItSlJh7f3okDDZTvOJKpQK7kiZpi9V4=s0",
+        "https://2.bp.blogspot.com/1X-EWOjzp72Z4CxMwkg44MtnsyiBu2haLgYq_trmAmWOGbb4Xa2gZooBr3e1Bn4ZPOWDqN7nDVuH=s0",
+        "https://2.bp.blogspot.com/xTd72GOoHLEqSRy3-nbKi1bUErWfgnwiA0f7H7F5RYsV_o53u8aczEsZfsRtP3Pn81JvTyCYBCry=s0",
+        "https://2.bp.blogspot.com/Qb8pSBcoqNXjGD2i3Y76lq0Mw8ehILHer8Fgt5SWnW8u8MWBhCYhSP-xKYjhXN5bBeNJd5D07nt-=s0",
+        "https://2.bp.blogspot.com/X2x_9a0C20JKAMOsLKEW4gC5AIQ6C9vtpgvEuFPsrl-R_TlvmsxUDMXthS9mXbjaC99CpT_XCKqH=s0",
+        "https://2.bp.blogspot.com/4P_cc4MsMkN7U326ZGbugVKDfcy2ycaxr1jPb1d7zMH13xVFCgkFx6CmiPdbTRPqcvvYdof2IKs4=s0",
+        "https://2.bp.blogspot.com/nMQFqjbSxW9pzyIUQgFRcLY1BQ4pujFeGEmCyj6_nTEFpWJeFev1H4rADI8MzO_kttwzrEsnoZyM=s0",
+        "https://2.bp.blogspot.com/Hu3uoF-Mg0sGvjUdaenqNNDb108Aocl_UUaqMLIBzhEzdP0axtE7Lq7qmGygtgHcGKwKa2zioDBU=s0",
+        "https://2.bp.blogspot.com/E9rXb5X2IRJpSKvQ-kA6T2wuBYA2JKnwp9yJy4HtfARunOOb9n9fE8LXQHbfw6c04bj22HGJSdXM=s0",
+        "https://2.bp.blogspot.com/_9PiCNd5la5fFcLGd2dcyTjfixiLuNwqykycIcEzGd5a2UJFZ7DgJ9sen5O8mpn98upFRyiGltNH=s0",
+        "https://2.bp.blogspot.com/2KKhisnbZWrfEXEw7HyDSa39lbYAlKQ1wN005AMn-PAYsBs5VSuiHAURdEPhT2i_brLK-lzsjfL1=s0",
+        "https://2.bp.blogspot.com/Xq9KK1tyHdoGE5xSakzJwjVZV2K3sroDR8Ew_-3fnWi6tL4OaPoc9D8s6U6Vyo-nzL_P1fPXto8Q=s0",
+        "https://2.bp.blogspot.com/anKpOvYRI-6EQzxENOXWrCpFVSSvgqLfLImu2PCw-8W6R5kH7SqAD3kAaGE9P46GjwBAl7c5B4og=s0",
+        "https://2.bp.blogspot.com/AJmgybGO-APreCdg3VWnK8DgFhcgeSfU0RVNTY9qdzrNwrXEOoXHMkZCa7ymKxt8TN9GEBbV4NkM=s0",
+        "https://2.bp.blogspot.com/SRF67HE4wcj8XFGvSDfGlsYKUxJfmjVtVhR9NZLTiYqSshAM7CmMM8DEuTsplLA2IkT4SFsIzWj3=s0",
+        "https://2.bp.blogspot.com/oQMNhOkxfXbOTajHoUvpxxtlLqL3MWFfber1leMf0ve1Z58j5WKiB0lKB0is0wQiyPzog0bwwy7Q=s0",
+        "https://2.bp.blogspot.com/kfv23KBkz4h_vv_CVymN-v2SOYlpHXN2vfDeXiRtvPWJvka8-T3MdvEcRSb_zqMIUBYN-01VHnzq=s0",
+        "https://2.bp.blogspot.com/MrqBtwl54FB1TqWs4lQ1uzctwU9PTIpt8JqL8-NwdqeblM8LJk74rHGt1dSI4GDBt7Ld_T_-3thw=s0",
+        "https://2.bp.blogspot.com/Pb3RUl8re6wwPAmibCftgtZHkW8zD8_akOps5anFGPZPe5EB2lcuAO7rjS17ZvkP27NvjIAHhs2s=s0",
+        "https://2.bp.blogspot.com/K4QJHG1MiLX2s4NSpFCmk44d3q_cr-yFBGnQJ0gxXKw_Em5sE0rsObSiQ9lhvPiyeUMbGBk2hE6j=s0",
+        "https://2.bp.blogspot.com/BFbP5CtOx3nuFn8PfyMZwE_puN74n7JUlJ50nbbEb2FOzeHM9MFvidzkyCZGYGQiaAQBYdhH7MnK=s0",
+        "https://2.bp.blogspot.com/ZGY-KvE1Vra7PmVQ69TE4iiURWfJIiIyrVOgTMUyJdIlO6U-EacAsoVDrga1HdKFqFE8YQ7VuXP-=s0",
+        "https://2.bp.blogspot.com/RmQLCjkCvFwoucmTFN3QNLaBf8nXv3j75VAudxq5Wty4JVaw7SMgLGRLIbOB_E_6DSyJNkAgS5ie=s0",
+        "https://2.bp.blogspot.com/VuWFl6_zPSjYu1dOs1Li7AiMTNznEh7AxupGAYIa4KsJ6Wj6yplU2E9TBmrublgfNTJAbHwnmAqH=s0",
+        "https://2.bp.blogspot.com/atLj3b3rkdNZpBcHhH-GgNHRpD61nacHxhiAeiGvcAuwI6WaV9UqL0KN69_IAw2K-MUOQ1dHY2PP=s0",
+        "https://2.bp.blogspot.com/g2ggdQ32Kdz3qxEEmYbqKNvFROLbjD7kkhgx3mrmwaGQwCdm1qD0cplyjop4dL1iRrrljNAJCbZh=s0",
+        "https://2.bp.blogspot.com/RB6TwQiY7z97Ep-VlpUGxVdYqNpkt_P7i46hyEVrUxoXnhN2TU_wRRuFrwJVL2f1zt2ZVWRGyZop=s0",
+        "https://2.bp.blogspot.com/z9LKAPQOi_bvdsC0p14Drr70SR9zYfLApvbIhTUtNoGhENwGiTC8es8-BEd0sXwjQ9WMXh4C-mEf=s0",
+        "https://2.bp.blogspot.com/g6SQVMrd6ewEI5FpUhncJzlCTYM0LLzDCN3Tk8yDAqflaCeovq117r_MUzetBQwh0aYI9QsWE-UD=s0",
+        "https://2.bp.blogspot.com/Va2_UnXlV1j3aWuZeeXd4wmCbXGzFe0W9w8VLCEUdZIB8AJThiZ387jxmuZCzI8enmnbdZsnkyjG=s0",
+        "https://2.bp.blogspot.com/8nIFEivVk2PiovwdrGSY1FIhXS1g8vygjtiQ6ykX-pslURfvh3s8TUGAr9njzPAPVfvqulQnO3G_=s0",
+        "https://2.bp.blogspot.com/HxwPlPadW1EPvtn4NNyXLt7_ShbfnfdqSaLaGYnHPFZVYvPVGQf1E7FvKKJz7sKFMzjDS5JgjpjW=s0",
+        "https://2.bp.blogspot.com/tI022HlnJzV2HOGkKSl3HI9CzT9on5KPc0mYMuFTm-xBjMVjVK-AjGXr1O-_t0Cptp8cNIPFULoq=s0",
+        "https://2.bp.blogspot.com/eo9Um4O5GU_XMADPsNkzz1aFu06e4PAMnzdYar7f2COYw-6YpQ0GeRxFhLy9f0DMY_pxDjnVH5uL=s0",
+        "https://2.bp.blogspot.com/URMxzxpAXReR9Vm1F_n6pOm02bT7WwaFYx5sFcXy1F7CqMkF9TnlEYonk4ArMdanwWF-O-tiiH12=s0",
+        "https://2.bp.blogspot.com/FKew4evU7lzi4GjI08hFt4pbZ5YlutVfLKC9qHmRUZ_dMRD83L2OUQn_vF5R_v9Z2ZV1yXPj-M3H=s0",
+        "https://2.bp.blogspot.com/pWSjbRTRDtev5gU0I-uzV6JxzprrqLzHwEszwcCX0eXNuaqEuKN7N7_wrv8DPCJOcNOgTdi5FXnP=s0",
+        "https://2.bp.blogspot.com/N9gTTxybQ6w9_PtLRmwxtssaUjcFj4d-EEgKln22iVVq0uTTaHng9cwumPyJLT8bqV7wJAgNCRdZ=s0",
+        "https://2.bp.blogspot.com/vFVnSQBdHIJX8irrAJNnkljpe0tY6fzXlb19SALcuIdgR3_QE7VJaFJAKcEOdJ-p5WjBplZI_GLu=s0",
+        "https://2.bp.blogspot.com/aMHMGQWx4OPHc3Cc3cjoekgxmbsCfgAgV9GqV74ND3pGRZcecRakRh8C0s1HuC8dhBKkVF3bxGK7=s0",
+        "https://2.bp.blogspot.com/RxqwWK0dShz8JDJH5VuRdSDXYbvFFZXYe9cQwaB4Lrp_Q1C5POgJccI9OR0atM6w7TJ1mgyJPUTV=s0",
+        "https://2.bp.blogspot.com/NyaPmg8rAphfK9MeyAwbywt7vU_bC8_nYHiHglUSs-pgkntFSYC9QcWnuu5-r9RLYHnudgprMb06=s0",
+        "https://2.bp.blogspot.com/Fdj9hjjQP9iIQJdDtWVc8CwLsrv6XUgDJkefXX7nRxoPb62Iunsez94cFobYRw7KS89-or_1Yts3=s0",
+        "https://2.bp.blogspot.com/ULaVbB9AgRhqmP8NGdgcZ4PXEdwLCnsHETQS8lRrwPSoZCfDODvlYIzX73EogU0STj-goJWMWWO8=s0",
+        "https://2.bp.blogspot.com/C6zEbCRrGRRAvscETUFQTLOtAyPL_yv5ngNAip8IHJDZmSrGlboDk-AQuvzhNHkkY25SBdyRsDrH=s0",
+        "https://2.bp.blogspot.com/sqHw6voSRjCfPSkDiI5qI0gNrxRM6dyq_OclSbcyPXsKnqfzN_nn1oCU3arcsMq_tt1qc7mhp9jx=s0",
+        "https://2.bp.blogspot.com/i1N4C50kP0nT3kMPmtuR9AecucymJuAIQqO8OkWvFsSpfDaOrx5LXojj5IF7ZSXZfmrGAxP_lOHb=s0",
+        "https://2.bp.blogspot.com/SVP5vddXsoJD0iy4-_fR1mI5_7M_O1QlnR9xLw9LlvV8XsZxB3cy00bfVNftmlAed25sva_4AWAY=s0",
+        "https://2.bp.blogspot.com/K5c20XN7iNoxwapKIpLEHD_Q57EAe6LE-ozCBjp89AmZH5s1VN-iylhMjAQvbD5l3oUc4bCJS_8o=s0",
+        "https://2.bp.blogspot.com/Yr3Zv1Gr6my0iFmEFV50vE8GQy9ZF9C_DPMEPYLNxm25dkc6iC15MxD8poXENZLmuTnXaoSfYuNE=s0",
+        "https://2.bp.blogspot.com/9duRxYg5UK8Xs9VYzETNf6UKFvVqW08_emEooEwKvTJpvMCCvmTKIoSYGdLRuKyX32_GSogyTyAw=s0",
+        "https://2.bp.blogspot.com/fwPbuQs-XOI7OpRtoVqUhscNH727KKyiTtBzJpBy9lAnXcrBEJHPJQXTnVn40LEKKIRBSRgQnpwb=s0",
+        "https://2.bp.blogspot.com/okRxJNHeGaLjd1yqyihB4aL-EHxbCs2IzGiolaJqCvCCHxBamCcLxIlVHpB8YPiuSUS5AzPZckbZ=s0",
+        "https://2.bp.blogspot.com/5dT_jrQFVwDsTxXW6ZPpIUmiLbKCBcWwHX2hg0R5zj2JBXaHeTUw20PRHSg6LHvTWV36-C5qEcYd=s0",
+        "https://2.bp.blogspot.com/UlZ-jSW07hO1isNPqD6sSNc8X5hIvcmlrxdyiPwXXMCr1pfSViPZXuU1xsNn4EfMoyzWgfZCCB2L=s0",
+        "https://2.bp.blogspot.com/qcs-N-L7Lba0PwNjPym_J_vKgXjYUoXb8rSqYwFwW6phcENGH1WoGVtHCXdSqrgQTSBSwL-Q1zFG=s0",
+        "https://2.bp.blogspot.com/wLdz3zJf6u5GuxHVRiJUYM3zKoLbBZ6E0uIQV0So_4w1SUh_dWNjIO56f9-Ff6eqe3CffXt55dqL=s0",
+        "https://2.bp.blogspot.com/Cn_oLSjdDFNvt9_dYSwy6PPeUoMVWsvTupc5BWpReB3INNyJ7rchVGSAEgWlXu0vQd1vEd3GGjxj=s0",
+        "https://2.bp.blogspot.com/I9NisHt9Kf_rpMxAebPU3piXOl_V7Wj3xNHWUwSi0GT7MzNZBW42-hsoQzxJNGz7juICI94Y1o8o=s0",
+        "https://2.bp.blogspot.com/kUi6uLjz4W2Y8vvSkEQSX0wfrBublOTIJ0Q8MeahsFau7ramGCQ9k8Yfc3AOWhqY0mybuWBzx33T=s0",
+        "https://2.bp.blogspot.com/6JJjUV4K5aBW69cdhtiwZawnuIk9HY6z-tR7AkOjZeUkeBH0msq-8UiR29DpWWzW-TXIy6rjf3rF=s0",
+        "https://2.bp.blogspot.com/Rjzcw6Vyk7nm8B5FNRh-8EsFAFdavCWeuJE9f77-IBq6BD4jzgZv7Kt4RMZvwVbTBDbC1GqJUBsq=s0",
+        "https://2.bp.blogspot.com/bgbxlZK7Jsun3sMt4BrT8wwaPkSBAk832AK-VEZspNKKmOmCGqYJv27B-nlePlDqg0QQ2uzwFqqw=s0",
+        "https://2.bp.blogspot.com/OlBIi3okGFuEhnZ9y24NDkZjjKfPXIDJxETf0qYoiBYSZlWZu7fFtrJW4DS4tF86W2PkY13zmobu=s0"
+      ],
+      "raw_file": "diagnostics\\readallcomics\\chapter-batman-v1-annual-001.raw.html",
+      "clean_file": "diagnostics\\readallcomics\\chapter-batman-v1-annual-001.clean.html"
+    }
+  ],
+  "paperback_repo": {
+    "repo_url": null,
+    "checked": false,
+    "versioning_url": null,
+    "status": null,
+    "error": null,
+    "sources": [],
+    "readallcomics_present": false,
+    "source_file_checks": []
+  }
+}
