@@ -54,6 +54,11 @@ interface JsonLdGraphNode {
     illustrator?: JsonLdReference | JsonLdReference[]
     artist?: JsonLdReference | JsonLdReference[]
     startDate?: string
+    itemListElement?: Array<{
+        url?: string
+        name?: string
+        item?: JsonLdGraphNode
+    }>
     hasPart?: {
         itemListElement?: Array<{
             item?: JsonLdGraphNode
@@ -95,6 +100,16 @@ export class BatCaveParser {
         })
 
         return results
+    }
+
+    parseCatalogueResults($: CheerioAPI): BatCaveSourceComic[] {
+        const results = this.parseSearchResults($)
+
+        if (results.length > 0) {
+            return results
+        }
+
+        return this.parseItemListResults($)
     }
 
     parseHomeSectionItems($: CheerioAPI, rootSelector: string): BatCaveSourceComic[] {
@@ -316,6 +331,12 @@ export class BatCaveParser {
     }
 
     parseTags($: CheerioAPI): BatCaveTag[] {
+        const tagsFromJson = this.parseFilterTags($)
+
+        if (tagsFromJson.length > 0) {
+            return tagsFromJson
+        }
+
         const tags: BatCaveTag[] = []
         const seen = new Set<string>()
 
@@ -362,6 +383,60 @@ export class BatCaveParser {
 
     extractPostId(comicId: string): string | undefined {
         return comicId.match(/^(\d+)-/)?.[1]
+    }
+
+    private parseItemListResults($: CheerioAPI): BatCaveSourceComic[] {
+        const itemList = this.getJsonLdGraph($).find((node: JsonLdGraphNode) => this.hasType(node, 'ItemList'))
+        const results: BatCaveSourceComic[] = []
+        const seen = new Set<string>()
+
+        itemList?.itemListElement?.forEach((itemElement) => {
+            const url = itemElement.url || itemElement.item?.url
+            const title = this.cleanText(itemElement.name || itemElement.item?.name)
+            const comicId = this.extractComicId(url)
+
+            if (!comicId || !title || seen.has(comicId)) {
+                return
+            }
+
+            seen.add(comicId)
+            results.push({
+                comicId,
+                title
+            })
+        })
+
+        return results
+    }
+
+    private parseFilterTags($: CheerioAPI): BatCaveTag[] {
+        const raw = this.extractWindowObject($, '__XFILTER__')
+
+        if (!raw) {
+            return []
+        }
+
+        try {
+            const data = JSON.parse(raw) as {
+                filter_items?: {
+                    g?: {
+                        values?: Array<{ value?: string }>
+                    }
+                }
+            }
+
+            return (data.filter_items?.g?.values ?? [])
+                .map((tag): BatCaveTag | undefined => {
+                    const label = this.cleanText(tag.value)
+
+                    return label
+                        ? { id: label, label }
+                        : undefined
+                })
+                .filter((tag): tag is BatCaveTag => Boolean(tag))
+        } catch {
+            return []
+        }
     }
 
     private parseComicFromSearchCard($: CheerioAPI, element: any): BatCaveSourceComic | undefined {
@@ -455,24 +530,81 @@ export class BatCaveParser {
     }
 
     private parseReaderData($: CheerioAPI): ReaderData | undefined {
-        let parsedData: ReaderData | undefined
+        const raw = this.extractWindowObject($, '__DATA__')
+
+        if (!raw) {
+            return undefined
+        }
+
+        try {
+            return JSON.parse(raw)
+        } catch {
+            return undefined
+        }
+    }
+
+    private extractWindowObject($: CheerioAPI, objectName: string): string | undefined {
+        let rawObject: string | undefined
 
         $('script').each((_: number, element: any) => {
             const script = $(element).contents().text()
-            const match = script.match(/window\.__DATA__\s*=\s*(\{[\s\S]*?\})\s*;?\s*(?:<\/script>|$)/)
+            const startToken = `window.${objectName} = `
+            const startIndex = script.indexOf(startToken)
 
-            if (!match) {
+            if (startIndex < 0) {
                 return
             }
 
-            try {
-                parsedData = JSON.parse(match[1])
-            } catch {
-                parsedData = undefined
+            const objectStart = script.indexOf('{', startIndex)
+
+            if (objectStart < 0) {
+                return
             }
+
+            let depth = 0
+            let inString = false
+            let escaped = false
+
+            for (let index = objectStart; index < script.length; index += 1) {
+                const character = script[index]
+
+                if (escaped) {
+                    escaped = false
+                    continue
+                }
+
+                if (character === '\\') {
+                    escaped = true
+                    continue
+                }
+
+                if (character === '"') {
+                    inString = !inString
+                    continue
+                }
+
+                if (inString) {
+                    continue
+                }
+
+                if (character === '{') {
+                    depth += 1
+                }
+
+                if (character === '}') {
+                    depth -= 1
+
+                    if (depth === 0) {
+                        rawObject = script.slice(objectStart, index + 1)
+                        return false
+                    }
+                }
+            }
+
+            return undefined
         })
 
-        return parsedData
+        return rawObject
     }
 
     private resolveReferences(value: JsonLdReference | JsonLdReference[] | undefined, entities: Map<string, JsonLdGraphNode>): string[] {
