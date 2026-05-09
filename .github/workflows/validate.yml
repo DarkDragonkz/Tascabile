@@ -4,12 +4,11 @@ on:
   push:
     branches:
       - main
-      - "0.8"
+      - "paperback-0-9-rebuild"
       - "feature/**"
   pull_request:
     branches:
       - main
-      - "0.8"
   workflow_dispatch:
 
 jobs:
@@ -29,8 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run TypeScript typecheck
-        run: npm run typecheck
+      - name: Run TypeScript compiler
+        run: npm run tsc
 
-      - name: Run tests
-        run: npm test
+      - name: Run lint check
+        run: npm run lint:check
+
+      - name: Run format check
+        run: npm run format:check
