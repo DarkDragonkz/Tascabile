@@ -100,11 +100,19 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
 
   async getSearchResults(
     query: SearchQuery<JSONValue>,
-    _metadata: JSONValue | undefined,
+    metadata: JSONValue | undefined,
     _sortingOption: SortingOption | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
+    const page = typeof metadata === 'object' && metadata && 'page' in metadata
+      ? Number((metadata as { page?: number }).page ?? 1)
+      : 1
+
+    const keyword = String(query.title ?? '')
+      .replace(/[\/]+/g, ' ')
+      .trim()
+
     const html = await fetchText({
-      url: `${MANGA_WORLD_DOMAIN}/archive?keyword=${encodeURIComponent(query.title ?? '')}`,
+      url: `${MANGA_WORLD_DOMAIN}/archive?keyword=${encodeURIComponent(keyword)}&page=${page}`,
       method: 'GET',
     })
 
@@ -118,7 +126,7 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
         subtitle: manga.subtitle,
         contentRating: pbconfig.contentRating,
       })),
-      metadata: undefined,
+      metadata: mangas.length > 0 ? { page: page + 1 } : undefined,
     }
   }
 
