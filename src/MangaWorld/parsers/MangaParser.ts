@@ -24,7 +24,7 @@ export class MangaParser {
       ''
     )
 
-    const genres = $('.meta-data a').map((_, element) => {
+    const genres = $('.meta-data .badge[href*="genre="]').map((_, element) => {
       return $(element).text().trim()
     }).get().filter(Boolean)
 
