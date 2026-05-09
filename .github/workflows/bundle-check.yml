@@ -5,12 +5,11 @@ on:
   push:
     branches:
       - main
-      - "0.8"
+      - "paperback-0-9-rebuild"
       - "feature/**"
   pull_request:
     branches:
       - main
-      - "0.8"
 
 jobs:
   bundle-check:
@@ -29,60 +28,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate project
-        run: npm run validate
+      - name: Run TypeScript compiler
+        run: npm run tsc
 
-      - name: Prepare bundle directory
-        shell: bash
-        run: mkdir -p bundles/0.8
+      - name: Build extensions
+        run: npm run build
 
-      - name: Build Paperback bundle
-        run: npm run bundle -- --folder=0.8
-
-      - name: Inspect generated bundle
+      - name: Inspect build output
         shell: bash
         run: |
           echo "Generated files:"
-          find bundles -maxdepth 4 -type f | sort || true
+          find dist -maxdepth 4 -type f | sort || true
 
-      - name: Print versioning JSON
-        shell: bash
-        run: |
-          cat bundles/0.8/versioning.json
-
-      - name: Verify versioning JSON
-        shell: bash
-        run: |
-          if [ ! -f "bundles/0.8/versioning.json" ]; then
-            echo "Missing bundles/0.8/versioning.json"
-            exit 1
-          fi
-
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          data = json.loads(Path('bundles/0.8/versioning.json').read_text())
-          sources = data.get('sources')
-
-          if not isinstance(sources, list):
-              raise SystemExit('versioning.json sources is not a list')
-
-          if any(source is None for source in sources):
-              raise SystemExit('versioning.json contains a null source')
-
-          ids = [source.get('id') for source in sources]
-          print('Source ids:', ids)
-
-          expected = {'BatCave', 'MangaWorld'}
-          actual = set(ids)
-
-          if actual != expected:
-              raise SystemExit(f'Unexpected sources: expected {sorted(expected)}, got {sorted(actual)}')
-          PY
-
-      - name: Upload bundle artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: paperback-bundle-0.8
-          path: bundles/0.8
+          name: paperback-0.9-build
+          path: dist
