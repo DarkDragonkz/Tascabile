@@ -1,8 +1,10 @@
-import type { Cheerio } from 'cheerio'
-
 import { absoluteUrl } from './url'
 
-export function getImageUrl(image: Cheerio<unknown>): string {
+interface ImageAttributes {
+  attr(name: string): string | undefined
+}
+
+export function getImageUrl(image: ImageAttributes): string {
   const srcset = image.attr('srcset') ?? image.attr('data-srcset') ?? ''
   const firstSrcsetUrl = srcset.split(',')[0]?.trim().split(' ')[0]
 
