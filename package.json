@@ -9,7 +9,7 @@
     "lint:check": "oxlint --type-aware --deny-warnings",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "tsc": "tsc",
+    "tsc": "tsc --noEmit src/MangaWorld/main.ts src/MangaWorld/pbconfig.ts src/ReadAllComics/main.ts src/ReadAllComics/pbconfig.ts src/common/network.ts",
     "bundle": "paperback-cli bundle",
     "test": "paperback-cli test --noConsole --output ./bundles/tests.json",
     "serve": "paperback-cli serve",
