@@ -204,7 +204,7 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       type: 'featuredCarouselItem',
       mangaId: manga.id,
       title: manga.title,
-      subtitle: manga.subtitle,
+      supertitle: manga.chapterTitle ?? manga.subtitle,
       imageUrl: manga.image,
       contentRating: pbconfig.contentRating,
     }
