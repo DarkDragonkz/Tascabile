@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 
 import type { Manga } from '../models/Manga'
+import { getImageUrl } from '../utils/image'
 import { absoluteUrl, extractChapterId, extractMangaId } from '../utils/url'
 
 export interface MangaUpdate extends Manga {
@@ -31,7 +32,6 @@ export class HomeParser {
       const image = root.find('img').first()
       const href = mangaAnchor.attr('href')
       const title = image.attr('alt') ?? mangaAnchor.attr('title') ?? mangaAnchor.text().trim()
-      const imageUrl = image.attr('src') ?? image.attr('data-src')
 
       if (!href || !title) return
 
@@ -45,7 +45,7 @@ export class HomeParser {
       mangas.push({
         id: extractMangaId(url),
         title,
-        image: imageUrl ? absoluteUrl(imageUrl) : '',
+        image: getImageUrl(image),
         subtitle: chapterTitle || undefined,
         url,
         chapterId: chapterHref ? extractChapterId(chapterHref) : undefined,
