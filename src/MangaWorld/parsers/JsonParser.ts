@@ -6,7 +6,7 @@ import type {
 
 export class JsonParser {
   getWindowEntries(html: string): WindowEntry[] {
-    const regex = /\$MC\s*=\s*\(window\.\$MC\|\|\[\]\)\.concat\(([\s\S]*?)\)<\/script>/i
+    const regex = /<script[^>]*>\s*[^<]*?\$MC\s*=\s*\(window\.\$MC\|\|\[\]\)\.concat\(([\s\S]*?)\)\s*<\/script>/i
     const match = html.match(regex)
 
     if (!match?.[1]) {
