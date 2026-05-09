@@ -69,7 +69,7 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
     }
   }
 
-  async getSearchResults(query: SearchQuery): Promise<PagedResults<SearchResultItem>> {
+  async getSearchResults(query: SearchQuery<unknown[]>): Promise<PagedResults<SearchResultItem>> {
     const html = await fetchText({
       url: `${MANGA_WORLD_DOMAIN}/archive?keyword=${encodeURIComponent(query.title ?? '')}`,
       method: 'GET',
