@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 
 import type { Manga } from '../models/Manga'
+import { getImageUrl } from '../utils/image'
 import { absoluteUrl, extractMangaId } from '../utils/url'
 
 export class SearchParser {
@@ -10,12 +11,11 @@ export class SearchParser {
     const mangas: Manga[] = []
 
     $('.comics-grid .entry, .entry.search, .entry').each((_, element) => {
-      const anchor = $(element).find('a').first()
+      const anchor = $(element).find('a[href*="/manga/"]').first()
       const image = $(element).find('img').first()
 
       const href = anchor.attr('href')
       const title = image.attr('alt') ?? anchor.attr('title') ?? anchor.text().trim()
-      const imageUrl = image.attr('src')
 
       if (!href || !title) {
         return
@@ -26,7 +26,7 @@ export class SearchParser {
       mangas.push({
         id: extractMangaId(url),
         title,
-        image: imageUrl ? absoluteUrl(imageUrl) : '',
+        image: getImageUrl(image),
         url,
       })
     })
