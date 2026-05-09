@@ -36,3 +36,5 @@ jobs:
 
       - name: Run format check
         run: npm run format:check
+
+# Trigger CI for Paperback 0.9 migration
