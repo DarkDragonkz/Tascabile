@@ -41,6 +41,10 @@ export class JsonParser {
       return 'unknown'
     }
 
+    if ('mangas' in data) {
+      return 'search'
+    }
+
     if ('manga' in data) {
       return 'manga'
     }
