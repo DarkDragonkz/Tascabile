@@ -8,21 +8,30 @@ import {
   type DiscoverSectionItem,
   type DiscoverSectionProviding,
   type Extension,
+  type JSONValue,
   type MangaProviding,
   type PagedResults,
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
+  type SortingOption,
   type SourceManga,
 } from '@paperback/types'
 
 import { fetchText } from '../common/http'
 import pbconfig from './pbconfig'
 import { MANGA_WORLD_DOMAIN } from './constants/MangaWorld'
+import type { MangaUpdate } from './parsers/HomeParser'
 import { ChapterParser } from './parsers/ChapterParser'
 import { HomeParser } from './parsers/HomeParser'
 import { MangaParser } from './parsers/MangaParser'
 import { SearchParser } from './parsers/SearchParser'
+
+const DISCOVER_SECTION_IDS = {
+  TRENDING: 'trending',
+  LATEST_UPDATES: 'latest-updates',
+  LATEST_ADDED: 'latest-added',
+} as const
 
 export class MangaWorldExtension implements Extension, SearchResultsProviding, MangaProviding, ChapterProviding, DiscoverSectionProviding {
   globalRateLimiter = new BasicRateLimiter('mangaworld', {
@@ -43,33 +52,57 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     return [
       {
-        id: 'popular',
-        title: 'Popular Manga',
+        id: DISCOVER_SECTION_IDS.TRENDING,
+        title: 'Capitoli di tendenza',
+        type: DiscoverSectionType.prominentCarousel,
+      },
+      {
+        id: DISCOVER_SECTION_IDS.LATEST_UPDATES,
+        title: 'Ultimi aggiornamenti',
+        type: DiscoverSectionType.chapterUpdates,
+      },
+      {
+        id: DISCOVER_SECTION_IDS.LATEST_ADDED,
+        title: 'Ultime aggiunte',
         type: DiscoverSectionType.simpleCarousel,
       },
     ]
   }
 
-  async getDiscoverSectionItems(): Promise<PagedResults<DiscoverSectionItem>> {
+  async getDiscoverSectionItems(
+    section: DiscoverSection,
+    _metadata: JSONValue | undefined,
+  ): Promise<PagedResults<DiscoverSectionItem>> {
     const html = await fetchText({
       url: MANGA_WORLD_DOMAIN,
       method: 'GET',
     })
 
-    const mangas = this.homeParser.parsePopular(html)
+    if (section.id === DISCOVER_SECTION_IDS.LATEST_UPDATES) {
+      return {
+        items: this.homeParser.parseLatest(html).map((manga) => this.toChapterUpdateItem(manga)),
+        metadata: undefined,
+      }
+    }
+
+    if (section.id === DISCOVER_SECTION_IDS.LATEST_ADDED) {
+      return {
+        items: this.homeParser.parseLatest(html).map((manga) => this.toSimpleItem(manga)),
+        metadata: undefined,
+      }
+    }
 
     return {
-      items: mangas.map((manga) => ({
-        type: 'simpleCarouselItem',
-        mangaId: manga.id,
-        title: manga.title,
-        imageUrl: manga.image,
-        contentRating: pbconfig.contentRating,
-      })),
+      items: this.homeParser.parseTrending(html).map((manga) => this.toProminentItem(manga)),
+      metadata: undefined,
     }
   }
 
-  async getSearchResults(query: SearchQuery<unknown[]>): Promise<PagedResults<SearchResultItem>> {
+  async getSearchResults(
+    query: SearchQuery<JSONValue>,
+    _metadata: JSONValue | undefined,
+    _sortingOption: SortingOption | undefined,
+  ): Promise<PagedResults<SearchResultItem>> {
     const html = await fetchText({
       url: `${MANGA_WORLD_DOMAIN}/archive?keyword=${encodeURIComponent(query.title ?? '')}`,
       method: 'GET',
@@ -82,8 +115,10 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
         mangaId: manga.id,
         title: manga.title,
         imageUrl: manga.image,
+        subtitle: manga.subtitle,
         contentRating: pbconfig.contentRating,
       })),
+      metadata: undefined,
     }
   }
 
@@ -148,6 +183,40 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       id: chapter.chapterId,
       mangaId: chapter.sourceManga.mangaId,
       pages: this.chapterParser.parsePages(html),
+    }
+  }
+
+  private toProminentItem(manga: MangaUpdate): DiscoverSectionItem {
+    return {
+      type: 'prominentCarouselItem',
+      mangaId: manga.id,
+      title: manga.title,
+      subtitle: manga.subtitle,
+      imageUrl: manga.image,
+      contentRating: pbconfig.contentRating,
+    }
+  }
+
+  private toSimpleItem(manga: MangaUpdate): DiscoverSectionItem {
+    return {
+      type: 'simpleCarouselItem',
+      mangaId: manga.id,
+      title: manga.title,
+      subtitle: manga.subtitle,
+      imageUrl: manga.image,
+      contentRating: pbconfig.contentRating,
+    }
+  }
+
+  private toChapterUpdateItem(manga: MangaUpdate): DiscoverSectionItem {
+    return {
+      type: 'chapterUpdatesCarouselItem',
+      mangaId: manga.id,
+      chapterId: manga.chapterId ?? manga.id,
+      title: manga.title,
+      subtitle: manga.chapterTitle,
+      imageUrl: manga.image,
+      contentRating: pbconfig.contentRating,
     }
   }
 }
