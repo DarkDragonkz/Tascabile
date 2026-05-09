@@ -9,6 +9,10 @@ export interface MangaUpdate extends Manga {
 }
 
 export class HomeParser {
+  parsePopular(html: string): MangaUpdate[] {
+    return this.parseTrending(html)
+  }
+
   parseTrending(html: string): MangaUpdate[] {
     return this.parseCards(html, '#chapters-slide .entry.vertical', true)
   }
