@@ -31,6 +31,7 @@ const DISCOVER_SECTION_IDS = {
   TRENDING: 'trending',
   LATEST_UPDATES: 'latest-updates',
   LATEST_ADDED: 'latest-added',
+  ARCHIVE: 'archive',
 } as const
 
 export class MangaWorldExtension implements Extension, SearchResultsProviding, MangaProviding, ChapterProviding, DiscoverSectionProviding {
@@ -54,7 +55,7 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       {
         id: DISCOVER_SECTION_IDS.TRENDING,
         title: 'Capitoli di tendenza',
-        type: DiscoverSectionType.prominentCarousel,
+        type: DiscoverSectionType.featured,
       },
       {
         id: DISCOVER_SECTION_IDS.LATEST_UPDATES,
@@ -64,6 +65,11 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       {
         id: DISCOVER_SECTION_IDS.LATEST_ADDED,
         title: 'Ultime aggiunte',
+        type: DiscoverSectionType.prominentCarousel,
+      },
+      {
+        id: DISCOVER_SECTION_IDS.ARCHIVE,
+        title: 'Archivio',
         type: DiscoverSectionType.simpleCarousel,
       },
     ]
@@ -87,13 +93,20 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
 
     if (section.id === DISCOVER_SECTION_IDS.LATEST_ADDED) {
       return {
+        items: this.homeParser.parseLatest(html).map((manga) => this.toProminentItem(manga)),
+        metadata: undefined,
+      }
+    }
+
+    if (section.id === DISCOVER_SECTION_IDS.ARCHIVE) {
+      return {
         items: this.homeParser.parseLatest(html).map((manga) => this.toSimpleItem(manga)),
         metadata: undefined,
       }
     }
 
     return {
-      items: this.homeParser.parseTrending(html).map((manga) => this.toProminentItem(manga)),
+      items: this.homeParser.parseTrending(html).map((manga) => this.toFeaturedItem(manga)),
       metadata: undefined,
     }
   }
@@ -145,7 +158,7 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
             id: 'genres',
             title: 'Genres',
             tags: manga.genres.map((genre) => ({
-              id: genre,
+              id: this.toSafeId(genre),
               title: genre,
             })),
           },
@@ -186,6 +199,17 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
     }
   }
 
+  private toFeaturedItem(manga: MangaUpdate): DiscoverSectionItem {
+    return {
+      type: 'featuredCarouselItem',
+      mangaId: manga.id,
+      title: manga.title,
+      subtitle: manga.subtitle,
+      imageUrl: manga.image,
+      contentRating: pbconfig.contentRating,
+    }
+  }
+
   private toProminentItem(manga: MangaUpdate): DiscoverSectionItem {
     return {
       type: 'prominentCarouselItem',
@@ -218,6 +242,17 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       imageUrl: manga.image,
       contentRating: pbconfig.contentRating,
     }
+  }
+
+  private toSafeId(value: string): string {
+    const safe = value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._\-@()[\]%?#+=/&:]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    return safe || 'unknown'
   }
 }
 
