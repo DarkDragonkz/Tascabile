@@ -4,7 +4,7 @@ import { ContentRating, SourceIntents } from '@paperback/types'
 export default {
   name: 'MangaWorld',
   description: 'MangaWorld source for Paperback 0.9',
-  version: '0.9.0-alpha.9',
+  version: '0.9.0-alpha.10',
   icon: 'icon.svg',
   language: 'it',
   contentRating: ContentRating.MATURE,
