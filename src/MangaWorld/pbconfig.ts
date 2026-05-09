@@ -11,7 +11,6 @@ export default {
   capabilities: [
     SourceIntents.DISCOVER_SECTION_PROVIDING,
     SourceIntents.SEARCH_RESULT_PROVIDING,
-    SourceIntents.MANGA_PROVIDING,
     SourceIntents.CHAPTER_PROVIDING,
   ],
   badges: [
