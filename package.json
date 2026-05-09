@@ -1,25 +1,29 @@
 {
   "name": "tascabile",
-  "version": "0.1.0",
-  "description": "Repository modulare di estensioni Paperback/Tascabile per manga e comics.",
+  "version": "0.9.0",
+  "description": "Repository di estensioni Paperback/Tascabile ricostruita per Paperback 0.9.",
   "private": true,
+  "type": "module",
   "scripts": {
-    "bundle": "npx paperback bundle",
-    "serve": "npx paperback serve",
-    "test": "npx mocha --timeout 300000 -r ts-node/register \"lib/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit",
-    "validate": "npm run typecheck && npm test"
-  },
-  "dependencies": {
-    "@paperback/toolchain": "^0.8.4",
-    "@paperback/types": "^0.8.4",
-    "cheerio": "1.0.0-rc.12"
+    "lint": "oxlint --type-aware --fix",
+    "lint:check": "oxlint --type-aware --deny-warnings",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "tsc": "tsc",
+    "bundle": "paperback-cli bundle",
+    "test": "paperback-cli test --noConsole --output ./bundles/tests.json",
+    "serve": "paperback-cli serve",
+    "dev": "paperback-cli serve --watch"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^24.9.2",
-    "mocha": "^11.7.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^4.9.5"
+    "@paperback/toolchain": "^1.0.0-alpha.86",
+    "@paperback/types": "^1.0.0-alpha.86",
+    "@types/chai": "^5.2.3",
+    "chai": "^6.2.2",
+    "cheerio": "^1.2.0",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
+    "oxlint-tsgolint": "^0.22.1",
+    "typescript": "^6.0.3"
   }
 }
