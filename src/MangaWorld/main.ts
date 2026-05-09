@@ -31,7 +31,6 @@ const DISCOVER_SECTION_IDS = {
   TRENDING: 'trending',
   LATEST_UPDATES: 'latest-updates',
   LATEST_ADDED: 'latest-added',
-  ARCHIVE: 'archive',
 } as const
 
 export class MangaWorldExtension implements Extension, SearchResultsProviding, MangaProviding, ChapterProviding, DiscoverSectionProviding {
@@ -67,11 +66,6 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
         title: 'Ultime aggiunte',
         type: DiscoverSectionType.prominentCarousel,
       },
-      {
-        id: DISCOVER_SECTION_IDS.ARCHIVE,
-        title: 'Archivio',
-        type: DiscoverSectionType.simpleCarousel,
-      },
     ]
   }
 
@@ -94,13 +88,6 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
     if (section.id === DISCOVER_SECTION_IDS.LATEST_ADDED) {
       return {
         items: this.homeParser.parseLatest(html).map((manga) => this.toProminentItem(manga)),
-        metadata: undefined,
-      }
-    }
-
-    if (section.id === DISCOVER_SECTION_IDS.ARCHIVE) {
-      return {
-        items: this.homeParser.parseLatest(html).map((manga) => this.toSimpleItem(manga)),
         metadata: undefined,
       }
     }
@@ -147,10 +134,10 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
       mangaId,
       mangaInfo: {
         primaryTitle: manga.title,
-        secondaryTitles: [],
+        secondaryTitles: manga.altTitles,
         synopsis: manga.description,
         thumbnailUrl: manga.image,
-        status: 'Unknown',
+        status: manga.status ?? 'Unknown',
         contentRating: pbconfig.contentRating,
         shareUrl: `${MANGA_WORLD_DOMAIN}/manga/${mangaId}`,
         tagGroups: [
@@ -213,17 +200,6 @@ export class MangaWorldExtension implements Extension, SearchResultsProviding, M
   private toProminentItem(manga: MangaUpdate): DiscoverSectionItem {
     return {
       type: 'prominentCarouselItem',
-      mangaId: manga.id,
-      title: manga.title,
-      subtitle: manga.subtitle,
-      imageUrl: manga.image,
-      contentRating: pbconfig.contentRating,
-    }
-  }
-
-  private toSimpleItem(manga: MangaUpdate): DiscoverSectionItem {
-    return {
-      type: 'simpleCarouselItem',
       mangaId: manga.id,
       title: manga.title,
       subtitle: manga.subtitle,
