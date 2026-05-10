@@ -398,9 +398,9 @@ class NineMangaExtension
   private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
     const urls: string[] = [];
 
-    $("select#page option").each((_, element) => {
+    $("select.sl-page option, select#page option").each((_, element) => {
       const value = $(element).attr("value") ?? "";
-      if (!value) return;
+      if (!value || !value.includes("/chapter/")) return;
 
       const url = normalizeUrl(value, baseUrl);
       if (url && !urls.includes(url)) urls.push(url);
