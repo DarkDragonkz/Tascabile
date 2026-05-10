@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-05-10T17:14:24.852Z",
+  "buildTime": "2026-05-10T17:16:10.973Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.86",
     "types": "1.0.0-alpha.86"
@@ -12,7 +12,7 @@
     {
       "name": "BatCave",
       "description": "Extension that pulls comic content from batcave.biz.",
-      "version": "1.0.0-alpha.25",
+      "version": "1.0.0-alpha.26",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -34,7 +34,7 @@
     {
       "name": "MangaWorld",
       "description": "Extension that pulls content from www.mangaworld.mx.",
-      "version": "1.0.0-alpha.25",
+      "version": "1.0.0-alpha.26",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -56,7 +56,7 @@
     {
       "name": "NineManga",
       "description": "Extension that pulls multi-language manga content from NineManga.",
-      "version": "1.0.0-alpha.25",
+      "version": "1.0.0-alpha.26",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -78,7 +78,7 @@
     {
       "name": "ReadAllComics",
       "description": "Extension that pulls comic content from readallcomics.com.",
-      "version": "1.0.0-alpha.25",
+      "version": "1.0.0-alpha.26",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
