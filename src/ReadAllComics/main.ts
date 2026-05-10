@@ -19,6 +19,7 @@ import {
   type SearchResultsProviding,
   type SourceManga,
 } from "@paperback/types";
+import type { JSONValue } from "@paperback/types/lib/JSON";
 import * as cheerio from "cheerio";
 
 const BASE_URL = "https://readallcomics.com";
@@ -91,6 +92,8 @@ class ReadAllComicsExtension
     section: DiscoverSection,
     metadata: PageMetadata | undefined,
   ): Promise<PagedResults<DiscoverSectionItem>> {
+    void section;
+
     const page = metadata?.page ?? 1;
     const url = page === 1 ? `${BASE_URL}/` : `${BASE_URL}/page/${page}/`;
     const html = await this.fetchText(url);
@@ -111,7 +114,7 @@ class ReadAllComicsExtension
   }
 
   async getSearchResults(
-    query: SearchQuery<unknown>,
+    query: SearchQuery<JSONValue>,
     metadata: PageMetadata | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
@@ -140,9 +143,13 @@ class ReadAllComicsExtension
     const $ = cheerio.load(html);
 
     const title = this.cleanText($("h1").first().text()) || this.cleanText($("title").text());
-    const description = this.cleanText($(".description-archive").text()) || this.cleanText($("meta[name='description']").attr("content"));
+    const description =
+      this.cleanText($(".description-archive").text()) ||
+      this.cleanText($("meta[name='description']").attr("content"));
     const imageUrl = this.normalizeUrl(
-      $(".description-archive img").first().attr("src") || $("meta[property='og:image']").attr("content") || "",
+      $(".description-archive img").first().attr("src") ||
+        $("meta[property='og:image']").attr("content") ||
+        "",
     );
     const genres = this.extractLabeledValue($, "Genres:");
     const publisher = this.extractLabeledValue($, "Publisher:");
@@ -151,6 +158,7 @@ class ReadAllComicsExtension
       mangaId,
       mangaInfo: {
         primaryTitle: title,
+        secondaryTitles: [],
         thumbnailUrl: imageUrl,
         synopsis: description,
         contentRating: ContentRating.EVERYONE,
@@ -244,7 +252,10 @@ class ReadAllComicsExtension
       const href = titleElement.attr("href") || $(element).find("a.book-link").first().attr("href") || "";
       const image = $(element).find("img.book-cover").first();
       const imageUrl = this.normalizeUrl(image.attr("data-src") || image.attr("src") || "");
-      const publisher = this.cleanText($(element).find(".cat-publisher").text()).replace(/^Publisher:\s*/iu, "");
+      const publisher = this.cleanText($(element).find(".cat-publisher").text()).replace(
+        /^Publisher:\s*/iu,
+        "",
+      );
       const year = this.cleanText($(element).find(".cat-vol").first().text());
       const issueCount = this.cleanText($(element).find(".issue-count").first().text());
       const subtitleParts = [publisher, year, issueCount].filter((value) => value.length > 0);
@@ -263,7 +274,9 @@ class ReadAllComicsExtension
 
     $("article, .post, .type-post").each((_, element) => {
       const anchor = $(element).find("a").first();
-      const title = this.cleanText($(element).find("h2, h1, .entry-title").first().text()) || this.cleanText(anchor.text());
+      const title =
+        this.cleanText($(element).find("h2, h1, .entry-title").first().text()) ||
+        this.cleanText(anchor.text());
       const href = anchor.attr("href") ?? "";
       const imageUrl = this.normalizeUrl($(element).find("img").first().attr("src") ?? "");
       if (title.length === 0 || href.length === 0) return;
