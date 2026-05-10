@@ -20,8 +20,14 @@ import { filter, jsonParser, tags, types } from "./utils";
 export class Parsers {
   private normalizeCoverUrl(source: MangaWorldGeneric, imageT?: string, image?: string): string {
     const rawUrl = imageT && imageT.trim().length > 0 ? imageT : image ?? "";
-    if (rawUrl.trim().length === 0) return "";
-    return new URL(rawUrl, source.base_url).toString();
+    const trimmedUrl = rawUrl.trim();
+    if (trimmedUrl.length === 0) return "";
+    if (trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")) return trimmedUrl;
+    if (trimmedUrl.startsWith("//")) return `https:${trimmedUrl}`;
+
+    const baseUrl = source.base_url.replace(/\/+$/u, "");
+    const path = trimmedUrl.replace(/^\/+/, "");
+    return `${baseUrl}/${path}`;
   }
 
   parseMangaDetails(
