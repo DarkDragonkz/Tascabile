@@ -41,6 +41,7 @@ const NINEMANGA_SITES = {
 } as const;
 
 type NineMangaLanguage = keyof typeof NINEMANGA_SITES;
+type CheerioSelection = ReturnType<CheerioAPI>;
 
 type NineMangaMetadata = {
   page?: number;
@@ -403,7 +404,7 @@ function isNineMangaLanguage(value: string | undefined): value is NineMangaLangu
   return value !== undefined && value in NINEMANGA_SITES;
 }
 
-function firstExisting(unit: cheerio.Cheerio<cheerio.Element>, selectors: string[]): cheerio.Cheerio<cheerio.Element> {
+function firstExisting(unit: CheerioSelection, selectors: string[]): CheerioSelection {
   for (const selector of selectors) {
     const result = unit.find(selector).first();
     if (result.length > 0) return result;
