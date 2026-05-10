@@ -19,7 +19,7 @@ import {
   type SearchResultsProviding,
   type SourceManga,
 } from "@paperback/types";
-import type { JSONValue } from "@paperback/types/lib/JSON";
+import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
 
 const BASE_URL = "https://readallcomics.com";
@@ -114,7 +114,7 @@ class ReadAllComicsExtension
   }
 
   async getSearchResults(
-    query: SearchQuery<JSONValue>,
+    query: SearchQuery<SearchFilterValue[]>,
     metadata: PageMetadata | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
