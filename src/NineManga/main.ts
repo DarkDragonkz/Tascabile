@@ -274,12 +274,13 @@ class NineMangaExtension
 
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const baseUrl = getSelectedSite().baseUrl;
+    const chapterImageKey = getChapterImageKey(chapter.chapterId);
     const firstUrl = `${baseUrl}/${chapter.chapterId}`;
     const firstHtml = await this.fetchHtml({ url: firstUrl, method: "GET" } as Request);
     const first$ = cheerio.load(firstHtml);
     const pages: string[] = [];
 
-    this.addChapterImages(pages, first$, firstHtml, baseUrl);
+    this.addChapterImages(pages, first$, firstHtml, baseUrl, chapterImageKey);
 
     const imageCount = getPageCount(firstHtml);
     const urls = this.getGeneratedChapterPageUrls(chapter.chapterId, baseUrl, imageCount);
@@ -289,7 +290,7 @@ class NineMangaExtension
       try {
         const html = await this.fetchHtml({ url, method: "GET" } as Request);
         const $ = cheerio.load(html);
-        this.addChapterImages(pages, $, html, baseUrl);
+        this.addChapterImages(pages, $, html, baseUrl, chapterImageKey);
       } catch {
         // Some generated page variants may not exist for every chapter.
       }
@@ -403,23 +404,32 @@ class NineMangaExtension
     return cards.slice(0, 48);
   }
 
-  private addChapterImages(pages: string[], $: CheerioAPI, html: string, baseUrl: string): void {
+  private addChapterImages(
+    pages: string[],
+    $: CheerioAPI,
+    html: string,
+    baseUrl: string,
+    chapterImageKey: string,
+  ): void {
     $("img.manga_pic, .pic_box img, #manga_pic img, .chapter-content img, .pic img").each((_, element) => {
-      const pageUrl = normalizeUrl($(element).attr("src") ?? $(element).attr("data-src") ?? "", baseUrl);
-      if (pageUrl && !pages.includes(pageUrl)) pages.push(pageUrl);
+      this.addChapterImageUrl(pages, $(element).attr("src") ?? $(element).attr("data-src") ?? "", baseUrl, chapterImageKey);
     });
 
     $("a.pic_download[href]").each((_, element) => {
-      const pageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
-      if (pageUrl && !pages.includes(pageUrl)) pages.push(pageUrl);
+      this.addChapterImageUrl(pages, $(element).attr("href") ?? "", baseUrl, chapterImageKey);
     });
 
     const imagePattern = /<(?:img|a)\b[^>]*(?:src|data-src|href)=["']([^"']+\.(?:webp|jpg|jpeg|png)(?:\?[^"']*)?)["'][^>]*>/giu;
     let match: RegExpExecArray | null;
     while ((match = imagePattern.exec(html)) !== null) {
-      const imageUrl = normalizeUrl(match[1] ?? "", baseUrl);
-      if (imageUrl && !pages.includes(imageUrl)) pages.push(imageUrl);
+      this.addChapterImageUrl(pages, match[1] ?? "", baseUrl, chapterImageKey);
     }
+  }
+
+  private addChapterImageUrl(pages: string[], rawUrl: string, baseUrl: string, chapterImageKey: string): void {
+    const imageUrl = normalizeUrl(rawUrl, baseUrl);
+    if (!isChapterImageUrl(imageUrl, chapterImageKey)) return;
+    if (!pages.includes(imageUrl)) pages.push(imageUrl);
   }
 
   private getGeneratedChapterPageUrls(chapterId: string, baseUrl: string, imageCount: number): string[] {
@@ -491,11 +501,27 @@ function getPageCount(html: string): number {
   const listNumMatch = html.match(/list_num\s*=\s*["'](\d+)["']/iu);
   if (listNumMatch?.[1]) return Number(listNumMatch[1]);
 
+  const visibleCounterMatch = html.match(/>\s*\d+\s*\/\s*(\d+)\s*</iu);
+  if (visibleCounterMatch?.[1]) return Number(visibleCounterMatch[1]);
+
   const mangaPicIndexes = [...html.matchAll(/manga_pic_(\d+)/giu)]
     .map((match) => Number(match[1]))
     .filter((value) => Number.isFinite(value));
 
   return mangaPicIndexes.length > 0 ? Math.max(...mangaPicIndexes) : 1;
+}
+
+function getChapterImageKey(chapterId: string): string {
+  const cleanChapterId = normalizeChapterId(chapterId);
+  const lastSegment = cleanChapterId.split("/").pop() ?? "";
+  return lastSegment.replace(/(?:-\d+)?\.html$/u, "");
+}
+
+function isChapterImageUrl(imageUrl: string, chapterImageKey: string): boolean {
+  if (!chapterImageKey) return false;
+  if (!/\.(?:webp|jpg|jpeg|png)(?:\?|$)/iu.test(imageUrl)) return false;
+  if (!imageUrl.includes("/pic/")) return false;
+  return imageUrl.includes(`/${chapterImageKey}/`);
 }
 
 function stripHtml(value: string): string {
