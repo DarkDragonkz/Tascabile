@@ -49,6 +49,16 @@ type JsonLdGraphNode = {
   publisher?: { name?: string } | { "@id"?: string };
   author?: Array<{ name?: string }>;
   illustrator?: Array<{ name?: string }>;
+  itemListElement?: Array<{
+    position?: number;
+    url?: string;
+    name?: string;
+    item?: {
+      url?: string;
+      name?: string;
+      issueNumber?: string;
+    };
+  }>;
   hasPart?: {
     itemListElement?: Array<{
       position?: number;
@@ -319,14 +329,17 @@ class BatCaveExtension
 
   private parseCards(html: string, sectionId: string): ParsedComicCard[] {
     const $ = cheerio.load(html);
-    const selector = sectionId === "hot_releases" ? ".sect--hot .poster" : ".poster";
+    const selector = sectionId === "hot_releases" ? ".sect--hot .poster, .sect--hot a[href$='.html']" : ".poster, a[href$='.html']";
     const cards: ParsedComicCard[] = [];
 
     $(selector).each((_, element) => {
       const href = $(element).attr("href") ?? "";
+      if (!this.isComicUrl(href)) return;
+
       const title =
         this.cleanText($(element).find(".poster__title").first().text()) ||
-        this.cleanText($(element).find("img").first().attr("alt"));
+        this.cleanText($(element).find("img").first().attr("alt")) ||
+        this.cleanText($(element).text());
       const image = $(element).find("img").first();
       const imageUrl = this.normalizeUrl(
         image.attr("data-src") ||
@@ -341,7 +354,7 @@ class BatCaveExtension
         .join(" · ");
       const rating = this.cleanText($(element).find(".poster__label--rate").first().text());
 
-      if (href.length === 0 || title.length === 0) return;
+      if (title.length === 0) return;
 
       cards.push({
         mangaId: this.urlToId(href),
@@ -352,7 +365,56 @@ class BatCaveExtension
       });
     });
 
-    return this.deduplicateCards(cards);
+    const withRegexFallback = cards.length > 0 ? cards : this.parsePosterCardsByRegex(html);
+    const withJsonFallback = withRegexFallback.length > 0 ? withRegexFallback : this.parseItemListCards(html);
+    return this.deduplicateCards(withJsonFallback);
+  }
+
+  private parsePosterCardsByRegex(html: string): ParsedComicCard[] {
+    const cards: ParsedComicCard[] = [];
+    const posterPattern = /<a\b[^>]*class=["'][^"']*poster[^"']*["'][^>]*href=["']([^"']+)["'][\s\S]*?<\/a>/giu;
+    let match: RegExpExecArray | null;
+
+    while ((match = posterPattern.exec(html)) !== null) {
+      const block = match[0];
+      const href = match[1] ?? "";
+      if (!this.isComicUrl(href)) continue;
+
+      const title =
+        this.decodeHtml(this.matchFirst(block, /<p\b[^>]*class=["'][^"']*poster__title[^"']*["'][^>]*>([\s\S]*?)<\/p>/iu)) ||
+        this.decodeHtml(this.matchFirst(block, /alt=["']([^"']+)["']/iu));
+      const imageUrl = this.normalizeUrl(
+        this.matchFirst(block, /data-src=["']([^"']+)["']/iu) ||
+          this.matchFirst(block, /src=["']([^"']+)["']/iu),
+      );
+      if (title.length === 0) continue;
+
+      cards.push({
+        mangaId: this.urlToId(href),
+        title,
+        imageUrl: imageUrl.startsWith(IMAGE_PLACEHOLDER_PREFIX) ? "" : imageUrl,
+        subtitle: "",
+      });
+    }
+
+    return cards;
+  }
+
+  private parseItemListCards(html: string): ParsedComicCard[] {
+    const itemList = this.findJsonLdNode(html, "ItemList");
+    const items = itemList?.itemListElement ?? [];
+    return items
+      .map((item) => {
+        const href = item.item?.url ?? item.url ?? "";
+        const title = this.cleanText(item.item?.name ?? item.name);
+        return {
+          mangaId: this.urlToId(href),
+          title,
+          imageUrl: "",
+          subtitle: "",
+        };
+      })
+      .filter((card) => card.mangaId.length > 0 && card.title.length > 0);
   }
 
   private deduplicateCards(cards: ParsedComicCard[]): ParsedComicCard[] {
@@ -483,6 +545,27 @@ class BatCaveExtension
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
     if (trimmed.startsWith("//")) return `https:${trimmed}`;
     return `${BASE_URL}/${trimmed.replace(/^\/+/, "")}`;
+  }
+
+  private isComicUrl(value: string): boolean {
+    const url = this.normalizeUrl(value);
+    return url.startsWith(`${BASE_URL}/`) && url.endsWith(".html") && !url.includes("/reader/");
+  }
+
+  private matchFirst(value: string, pattern: RegExp): string {
+    return value.match(pattern)?.[1] ?? "";
+  }
+
+  private decodeHtml(value: string): string {
+    return this.cleanText(
+      value
+        .replace(/<[^>]+>/gu, " ")
+        .replace(/&amp;/gu, "&")
+        .replace(/&#039;/gu, "'")
+        .replace(/&quot;/gu, '"')
+        .replace(/&ndash;/gu, "–")
+        .replace(/&mdash;/gu, "—"),
+    );
   }
 
   private extractChapterNumber(title: string, fallback: number): number {
