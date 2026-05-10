@@ -61,6 +61,8 @@ type JsonLdGraphNode = {
   };
 };
 
+type JsonLdDocument = JsonLdGraphNode | { "@graph": JsonLdGraphNode[] };
+
 type ReaderData = {
   news_id?: number;
   chapter_id?: number;
@@ -372,8 +374,8 @@ class BatCaveExtension
 
     for (const script of scripts) {
       try {
-        const parsed = JSON.parse(script) as { "@graph"?: JsonLdGraphNode[] } | JsonLdGraphNode;
-        const graph = "@graph" in parsed && parsed["@graph"] ? parsed["@graph"] : [parsed];
+        const parsed = JSON.parse(script) as JsonLdDocument;
+        const graph: JsonLdGraphNode[] = "@graph" in parsed ? parsed["@graph"] : [parsed];
         const node = graph.find((entry) => {
           const entryType = entry["@type"];
           return Array.isArray(entryType) ? entryType.includes(type) : entryType === type;
