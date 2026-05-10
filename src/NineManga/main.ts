@@ -41,7 +41,6 @@ const NINEMANGA_SITES = {
 } as const;
 
 type NineMangaLanguage = keyof typeof NINEMANGA_SITES;
-type CheerioSelection = ReturnType<CheerioAPI>;
 
 type NineMangaMetadata = {
   page?: number;
@@ -134,7 +133,6 @@ class NineMangaExtension
       { id: "updated_section", title: `Ultimi aggiornamenti · ${language}`, type: DiscoverSectionType.simpleCarousel },
       { id: "popular_section", title: `Più popolari · ${language}`, type: DiscoverSectionType.featured },
       { id: "new_section", title: `Nuove serie · ${language}`, type: DiscoverSectionType.simpleCarousel },
-      { id: "catalog_section", title: `Catalogo · ${language}`, type: DiscoverSectionType.simpleCarousel },
     ];
   }
 
@@ -301,8 +299,6 @@ class NineMangaExtension
         return `${baseUrl}/list/Hot-Book/${pageSuffix}`;
       case "new_section":
         return `${baseUrl}/list/New-Book/${pageSuffix}`;
-      case "catalog_section":
-        return `${baseUrl}/category/${pageSuffix}`;
       default:
         return `${baseUrl}/list/New-Update/${pageSuffix}`;
     }
@@ -331,7 +327,7 @@ class NineMangaExtension
       case "updated_section":
         return "#tab_content_2 > li";
       default:
-        return "#tab_content_2 > li, ul.direlist > li, dl.bookinfo";
+        return "ul.direlist > li, dl.bookinfo";
     }
   }
 
@@ -340,19 +336,14 @@ class NineMangaExtension
 
     $(selector).each((_, element) => {
       const unit = $(element);
-      const titleLink = firstExisting(unit, [
-        "a.bookname",
-        "dd.book-list a[href*='/manga/']",
-        "dd a[href*='/manga/']",
-      ]);
+      const titleLink = unit
+        .find("a.bookname, dd.book-list a[href*='/manga/'], dd a[href*='/manga/']")
+        .first();
       const coverLink = unit.find("dt a[href*='/manga/'], a.bookface[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
-      const chapterLink = firstExisting(unit, [
-        "a.chaptername",
-        "dd.chapter a[href*='/chapter/']",
-        "dd.book-list a[href*='/chapter/']",
-        "a[href*='/chapter/']",
-      ]);
+      const chapterLink = unit
+        .find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/']")
+        .first();
       const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
       const title = cleanText(titleLink.text()) ||
         cleanText(titleLink.find("b").text()) ||
@@ -402,14 +393,6 @@ function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
 
 function isNineMangaLanguage(value: string | undefined): value is NineMangaLanguage {
   return value !== undefined && value in NINEMANGA_SITES;
-}
-
-function firstExisting(unit: CheerioSelection, selectors: string[]): CheerioSelection {
-  for (const selector of selectors) {
-    const result = unit.find(selector).first();
-    if (result.length > 0) return result;
-  }
-  return unit.find("__missing__");
 }
 
 function normalizeUrl(value: string, baseUrl: string): string {
