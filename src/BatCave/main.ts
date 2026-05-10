@@ -7,7 +7,6 @@ import {
   type Chapter,
   type ChapterDetails,
   type ChapterProviding,
-  type CloudflareBypassRequestProviding,
   type Cookie,
   type DiscoverSection,
   type DiscoverSectionItem,
@@ -85,7 +84,6 @@ class BatCaveExtension
     SearchResultsProviding,
     MangaProviding,
     ChapterProviding,
-    CloudflareBypassRequestProviding,
     DiscoverSectionProviding
 {
   readonly requestManager = new BatCaveInterceptor("batcave-main");
@@ -160,12 +158,10 @@ class BatCaveExtension
       };
     }
 
-    const request = {
+    const $ = await this.fetchCheerio({
       url: page > 1 ? `${BASE_URL}/search/${encodeURIComponent(title)}/page/${page}/` : `${BASE_URL}/search/${encodeURIComponent(title)}`,
       method: "GET",
-    };
-
-    const $ = await this.fetchCheerio(request);
+    } as Request);
     const searchResults: SearchResultItem[] = [];
 
     $(".readed").each((_, element) => {
@@ -197,7 +193,7 @@ class BatCaveExtension
     const $ = await this.fetchCheerio({
       url: `${BASE_URL}/${mangaId}.html`,
       method: "GET",
-    });
+    } as Request);
 
     const title = $("h1").first().text().trim();
     const image = this.normalizeImage($(".page__poster img").first().attr("src") || "");
@@ -254,7 +250,7 @@ class BatCaveExtension
     const $ = await this.fetchCheerio({
       url: `${BASE_URL}/${sourceManga.mangaId}.html`,
       method: "GET",
-    });
+    } as Request);
     const chapters: Chapter[] = [];
     const chapterScript = $(".page__chapters-list script")
       .filter((_, element) => $(element).html()?.includes("__DATA__") ?? false)
@@ -295,7 +291,7 @@ class BatCaveExtension
     const $ = await this.fetchCheerio({
       url: `${BASE_URL}/reader/${chapter.sourceManga.mangaId.split("-")[0]}/${chapter.chapterId}`,
       method: "GET",
-    });
+    } as Request);
     const pages: string[] = [];
     const scriptData = $("script")
       .filter((_, element) => $(element).html()?.includes("__DATA__") ?? false)
@@ -327,7 +323,7 @@ class BatCaveExtension
     const page = metadata?.page ?? 1;
     const collectedIds = metadata?.collectedIds ?? [];
     const url = page > 1 ? `${BASE_URL}/comix/page/${page}/` : `${BASE_URL}/comix/`;
-    const $ = await this.fetchCheerio({ url, method: "GET" });
+    const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
     const items: DiscoverSectionItem[] = [];
 
     $("#dle-content .readed, .readed").each((_, element) => {
@@ -353,7 +349,7 @@ class BatCaveExtension
     metadata: BatCaveMetadata | undefined,
   ): Promise<PagedResults<DiscoverSectionItem>> {
     const collectedIds = metadata?.collectedIds ?? [];
-    const $ = await this.fetchCheerio({ url: BASE_URL, method: "GET" });
+    const $ = await this.fetchCheerio({ url: BASE_URL, method: "GET" } as Request);
     const items: DiscoverSectionItem[] = [];
 
     $(".poster.grid-item, a.poster").each((_, element) => {
@@ -384,7 +380,7 @@ class BatCaveExtension
     const page = metadata?.page ?? 1;
     const collectedIds = metadata?.collectedIds ?? [];
     const url = page > 1 ? `${BASE_URL}/page/${page}/` : `${BASE_URL}/`;
-    const $ = await this.fetchCheerio({ url, method: "GET" });
+    const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
     const items: DiscoverSectionItem[] = [];
 
     $("#content-load .latest.grid-item").each((_, element) => {
