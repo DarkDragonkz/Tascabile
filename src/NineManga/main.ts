@@ -29,8 +29,7 @@ import type { CheerioAPI } from "cheerio";
 
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
-const MAX_CHAPTER_PAGE_REQUESTS = 80;
-const CHAPTER_IMAGES_PER_PAGE = 10;
+const MAX_CHAPTER_PAGE_REQUESTS = 120;
 
 const NINEMANGA_SITES = {
   eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
@@ -254,7 +253,7 @@ class NineMangaExtension
     $(".sub_vol_ul li").each((_, element) => {
       const unit = $(element);
       const chapterLink = unit.find("a.chapter_list_a[href*='/chapter/']").first();
-      const chapterId = normalizeChapterId(chapterLink.attr("href") ?? "");
+      const chapterId = normalizeChapterId(chapterLink.attr("href") ?? "").replace(/\.html$/u, "");
       const title = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
       const dateText = cleanText(unit.find("span").last().text());
       if (!chapterId || !title || seen.has(chapterId)) return;
@@ -274,26 +273,18 @@ class NineMangaExtension
 
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const baseUrl = getSelectedSite().baseUrl;
-    const chapterImageKey = getChapterImageKey(chapter.chapterId);
-    const firstUrl = `${baseUrl}/${chapter.chapterId}`;
-    const firstHtml = await this.fetchHtml({ url: firstUrl, method: "GET" } as Request);
-    const first$ = cheerio.load(firstHtml);
+    const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "");
+    const selectorUrl = `${baseUrl}/${cleanChapterId}-10-1`;
+    const selectorHtml = await this.fetchHtml({ url: selectorUrl, method: "GET" } as Request);
+    const selector$ = cheerio.load(selectorHtml);
+    const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
+    const urls = chapterPageUrls.length > 0 ? chapterPageUrls : [`${baseUrl}/${cleanChapterId}.html`];
     const pages: string[] = [];
 
-    this.addChapterImages(pages, first$, firstHtml, baseUrl, chapterImageKey);
-
-    const imageCount = getPageCount(firstHtml);
-    const urls = this.getGeneratedChapterPageUrls(chapter.chapterId, baseUrl, imageCount);
-
-    for (const url of urls) {
-      if (url === firstUrl) continue;
-      try {
-        const html = await this.fetchHtml({ url, method: "GET" } as Request);
-        const $ = cheerio.load(html);
-        this.addChapterImages(pages, $, html, baseUrl, chapterImageKey);
-      } catch {
-        // Some generated page variants may not exist for every chapter.
-      }
+    for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
+      const html = await this.fetchHtml({ url, method: "GET" } as Request);
+      const $ = cheerio.load(html);
+      this.addChapterImages(pages, $, baseUrl);
     }
 
     return { id: chapter.chapterId, mangaId: chapter.sourceManga.mangaId, pages: dedupeStrings(pages) };
@@ -404,47 +395,28 @@ class NineMangaExtension
     return cards.slice(0, 48);
   }
 
-  private addChapterImages(
-    pages: string[],
-    $: CheerioAPI,
-    html: string,
-    baseUrl: string,
-    chapterImageKey: string,
-  ): void {
-    $("img.manga_pic, .pic_box img, #manga_pic img, .chapter-content img, .pic img").each((_, element) => {
-      this.addChapterImageUrl(pages, $(element).attr("src") ?? $(element).attr("data-src") ?? "", baseUrl, chapterImageKey);
+  private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
+    const urls: string[] = [];
+    const firstValue = $("select#page option").first().attr("value") ?? "";
+
+    $("select#page option").each((index, element) => {
+      const value = $(element).attr("value") ?? "";
+      if (!value) return;
+      if (index > 0 && firstValue && value === firstValue) return false;
+
+      const url = normalizeUrl(value, baseUrl);
+      if (url && !urls.includes(url)) urls.push(url);
+      return;
     });
-
-    $("a.pic_download[href]").each((_, element) => {
-      this.addChapterImageUrl(pages, $(element).attr("href") ?? "", baseUrl, chapterImageKey);
-    });
-
-    const imagePattern = /<(?:img|a)\b[^>]*(?:src|data-src|href)=["']([^"']+\.(?:webp|jpg|jpeg|png)(?:\?[^"']*)?)["'][^>]*>/giu;
-    let match: RegExpExecArray | null;
-    while ((match = imagePattern.exec(html)) !== null) {
-      this.addChapterImageUrl(pages, match[1] ?? "", baseUrl, chapterImageKey);
-    }
-  }
-
-  private addChapterImageUrl(pages: string[], rawUrl: string, baseUrl: string, chapterImageKey: string): void {
-    const imageUrl = normalizeUrl(rawUrl, baseUrl);
-    if (!isChapterImageUrl(imageUrl, chapterImageKey)) return;
-    if (!pages.includes(imageUrl)) pages.push(imageUrl);
-  }
-
-  private getGeneratedChapterPageUrls(chapterId: string, baseUrl: string, imageCount: number): string[] {
-    const chunkCount = Math.min(Math.ceil(imageCount / CHAPTER_IMAGES_PER_PAGE), MAX_CHAPTER_PAGE_REQUESTS);
-    if (chunkCount <= 1) return [];
-
-    const cleanChapterId = normalizeChapterId(chapterId);
-    const basePath = cleanChapterId.replace(/(?:-\d+)?\.html$/u, "");
-    const urls = [`${baseUrl}/${basePath}.html`];
-
-    for (let chunk = 2; chunk <= chunkCount; chunk += 1) {
-      urls.push(`${baseUrl}/${basePath}-${chunk}.html`);
-    }
 
     return urls;
+  }
+
+  private addChapterImages(pages: string[], $: CheerioAPI, baseUrl: string): void {
+    $("div.pic_box img.manga_pic").each((_, element) => {
+      const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
+      if (imageUrl && !pages.includes(imageUrl)) pages.push(imageUrl);
+    });
   }
 
   private parseSecondaryTitles($: CheerioAPI): string[] {
@@ -495,33 +467,6 @@ function getImageSrc(html: string): string {
 function getFirstChapterTitle(html: string): string {
   const chapterMatch = html.match(/<a\b[^>]*href=["'][^"']*\/chapter\/[^"']+["'][^>]*>([\s\S]*?)<\/a>/iu);
   return chapterMatch?.[1] ? stripHtml(chapterMatch[1]) : "";
-}
-
-function getPageCount(html: string): number {
-  const listNumMatch = html.match(/list_num\s*=\s*["'](\d+)["']/iu);
-  if (listNumMatch?.[1]) return Number(listNumMatch[1]);
-
-  const visibleCounterMatch = html.match(/>\s*\d+\s*\/\s*(\d+)\s*</iu);
-  if (visibleCounterMatch?.[1]) return Number(visibleCounterMatch[1]);
-
-  const mangaPicIndexes = [...html.matchAll(/manga_pic_(\d+)/giu)]
-    .map((match) => Number(match[1]))
-    .filter((value) => Number.isFinite(value));
-
-  return mangaPicIndexes.length > 0 ? Math.max(...mangaPicIndexes) : 1;
-}
-
-function getChapterImageKey(chapterId: string): string {
-  const cleanChapterId = normalizeChapterId(chapterId);
-  const lastSegment = cleanChapterId.split("/").pop() ?? "";
-  return lastSegment.replace(/(?:-\d+)?\.html$/u, "");
-}
-
-function isChapterImageUrl(imageUrl: string, chapterImageKey: string): boolean {
-  if (!chapterImageKey) return false;
-  if (!/\.(?:webp|jpg|jpeg|png)(?:\?|$)/iu.test(imageUrl)) return false;
-  if (!imageUrl.includes("/pic/")) return false;
-  return imageUrl.includes(`/${chapterImageKey}/`);
 }
 
 function stripHtml(value: string): string {
