@@ -274,7 +274,7 @@ class NineMangaExtension
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const baseUrl = getSelectedSite().baseUrl;
     const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "");
-    const selectorUrl = `${baseUrl}/${cleanChapterId}-10-1`;
+    const selectorUrl = `${baseUrl}/${cleanChapterId}-10-1.html`;
     const selectorHtml = await this.fetchHtml({ url: selectorUrl, method: "GET" } as Request);
     const selector$ = cheerio.load(selectorHtml);
     const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
