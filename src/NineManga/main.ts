@@ -411,12 +411,14 @@ class NineMangaExtension
   }
 
   private addChapterImages(pages: string[], $: CheerioAPI, baseUrl: string): void {
+    const beforeCount = pages.length;
+
     $("div.pic_box a.pic_download[href]").each((_, element) => {
       const imageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
       if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
     });
 
-    if (pages.length > 0) return;
+    if (pages.length > beforeCount) return;
 
     $("div.pic_box img.manga_pic").each((_, element) => {
       const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
