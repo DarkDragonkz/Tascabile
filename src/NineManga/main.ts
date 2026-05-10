@@ -143,8 +143,9 @@ class NineMangaExtension
     const baseUrl = getSelectedSite().baseUrl;
     const page = metadata?.page ?? 1;
     const url = this.getDiscoverUrl(section.id, page, baseUrl);
-    const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const cards = this.parseCards($, section.id);
+    const html = await this.fetchHtml({ url, method: "GET" } as Request);
+    const $ = cheerio.load(html);
+    const cards = this.parseCards($, section.id, html);
 
     const items = cards.map((card) => {
       if (section.type === DiscoverSectionType.featured) {
@@ -177,8 +178,9 @@ class NineMangaExtension
 
     const baseUrl = getSelectedSite().baseUrl;
     const url = `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${page > 1 ? `&page=${page}` : ""}`;
-    const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const items = this.parseCards($, "search_section").map((card) => ({
+    const html = await this.fetchHtml({ url, method: "GET" } as Request);
+    const $ = cheerio.load(html);
+    const items = this.parseCards($, "search_section", html).map((card) => ({
       mangaId: card.mangaId,
       title: card.title,
       subtitle: card.subtitle,
@@ -304,18 +306,25 @@ class NineMangaExtension
     }
   }
 
-  private async fetchCheerio(request: Request): Promise<CheerioAPI> {
+  private async fetchHtml(request: Request): Promise<string> {
     const [response, data] = await Application.scheduleRequest(request);
     if (response.status === 404) throw new Error("Content not found");
-    return cheerio.load(Application.arrayBufferToUTF8String(data));
+    return Application.arrayBufferToUTF8String(data);
   }
 
-  private parseCards($: CheerioAPI, sectionId: string): ParsedCard[] {
+  private async fetchCheerio(request: Request): Promise<CheerioAPI> {
+    return cheerio.load(await this.fetchHtml(request));
+  }
+
+  private parseCards($: CheerioAPI, sectionId: string, html: string): ParsedCard[] {
     const mobileSelector = this.getMobileSectionSelector(sectionId);
     const mobileCards = this.parseCardsFromSelector($, mobileSelector);
     if (mobileCards.length > 0) return mobileCards;
 
-    return this.parseCardsFromSelector($, "ul.direlist > li, dl.bookinfo");
+    const listCards = this.parseCardsFromSelector($, "ul.direlist > li, dl.bookinfo");
+    if (listCards.length > 0) return listCards;
+
+    return this.parseCardsFromHtml(html);
   }
 
   private getMobileSectionSelector(sectionId: string): string {
@@ -360,6 +369,32 @@ class NineMangaExtension
     return dedupeCards(cards).slice(0, 48);
   }
 
+  private parseCardsFromHtml(html: string): ParsedCard[] {
+    const cards: ParsedCard[] = [];
+    const seen = new Set<string>();
+    const mangaLinkPattern = /<a\b([^>]*href=["'][^"']*\/manga\/[^"']+\.html[^"']*["'][^>]*)>([\s\S]*?)<\/a>/giu;
+    let match: RegExpExecArray | null;
+
+    while ((match = mangaLinkPattern.exec(html)) !== null) {
+      const attributes = match[1] ?? "";
+      const innerHtml = match[2] ?? "";
+      const href = getAttribute(attributes, "href");
+      const mangaId = normalizeMangaId(href);
+      if (!mangaId || seen.has(mangaId)) continue;
+
+      const nearbyHtml = html.slice(Math.max(0, match.index - 500), Math.min(html.length, match.index + 1200));
+      const imageUrl = normalizeUrl(getImageSrc(innerHtml) || getImageSrc(nearbyHtml), getSelectedSite().baseUrl);
+      const title = cleanText(getAttribute(attributes, "title")) || cleanText(stripHtml(innerHtml));
+      const subtitle = cleanText(getFirstChapterTitle(nearbyHtml));
+
+      if (!title) continue;
+      seen.add(mangaId);
+      cards.push({ mangaId, title, imageUrl, subtitle });
+    }
+
+    return cards.slice(0, 48);
+  }
+
   private parseSecondaryTitles($: CheerioAPI): string[] {
     const alternativeRow = $(".bookintro .message li")
       .toArray()
@@ -393,6 +428,28 @@ function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
 
 function isNineMangaLanguage(value: string | undefined): value is NineMangaLanguage {
   return value !== undefined && value in NINEMANGA_SITES;
+}
+
+function getAttribute(attributes: string, name: string): string {
+  const pattern = new RegExp(`${name}=["']([^"']+)["']`, "iu");
+  return attributes.match(pattern)?.[1] ?? "";
+}
+
+function getImageSrc(html: string): string {
+  const imageMatch = html.match(/<img\b[^>]*(?:src|data-src)=["']([^"']+)["'][^>]*>/iu);
+  return imageMatch?.[1] ?? "";
+}
+
+function getFirstChapterTitle(html: string): string {
+  const chapterMatch = html.match(/<a\b[^>]*href=["'][^"']*\/chapter\/[^"']+["'][^>]*>([\s\S]*?)<\/a>/iu);
+  return chapterMatch?.[1] ? stripHtml(chapterMatch[1]) : "";
+}
+
+function stripHtml(value: string): string {
+  return value
+    .replace(/<script\b[\s\S]*?<\/script>/giu, "")
+    .replace(/<style\b[\s\S]*?<\/style>/giu, "")
+    .replace(/<[^>]+>/gu, " ");
 }
 
 function normalizeUrl(value: string, baseUrl: string): string {
