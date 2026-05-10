@@ -13,7 +13,6 @@ pbConfig.capabilities = [
   SourceIntents.DISCOVER_SECTION_PROVIDING,
   SourceIntents.SEARCH_RESULT_PROVIDING,
   SourceIntents.SETTINGS_FORM_PROVIDING,
-  SourceIntents.CLOUDFLARE_BYPASS_PROVIDING,
 ] as unknown as typeof pbConfig.capabilities;
 
 export default pbConfig;
