@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
-/* Copyright © 2026 Inkdex */
+/* Copyright © 2026 DarkDragonkz */
 
 import {
   ContentRating,
@@ -8,7 +8,7 @@ import {
   type SourceDeveloper,
 } from "@paperback/types";
 
-const BASE_VERSION = "1.0.0-alpha.2";
+const BASE_VERSION = "1.0.0-alpha.3";
 
 export const basePbConfig = {
   name: "",
@@ -24,7 +24,7 @@ export const basePbConfig = {
     SourceIntents.SETTINGS_FORM_PROVIDING,
   ],
   badges: [],
-  developers: [{ name: "Catta1997", github: "https://github.com/Catta1997" }] as SourceDeveloper[],
+  developers: [{ name: "DarkDragonkz", github: "https://github.com/DarkDragonkz" }] as SourceDeveloper[],
 } satisfies ExtensionInfo;
 
 export function customVersion(
