@@ -67,7 +67,7 @@ class NineMangaSettingsForm extends Form {
             title: "Lingua NineManga",
             subtitle: "Default: Italiano",
             value: [(Application.getState(LANGUAGE_STATE_KEY) as string | undefined) ?? DEFAULT_LANGUAGE],
-            options: Object.entries(NINEMANGA_SITES).map(([id, site) => ({ id, title: site.title })),
+            options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
             minItemCount: 1,
             maxItemCount: 1,
             onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleLanguageChange"),
