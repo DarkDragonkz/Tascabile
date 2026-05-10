@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-05-10T08:30:48.084Z",
+  "buildTime": "2026-05-10T08:52:09.732Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.86",
     "types": "1.0.0-alpha.86"
@@ -12,7 +12,7 @@
     {
       "name": "MangaWorld",
       "description": "Extension that pulls content from www.mangaworld.mx.",
-      "version": "1.0.0-alpha.2",
+      "version": "1.0.0-alpha.3",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "ADULT",
@@ -25,8 +25,8 @@
       "badges": [],
       "developers": [
         {
-          "name": "Catta1997",
-          "github": "https://github.com/Catta1997"
+          "name": "DarkDragonkz",
+          "github": "https://github.com/DarkDragonkz"
         }
       ],
       "id": "MangaWorld"
