@@ -25,7 +25,7 @@ import {
 } from "@paperback/types";
 import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
-import type { Cheerio, CheerioAPI } from "cheerio";
+import type { CheerioAPI } from "cheerio";
 
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
@@ -53,6 +53,8 @@ type ParsedCard = {
   imageUrl: string;
   subtitle?: string;
 };
+
+type ChapterLink = ReturnType<CheerioAPI>;
 
 class NineMangaSettingsForm extends Form {
   override getSections() {
@@ -395,7 +397,7 @@ class NineMangaExtension
     chapters: Chapter[],
     seen: Set<string>,
     sourceManga: SourceManga,
-    link: Cheerio<unknown>,
+    link: ChapterLink,
     dateText: string,
   ): void {
     const chapterId = normalizeChapterId(link.attr("href") ?? "").replace(/\.html$/u, "");
