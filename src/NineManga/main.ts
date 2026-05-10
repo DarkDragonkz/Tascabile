@@ -397,12 +397,10 @@ class NineMangaExtension
 
   private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
     const urls: string[] = [];
-    const firstValue = $("select#page option").first().attr("value") ?? "";
 
-    $("select#page option").each((index, element) => {
+    $("select#page option").each((_, element) => {
       const value = $(element).attr("value") ?? "";
       if (!value) return;
-      if (index > 0 && firstValue && value === firstValue) return false;
 
       const url = normalizeUrl(value, baseUrl);
       if (url && !urls.includes(url)) urls.push(url);
@@ -413,9 +411,16 @@ class NineMangaExtension
   }
 
   private addChapterImages(pages: string[], $: CheerioAPI, baseUrl: string): void {
+    $("div.pic_box a.pic_download[href]").each((_, element) => {
+      const imageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
+      if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
+    });
+
+    if (pages.length > 0) return;
+
     $("div.pic_box img.manga_pic").each((_, element) => {
       const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
-      if (imageUrl && !pages.includes(imageUrl)) pages.push(imageUrl);
+      if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
     });
   }
 
@@ -509,6 +514,10 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&#39;/gu, "'")
     .replace(/&lt;/gu, "<")
     .replace(/&gt;/gu, ">");
+}
+
+function isValidImageUrl(value: string): boolean {
+  return /\.(?:webp|jpg|jpeg|png)(?:\?|$)/iu.test(value);
 }
 
 function dedupeStrings(values: string[]): string[] {
