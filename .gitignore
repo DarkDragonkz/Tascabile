@@ -1,9 +1,0 @@
-node_modules/
-dist/
-bundles/
-coverage/
-.env
-.env.*
-.DS_Store
-Thumbs.db
-npm-debug.log*
