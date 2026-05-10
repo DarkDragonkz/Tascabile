@@ -43,6 +43,65 @@ const NINEMANGA_SITES = {
   br: { title: "Português BR", baseUrl: "https://br.ninemanga.com", languageCode: "pt-BR" },
 } as const;
 
+const NINEMANGA_LABELS = {
+  eng: {
+    updated: "Latest Updates",
+    popular: "Popular Series",
+    newest: "New Series",
+    languageSettingTitle: "NineManga Language",
+    selectedLanguage: "Selected",
+    settingsFooter: "Choose the NineManga domain used for home, search, details, and reading.",
+  },
+  esp: {
+    updated: "Últimas actualizaciones",
+    popular: "Series populares",
+    newest: "Nuevas series",
+    languageSettingTitle: "Idioma de NineManga",
+    selectedLanguage: "Seleccionado",
+    settingsFooter: "Elige el dominio de NineManga usado para inicio, búsqueda, detalles y lectura.",
+  },
+  rus: {
+    updated: "Последние обновления",
+    popular: "Популярные серии",
+    newest: "Новые серии",
+    languageSettingTitle: "Язык NineManga",
+    selectedLanguage: "Выбрано",
+    settingsFooter: "Выберите домен NineManga для главной страницы, поиска, описаний и чтения.",
+  },
+  deu: {
+    updated: "Neueste Updates",
+    popular: "Beliebte Serien",
+    newest: "Neue Serien",
+    languageSettingTitle: "NineManga-Sprache",
+    selectedLanguage: "Ausgewählt",
+    settingsFooter: "Wähle die NineManga-Domain für Startseite, Suche, Details und Reader.",
+  },
+  ita: {
+    updated: "Ultimi aggiornamenti",
+    popular: "Più popolari",
+    newest: "Nuove serie",
+    languageSettingTitle: "Lingua NineManga",
+    selectedLanguage: "Selezionata",
+    settingsFooter: "Seleziona il dominio NineManga usato da home, ricerca, dettagli e lettura.",
+  },
+  fra: {
+    updated: "Dernières mises à jour",
+    popular: "Séries populaires",
+    newest: "Nouvelles séries",
+    languageSettingTitle: "Langue NineManga",
+    selectedLanguage: "Sélectionnée",
+    settingsFooter: "Choisis le domaine NineManga utilisé pour l’accueil, la recherche, les détails et la lecture.",
+  },
+  br: {
+    updated: "Últimas atualizações",
+    popular: "Séries populares",
+    newest: "Novas séries",
+    languageSettingTitle: "Idioma do NineManga",
+    selectedLanguage: "Selecionado",
+    settingsFooter: "Escolha o domínio NineManga usado na página inicial, busca, detalhes e leitura.",
+  },
+} as const;
+
 type NineMangaLanguage = keyof typeof NINEMANGA_SITES;
 
 type NineMangaMetadata = {
@@ -60,17 +119,20 @@ type ChapterLink = ReturnType<CheerioAPI>;
 
 class NineMangaSettingsForm extends Form {
   override getSections() {
+    const selectedSite = getSelectedSite();
+    const labels = getSelectedLabels();
+
     return [
       Section(
         {
           id: "ninemanga_language_settings",
-          footer: "Seleziona il dominio NineManga usato da home, ricerca, dettagli e lettura.",
+          footer: labels.settingsFooter,
         },
         [
           SelectRow("ninemanga_language", {
-            title: "Lingua NineManga",
-            subtitle: "Default: Italiano",
-            value: [(Application.getState(LANGUAGE_STATE_KEY) as string | undefined) ?? DEFAULT_LANGUAGE],
+            title: labels.languageSettingTitle,
+            subtitle: `${labels.selectedLanguage}: ${selectedSite.title}`,
+            value: [getSelectedLanguage()],
             options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
             minItemCount: 1,
             maxItemCount: 1,
@@ -133,11 +195,11 @@ class NineMangaExtension
   }
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
-    const language = getSelectedSite().title;
+    const labels = getSelectedLabels();
     return [
-      { id: "updated_section", title: `Ultimi aggiornamenti · ${language}`, type: DiscoverSectionType.simpleCarousel },
-      { id: "popular_section", title: `Più popolari · ${language}`, type: DiscoverSectionType.featured },
-      { id: "new_section", title: `Nuove serie · ${language}`, type: DiscoverSectionType.simpleCarousel },
+      { id: "updated_section", title: labels.updated, type: DiscoverSectionType.simpleCarousel },
+      { id: "popular_section", title: labels.popular, type: DiscoverSectionType.featured },
+      { id: "new_section", title: labels.newest, type: DiscoverSectionType.simpleCarousel },
     ];
   }
 
@@ -516,6 +578,10 @@ function getSelectedLanguage(): NineMangaLanguage {
 
 function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
   return NINEMANGA_SITES[getSelectedLanguage()];
+}
+
+function getSelectedLabels(): (typeof NINEMANGA_LABELS)[NineMangaLanguage] {
+  return NINEMANGA_LABELS[getSelectedLanguage()];
 }
 
 function isNineMangaLanguage(value: string | undefined): value is NineMangaLanguage {
