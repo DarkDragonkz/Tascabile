@@ -26,7 +26,7 @@ export class Parsers {
   ): SourceManga {
     const entry = mangaInfo.find((item) => item.kind === "manga");
     if (!entry) {
-      throw new Error("Nessun dato 'manga' trovato nel JSON");
+      throw new Error("Nessun dato manga trovato nel JSON");
     }
 
     const parsed = entry.data.manga;
@@ -59,7 +59,7 @@ export class Parsers {
     return {
       chapterId: chapter.id,
       sourceManga,
-      langCode: "🇮🇹",
+      langCode: "it",
       chapNum: Number(chapter.name.split(" ")[1] ?? 1),
       title: chapter.title ?? chapter.name ?? "",
       version: sourceManga.mangaInfo.additionalInfo?.subs ?? "",
@@ -185,7 +185,7 @@ export class Parsers {
         type: "genresCarouselItem",
         searchQuery: {
           title: "",
-          filters: [{ id: "types", value: { [filterItem.id]: "included" } }],
+          metadata: [{ id: "types", value: { [filterItem.id]: "included" } }],
         },
         name: filterItem.value,
         metadata,
@@ -210,7 +210,7 @@ export class Parsers {
         type: "genresCarouselItem",
         searchQuery: {
           title: "",
-          filters: [{ id: "genres", value: { [filterItem.id]: "included" } }],
+          metadata: [{ id: "genres", value: { [filterItem.id]: "included" } }],
         },
         name: filterItem.value,
         metadata,
