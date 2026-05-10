@@ -3,6 +3,7 @@ import {
   ContentRating,
   CookieStorageInterceptor,
   DiscoverSectionType,
+  Form,
   PaperbackInterceptor,
   type Chapter,
   type ChapterDetails,
@@ -47,6 +48,12 @@ type ParsedChapterData = {
 type ReaderData = {
   images?: string[];
 };
+
+class EmptySettingsForm extends Form {
+  override getSections() {
+    return [];
+  }
+}
 
 class BatCaveInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
@@ -94,6 +101,22 @@ class BatCaveExtension
   async initialise(): Promise<void> {
     this.requestManager.registerInterceptor();
     this.cookieStorageInterceptor.registerInterceptor();
+  }
+
+  async getSettingsForm(): Promise<Form> {
+    return new EmptySettingsForm();
+  }
+
+  async getCloudflareBypassRequest(): Promise<Request> {
+    return {
+      url: BASE_URL,
+      method: "GET",
+      headers: {
+        referer: BASE_URL,
+        origin: BASE_URL,
+        "user-agent": await Application.getDefaultUserAgent(),
+      },
+    } as Request;
   }
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
