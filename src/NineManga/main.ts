@@ -25,7 +25,8 @@ import {
 } from "@paperback/types";
 import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
-import type { CheerioAPI } from "cheerio";
+import type { Cheerio, CheerioAPI } from "cheerio";
+import type { AnyNode } from "domhandler";
 
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
@@ -253,20 +254,16 @@ class NineMangaExtension
     $(".sub_vol_ul li").each((_, element) => {
       const unit = $(element);
       const chapterLink = unit.find("a.chapter_list_a[href*='/chapter/']").first();
-      const chapterId = normalizeChapterId(chapterLink.attr("href") ?? "").replace(/\.html$/u, "");
-      const title = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
-      const dateText = cleanText(unit.find("span").last().text());
-      if (!chapterId || !title || seen.has(chapterId)) return;
-      seen.add(chapterId);
-      chapters.push({
-        chapterId,
-        title,
-        sourceManga,
-        chapNum: extractChapterNumber(title),
-        publishDate: parseDate(dateText),
-        langCode: getSelectedSite().languageCode,
-      });
+      this.addChapterFromLink(chapters, seen, sourceManga, chapterLink, cleanText(unit.find("span").last().text()));
     });
+
+    if (chapters.length === 0) {
+      $("a[href*='/chapter/']").each((_, element) => {
+        const link = $(element);
+        if (link.closest("select").length > 0) return;
+        this.addChapterFromLink(chapters, seen, sourceManga, link, "");
+      });
+    }
 
     return chapters;
   }
@@ -393,6 +390,28 @@ class NineMangaExtension
     }
 
     return cards.slice(0, 48);
+  }
+
+  private addChapterFromLink(
+    chapters: Chapter[],
+    seen: Set<string>,
+    sourceManga: SourceManga,
+    link: Cheerio<AnyNode>,
+    dateText: string,
+  ): void {
+    const chapterId = normalizeChapterId(link.attr("href") ?? "").replace(/\.html$/u, "");
+    const title = cleanText(link.text()) || cleanText(link.attr("title")) || chapterId.split("/").pop() || "";
+    if (!chapterId || !chapterId.includes("/chapter/") || !title || seen.has(chapterId)) return;
+
+    seen.add(chapterId);
+    chapters.push({
+      chapterId,
+      title,
+      sourceManga,
+      chapNum: extractChapterNumber(title),
+      publishDate: parseDate(dateText),
+      langCode: getSelectedSite().languageCode,
+    });
   }
 
   private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
