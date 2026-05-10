@@ -30,6 +30,8 @@ import type { CheerioAPI } from "cheerio";
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
+const ADVANCED_SEARCH_PARAMS =
+  "name_sel=contain&wd=&author_sel=contain&author=&artist_sel=contain&artist=&category_id=&out_category_id=&completed_series=either";
 
 const NINEMANGA_SITES = {
   eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
@@ -177,10 +179,10 @@ class NineMangaExtension
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
     const title = query.title.trim();
-    if (!title) return { items: [] };
-
     const baseUrl = getSelectedSite().baseUrl;
-    const url = `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${page > 1 ? `&page=${page}` : ""}`;
+    const url = title
+      ? `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${page > 1 ? `&page=${page}.html` : ""}`
+      : this.getAdvancedSearchUrl(baseUrl, page);
     const html = await this.fetchHtml({ url, method: "GET" } as Request);
     const $ = cheerio.load(html);
     const items = this.parseCards($, "search_section", html).map((card) => ({
@@ -191,7 +193,7 @@ class NineMangaExtension
       metadata: undefined,
     }));
 
-    return { items, metadata: this.hasNextPage($) ? { page: page + 1 } : undefined };
+    return { items, metadata: items.length > 0 ? { page: page + 1 } : undefined };
   }
 
   async getMangaDetails(mangaId: string): Promise<SourceManga> {
@@ -202,7 +204,7 @@ class NineMangaExtension
       cleanText($(".book-title h1, h1.book-title, h1").first().text()) ||
       cleanText($("meta[property='og:title']").attr("content"));
     const image = normalizeUrl(
-      $(".bookintro .bookface img").first().attr("src") || $("meta[property='og:image']").attr("content") || "",
+      getImageUrl($(".bookintro .bookface img").first()) || $("meta[property='og:image']").attr("content") || "",
       baseUrl,
     );
     const synopsis = cleanText(
@@ -292,6 +294,12 @@ class NineMangaExtension
     return `${getSelectedSite().baseUrl}/${mangaId}`;
   }
 
+  private getAdvancedSearchUrl(baseUrl: string, page: number): string {
+    return page > 1
+      ? `${baseUrl}/search/?${ADVANCED_SEARCH_PARAMS}&page=${page}.html`
+      : `${baseUrl}/search/?${ADVANCED_SEARCH_PARAMS}&type=`;
+  }
+
   private getDiscoverUrl(sectionId: string, page: number, baseUrl: string): string {
     const pageSuffix = page > 1 ? `${page}.html` : "";
     switch (sectionId) {
@@ -358,7 +366,7 @@ class NineMangaExtension
         cleanText(coverLink.attr("title")) ||
         cleanText(image.attr("alt"));
       const subtitle = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
-      const imageUrl = normalizeUrl(image.attr("src") ?? image.attr("data-src") ?? "", getSelectedSite().baseUrl);
+      const imageUrl = normalizeUrl(getImageUrl(image), getSelectedSite().baseUrl);
 
       if (!title || !mangaId) return;
       cards.push({ mangaId, title, imageUrl, subtitle });
@@ -519,9 +527,26 @@ function getAttribute(attributes: string, name: string): string {
   return attributes.match(pattern)?.[1] ?? "";
 }
 
+function getImageUrl(image: ChapterLink): string {
+  return (
+    image.attr("data-original") ||
+    image.attr("data-src") ||
+    image.attr("data-lazy-src") ||
+    image.attr("data-url") ||
+    image.attr("src") ||
+    ""
+  );
+}
+
 function getImageSrc(html: string): string {
-  const imageMatch = html.match(/<img\b[^>]*(?:src|data-src)=["']([^"']+)["'][^>]*>/iu);
-  return imageMatch?.[1] ?? "";
+  const imageTag = html.match(/<img\b[^>]*>/iu)?.[0] ?? "";
+  return (
+    getAttribute(imageTag, "data-original") ||
+    getAttribute(imageTag, "data-src") ||
+    getAttribute(imageTag, "data-lazy-src") ||
+    getAttribute(imageTag, "data-url") ||
+    getAttribute(imageTag, "src")
+  );
 }
 
 function getFirstChapterTitle(html: string): string {
@@ -538,7 +563,7 @@ function stripHtml(value: string): string {
 
 function normalizeUrl(value: string, baseUrl: string): string {
   const trimmed = decodeHtmlEntities(value).trim();
-  if (!trimmed) return "";
+  if (!trimmed || isPlaceholderImage(trimmed)) return "";
   if (trimmed.startsWith("//")) return `https:${trimmed}`;
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
   if (trimmed.startsWith("/")) return `${baseUrl}${trimmed}`;
@@ -573,6 +598,11 @@ function decodeHtmlEntities(value: string): string {
 
 function isChapterId(value: string): boolean {
   return value === "chapter" || value.startsWith("chapter/") || value.includes("/chapter/");
+}
+
+function isPlaceholderImage(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return normalized.startsWith("data:image/") || normalized.includes("blank") || normalized.includes("placeholder");
 }
 
 function isValidImageUrl(value: string): boolean {
