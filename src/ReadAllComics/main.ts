@@ -81,8 +81,15 @@ class ReadAllComicsExtension
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     return [
       {
+        id: "featured_comics",
+        title: "Featured Comics",
+        subtitle: "From the current ReadAllComics front page",
+        type: DiscoverSectionType.prominentCarousel,
+      },
+      {
         id: "latest_comics",
         title: "Latest Comics",
+        subtitle: "Recently listed series",
         type: DiscoverSectionType.simpleCarousel,
       },
     ];
@@ -92,12 +99,23 @@ class ReadAllComicsExtension
     section: DiscoverSection,
     metadata: PageMetadata | undefined,
   ): Promise<PagedResults<DiscoverSectionItem>> {
-    void section;
-
     const page = metadata?.page ?? 1;
     const url = page === 1 ? `${BASE_URL}/` : `${BASE_URL}/page/${page}/`;
     const html = await this.fetchText(url);
     const cards = this.parseComicCards(html);
+
+    if (section.id === "featured_comics") {
+      return {
+        items: cards.slice(0, 12).map((card) => ({
+          type: "prominentCarouselItem",
+          mangaId: card.mangaId,
+          title: card.title,
+          imageUrl: card.imageUrl,
+          contentRating: ContentRating.EVERYONE,
+        })),
+        metadata: undefined,
+      };
+    }
 
     return {
       items: cards.map((card) => ({
