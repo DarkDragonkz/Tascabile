@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-05-10T10:38:41.945Z",
+  "buildTime": "2026-05-10T10:40:39.027Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.86",
     "types": "1.0.0-alpha.86"
@@ -74,6 +74,28 @@
         }
       ],
       "id": "ReadAllComics"
+    },
+    {
+      "name": "ReadComicsOnline",
+      "description": "Extension that pulls comic content from readcomicsonline.ru.",
+      "version": "1.0.0-alpha.7",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        4,
+        64,
+        1,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "DarkDragonkz",
+          "github": "https://github.com/DarkDragonkz"
+        }
+      ],
+      "id": "ReadComicsOnline"
     }
   ]
 }
