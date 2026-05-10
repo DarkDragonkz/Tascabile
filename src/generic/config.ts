@@ -24,7 +24,12 @@ export const basePbConfig = {
     SourceIntents.SETTINGS_FORM_PROVIDING,
   ],
   badges: [],
-  developers: [{ name: "DarkDragonkz", github: "https://github.com/DarkDragonkz" }] as SourceDeveloper[],
+  developers: [
+    {
+      name: "DarkDragonkz",
+      github: "https://github.com/DarkDragonkz",
+    },
+  ] as SourceDeveloper[],
 } satisfies ExtensionInfo;
 
 export function customVersion(
