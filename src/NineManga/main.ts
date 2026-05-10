@@ -193,20 +193,9 @@ class NineMangaExtension
     const baseUrl = getSelectedSite().baseUrl;
     const url = `${baseUrl}/${mangaId}${mangaId.includes("?") ? "&" : "?"}waring=1`;
     const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const title = cleanText($(".ttline h1[itemprop='name']").first().text()) ||
-      cleanText($(".book-title h1, h1.book-title, h1").first().text()) ||
-      cleanText($("meta[property='og:title']").attr("content"));
-    const image = normalizeUrl(
-      $(".bookintro .bookface img").first().attr("src") ||
-        $(".book-cover img, .detail-info img, meta[property='og:image']").first().attr("content") ||
-        $("meta[property='og:image']").attr("content") ||
-        "",
-      baseUrl,
-    );
-    const synopsis = cleanText(
-      $(".bookintro p[itemprop='description']").first().text().replace(/^Sommario:\s*/iu, "") ||
-        $(".detail-info p, .summary, .book-summary").first().text(),
-    );
+    const title = cleanText($(".ttline h1[itemprop='name']").first().text()) || cleanText($(".book-title h1, h1.book-title, h1").first().text()) || cleanText($("meta[property='og:title']").attr("content"));
+    const image = normalizeUrl($(".bookintro .bookface img").first().attr("src") || $("meta[property='og:image']").attr("content") || "", baseUrl);
+    const synopsis = cleanText($(".bookintro p[itemprop='description']").first().text().replace(/^Sommario:\s*/iu, "") || $(".detail-info p, .summary, .book-summary").first().text());
     const author = cleanText($(".bookintro [itemprop='author']").first().text());
     const status = cleanText($(".bookintro li:contains('Stato') a.red").first().text()) || "Unknown";
     const genres = $(".bookintro li[itemprop='genre'] a")
@@ -294,7 +283,7 @@ class NineMangaExtension
       case "new_section":
         return `${baseUrl}/list/New-Book/${pageSuffix}`;
       default:
-        return `${baseUrl}/`;
+        return `${baseUrl}/list/New-Update/${pageSuffix}`;
     }
   }
 
@@ -309,43 +298,24 @@ class NineMangaExtension
     const mobileCards = this.parseMobileCards($, mobileSelector);
     if (mobileCards.length > 0) return mobileCards;
 
-    if (sectionId === "updated_section") {
-      const desktopUpdated = this.parseDesktopUpdatedCards($);
-      if (desktopUpdated.length > 0) return desktopUpdated;
-    }
-
     return this.parseDirectoryCards($);
   }
 
-  private parseDesktopUpdatedCards($: CheerioAPI): ParsedCard[] {
-    const cards: ParsedCard[] = [];
-    $(".pop_update li, ul.homeupdate li").each((_, element) => {
-      const unit = $(element);
-      const titleLink = unit.find("a.bookname, a.show_book_desc, a[href*='/manga/']").first();
-      const imageLink = unit.find("a.bookface, a[href*='/manga/']").first();
-      const image = unit.find("img").first();
-      const mangaId = normalizeMangaId(titleLink.attr("href") || imageLink.attr("href") || "");
-      const title = cleanText(titleLink.attr("title")) || cleanText(titleLink.text()) || cleanText(image.attr("alt"));
-      const subtitle = cleanText(unit.find("font, a[href*='/chapter/']").first().text());
-      const imageUrl = normalizeUrl(image.attr("src") ?? "", getSelectedSite().baseUrl);
-      if (!title || !mangaId) return;
-      cards.push({ mangaId, title, imageUrl, subtitle });
-    });
-    return dedupeCards(cards).slice(0, 24);
-  }
-
   private parseDirectoryCards($: CheerioAPI): ParsedCard[] {
-    const mobileCards = this.parseMobileCards($, "li, dl");
-    if (mobileCards.length > 0) return mobileCards;
-
     const cards: ParsedCard[] = [];
-    $("dl.bookinfo, .direlist li, .bookbox li").each((_, element) => {
+    $("dl.bookinfo, .direlist li, .bookbox li, .book-content li, .manga-list li, .pic-list li, li dl, dl").each((_, element) => {
       const unit = $(element);
-      const titleLink = unit.find("a.bookname, a[href*='/manga/']").first();
+      const titleLink = unit.find("a.bookname").first().length > 0
+        ? unit.find("a.bookname").first()
+        : unit.find("dd.book-list a[href*='/manga/']").first().length > 0
+          ? unit.find("dd.book-list a[href*='/manga/']").first()
+          : unit.find("a[href*='/manga/']").first();
+      const coverLink = unit.find("dt a[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
-      const mangaId = normalizeMangaId(titleLink.attr("href") || image.parent("a").attr("href") || "");
-      const title = cleanText(titleLink.text()) || cleanText(titleLink.attr("title")) || cleanText(image.attr("alt"));
-      const subtitle = cleanText(unit.find("a.chaptername, a[href*='/chapter/']").first().text());
+      const chapterLink = unit.find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/']").first();
+      const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
+      const title = cleanText(titleLink.text()) || cleanText(titleLink.find("b").text()) || cleanText(titleLink.attr("title")) || cleanText(coverLink.attr("title")) || cleanText(image.attr("alt"));
+      const subtitle = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
       const imageUrl = normalizeUrl(image.attr("src") ?? "", getSelectedSite().baseUrl);
       if (!title || !mangaId) return;
       cards.push({ mangaId, title, imageUrl, subtitle });
@@ -354,15 +324,25 @@ class NineMangaExtension
   }
 
   private parseMobileCards($: CheerioAPI, selector: string): ParsedCard[] {
+    const scopedCards = this.parseCardsFromSelector($, selector);
+    return scopedCards.length > 0 ? scopedCards : this.parseDirectoryCards($);
+  }
+
+  private parseCardsFromSelector($: CheerioAPI, selector: string): ParsedCard[] {
     const cards: ParsedCard[] = [];
     $(selector).each((_, element) => {
       const unit = $(element);
-      const mangaLink = unit.find("dt a[href*='/manga/'], a[href*='/manga/']").first();
+      const titleLink = unit.find("dd.book-list a[href*='/manga/']").first().length > 0
+        ? unit.find("dd.book-list a[href*='/manga/']").first()
+        : unit.find("a.bookname").first().length > 0
+          ? unit.find("a.bookname").first()
+          : unit.find("a[href*='/manga/']").first();
+      const coverLink = unit.find("dt a[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
-      const chapterLink = unit.find("dd.book-list a[href*='/chapter/'], a[href*='/chapter/']").first();
-      const mangaId = normalizeMangaId(mangaLink.attr("href") || "");
-      const title = cleanText(mangaLink.attr("title")) || cleanText(chapterLink.find("b").text()) || cleanText(chapterLink.attr("title")) || cleanText(image.attr("alt"));
-      const subtitle = cleanText(chapterLink.attr("title")) || cleanText(chapterLink.find("span").text());
+      const chapterLink = unit.find("dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a.chaptername, a[href*='/chapter/']").first();
+      const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
+      const title = cleanText(titleLink.find("b").text()) || cleanText(titleLink.text()) || cleanText(titleLink.attr("title")) || cleanText(coverLink.attr("title")) || cleanText(image.attr("alt"));
+      const subtitle = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
       const imageUrl = normalizeUrl(image.attr("src") ?? "", getSelectedSite().baseUrl);
       if (!title || !mangaId) return;
       cards.push({ mangaId, title, imageUrl, subtitle });
