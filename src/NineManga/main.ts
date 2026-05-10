@@ -117,6 +117,11 @@ type ParsedCard = {
 
 type ChapterLink = ReturnType<CheerioAPI>;
 
+type FetchedHtml = {
+  url: string;
+  html: string;
+};
+
 class NineMangaSettingsForm extends Form {
   override getSections() {
     const selectedSite = getSelectedSite();
@@ -335,18 +340,26 @@ class NineMangaExtension
 
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const baseUrl = getSelectedSite().baseUrl;
-    const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "");
-    const selectorUrl = `${baseUrl}/${cleanChapterId}-10-1.html`;
-    const selectorHtml = await this.fetchHtml({ url: selectorUrl, method: "GET" } as Request);
-    const selector$ = cheerio.load(selectorHtml);
+    const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "").replace(/\/+$/u, "");
+    const candidateUrls = this.getChapterReaderUrls(baseUrl, cleanChapterId);
+    const firstPage = await this.fetchFirstAvailableHtml(candidateUrls);
+    const selector$ = cheerio.load(firstPage.html);
     const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
-    const urls = chapterPageUrls.length > 0 ? chapterPageUrls : [`${baseUrl}/${cleanChapterId}.html`];
+    const urls = chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
     const pages: string[] = [];
 
+    this.addChapterImages(pages, selector$, baseUrl);
+
     for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
-      const html = await this.fetchHtml({ url, method: "GET" } as Request);
-      const $ = cheerio.load(html);
-      this.addChapterImages(pages, $, baseUrl);
+      if (url === firstPage.url) continue;
+
+      try {
+        const html = await this.fetchHtml({ url, method: "GET" } as Request);
+        const $ = cheerio.load(html);
+        this.addChapterImages(pages, $, baseUrl);
+      } catch {
+        continue;
+      }
     }
 
     return { id: chapter.chapterId, mangaId: chapter.sourceManga.mangaId, pages: dedupeStrings(pages) };
@@ -354,6 +367,15 @@ class NineMangaExtension
 
   getMangaShareUrl(mangaId: string): string {
     return `${getSelectedSite().baseUrl}/${mangaId}`;
+  }
+
+  private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
+    return dedupeStrings([
+      `${baseUrl}/${cleanChapterId}-10-1.html`,
+      `${baseUrl}/${cleanChapterId}.html`,
+      `${baseUrl}/${cleanChapterId}/`,
+      `${baseUrl}/${cleanChapterId}`,
+    ]);
   }
 
   private getAdvancedSearchUrl(baseUrl: string, page: number): string {
@@ -378,6 +400,18 @@ class NineMangaExtension
     const [response, data] = await Application.scheduleRequest(request);
     if (response.status === 404) throw new Error("Content not found");
     return Application.arrayBufferToUTF8String(data);
+  }
+
+  private async fetchFirstAvailableHtml(urls: string[]): Promise<FetchedHtml> {
+    for (const url of urls) {
+      try {
+        return { url, html: await this.fetchHtml({ url, method: "GET" } as Request) };
+      } catch {
+        continue;
+      }
+    }
+
+    throw new Error("Content not found");
   }
 
   private async fetchCheerio(request: Request): Promise<CheerioAPI> {
