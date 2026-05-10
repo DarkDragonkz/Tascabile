@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright © 2026 Inkdex */
 
-import { Form, Section, ToggleRow, NavigationRow, SelectRow } from "@paperback/types";
+import { Form, NavigationRow, Section, SelectRow, ToggleRow } from "@paperback/types";
 
 import { filter } from "./utils";
 
@@ -96,7 +96,6 @@ class FilterSettings extends Form {
   public async updateValue(value: string[], key: string): Promise<void> {
     Application.setState(value, key);
     this.reloadForm();
-    Application.invalidateSearchFilters();
   }
 
   override getSections() {
