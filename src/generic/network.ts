@@ -9,13 +9,14 @@ import {
   type SearchQuery,
   type SortingOption,
 } from "@paperback/types";
+import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 
 import { filter, MangaWorldGeneric } from "./main";
 
 export class Requests {
   constructSearchRequestURL(
     page: number,
-    query: SearchQuery = { title: "", filters: [] },
+    query: SearchQuery<SearchFilterValue[]> = { title: "", metadata: [] },
     sorting: SortingOption | undefined,
     source: MangaWorldGeneric,
   ): {
@@ -23,10 +24,11 @@ export class Requests {
     excluded: { generi: string[]; tipi: string[] };
   } {
     const generi: string[] = [];
-    const generi_esclusi: string[] = [];
-    const tipi_esclusi: string[] = [];
+    const generiEsclusi: string[] = [];
+    const tipiEsclusi: string[] = [];
     const tipologia: string[] = [];
-    const getFilterValue = (id: string) => query.filters.find((filter) => filter.id == id)?.value;
+    const queryFilters = query.metadata ?? [];
+    const getFilterValue = (id: string) => queryFilters.find((item) => item.id == id)?.value;
     const genres: string | Record<string, "included" | "excluded"> = getFilterValue("genres") ?? "";
     const types: string | Record<string, "included" | "excluded"> = getFilterValue("types") ?? "";
     const status: string | Record<string, "included" | "excluded"> = getFilterValue("status") ?? "";
@@ -35,7 +37,7 @@ export class Requests {
       for (const tag of Object.entries(genres)) {
         if (tag[1] == "included") generi.push(tag[0]);
         if (tag[1] == "excluded")
-          generi_esclusi.push(
+          generiEsclusi.push(
             filter.getGenreFilter().find((item) => item.id === tag[0])?.value ?? "",
           );
       }
@@ -44,7 +46,7 @@ export class Requests {
     if (types && typeof types === "object") {
       for (const tag of Object.entries(types)) {
         if (tag[1] == "included") tipologia.push(tag[0]);
-        if (tag[1] == "excluded") tipi_esclusi.push(tag[0]);
+        if (tag[1] == "excluded") tipiEsclusi.push(tag[0]);
       }
     }
     const statusFilter = status as string;
@@ -60,7 +62,7 @@ export class Requests {
     if (yearFilter.length > 0) url.setQueryItem("year", yearFilter ?? "");
     return {
       url: url.toString(),
-      excluded: { generi: generi_esclusi, tipi: tipi_esclusi },
+      excluded: { generi: generiEsclusi, tipi: tipiEsclusi },
     };
   }
 
