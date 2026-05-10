@@ -210,7 +210,7 @@ class NineMangaExtension
         $(".detail-info p, .summary, .book-summary").first().text(),
     );
     const author = cleanText($(".bookintro [itemprop='author']").first().text());
-    const status = cleanText($(".bookintro li:contains('Stato') a.red").first().text()) || "Unknown";
+    const status = this.parseStatus($);
     const genres = $(".bookintro li[itemprop='genre'] a")
       .toArray()
       .map((element) => cleanText($(element).text()))
@@ -459,6 +459,32 @@ class NineMangaExtension
       .filter((title) => title.length > 0);
   }
 
+  private parseStatus($: CheerioAPI): string {
+    const statusLabels = ["stato", "status", "estado", "statut", "статус", "situação", "situacao"];
+    const labelPattern = /^(?:stato|status|estado|statut|статус|situa(?:ç|c)ão)\s*[:：]?\s*/iu;
+
+    const rows = $(".bookintro li, .bookintro .message li, .message li").toArray();
+    for (const row of rows) {
+      const unit = $(row);
+      const fullText = cleanText(unit.text());
+      const lowerText = fullText.toLowerCase();
+      const boldLabel = cleanText(unit.find("b, strong").first().text())
+        .replace(/[:：]/gu, "")
+        .toLowerCase();
+
+      const hasStatusLabel = statusLabels.some(
+        (label) => boldLabel === label || lowerText.startsWith(`${label}:`) || lowerText.startsWith(`${label}：`),
+      );
+      if (!hasStatusLabel) continue;
+
+      const linkStatus = cleanText(unit.find("a").first().text());
+      const textStatus = cleanText(fullText.replace(labelPattern, ""));
+      return normalizeStatus(linkStatus || textStatus);
+    }
+
+    return "Unknown";
+  }
+
   private hasNextPage($: CheerioAPI): boolean {
     return $("a:contains('Next'), a:contains('Successivo'), a[href*='page='], .next a, a.next").length > 0;
   }
@@ -544,6 +570,19 @@ function isChapterId(value: string): boolean {
 
 function isValidImageUrl(value: string): boolean {
   return /\.(?:webp|jpg|jpeg|png)(?:\?|$)/iu.test(value);
+}
+
+function normalizeStatus(value: string): string {
+  const cleaned = cleanText(value);
+  const normalized = cleaned.toLowerCase();
+
+  if (!cleaned) return "Unknown";
+  if (/complete|complet|completo|termin|finito|finished|conclus/iu.test(normalized)) return "Completed";
+  if (/ongoing|in corso|corso|attivo|continua|continuing|serializz/iu.test(normalized)) return "Ongoing";
+  if (/hiatus|pausa|sospes/iu.test(normalized)) return "Hiatus";
+  if (/drop|dropped|cancel|cancell/iu.test(normalized)) return "Dropped";
+
+  return cleaned;
 }
 
 function dedupeStrings(values: string[]): string[] {
