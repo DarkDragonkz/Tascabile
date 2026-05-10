@@ -2,13 +2,25 @@
 
 Repository di estensioni Paperback 0.9 mantenuta da **DarkDragonkz**.
 
-Questa repository è impostata come base pulita TypeScript per Paperback 0.9, usando `@paperback/toolchain`, `@paperback/types`, `cheerio`, `oxlint`, `oxfmt` e GitHub Actions.
+Questa repository è impostata come base TypeScript per Paperback 0.9, usando `@paperback/toolchain`, `@paperback/types`, `cheerio`, `oxlint`, `oxfmt`, `husky` e GitHub Actions.
 
 ## Stato attuale
 
-La struttura base è pronta per compilazione, lint, formattazione, bundle e pubblicazione tramite GitHub Pages.
+La source **MangaWorld** è stata aggiunta usando come riferimento tecnico i file reali dello ZIP `mangaworld-extensions-0.9-stable`.
 
-Non sono state aggiunte source perché per implementare una source Paperback servono URL, selettori, metadata e comportamento verificati direttamente. Ogni source verrà aggiunta solo dopo analisi dedicata del sito o dei file tecnici forniti.
+Dati source:
+
+| Campo | Valore |
+|---|---|
+| Nome | MangaWorld |
+| URL base | `https://www.mangaworld.mx` |
+| Lingua | Italiano |
+| Rating | Adult |
+| Tipologia | Manga, manhwa, manhua, novel |
+| Login | No |
+| Tracker | No |
+
+Nota: il codice di riferimento ricava i dati dal JSON `$MC` incorporato nelle pagine HTML MangaWorld. Non è stata verificata una API JSON pubblica separata. Il sito live non è risultato recuperabile dagli strumenti web disponibili durante questa modifica, quindi Cloudflare/protezioni anti-bot e referer immagini devono essere verificati da ambiente locale/Paperback.
 
 ## Requisiti
 
@@ -44,6 +56,15 @@ npm run logcat
 .vscode/extensions.json
 .vscode/settings.json
 .husky/pre-push
+src/MangaWorld/main.ts
+src/MangaWorld/pbconfig.ts
+src/generic/config.ts
+src/generic/forms.ts
+src/generic/main.ts
+src/generic/models.ts
+src/generic/network.ts
+src/generic/parsers.ts
+src/generic/utils.ts
 src/common/errors.ts
 src/common/http.ts
 src/common/html.ts
@@ -94,7 +115,19 @@ URL previsto della repository Paperback:
 https://darkdragonkz.github.io/Tascabile
 ```
 
-## Dati necessari per aggiungere una source
+## Verifica locale
+
+```bash
+npm install
+npm run tsc
+npm run lint:check
+npm run format:check
+npm run bundle
+npm run test
+npm run serve
+```
+
+## Dati necessari per nuove source
 
 Per ogni nuova source servono:
 
