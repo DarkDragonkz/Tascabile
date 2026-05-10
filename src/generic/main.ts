@@ -15,7 +15,6 @@ import {
   type Extension,
   type MangaProviding,
   type PagedResults,
-  type SearchFilter,
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
@@ -23,6 +22,11 @@ import {
   type SortingOption,
   type SourceManga,
 } from "@paperback/types";
+import {
+  SearchFilterForm,
+  type SearchFilter,
+  type SearchFilterValue,
+} from "@paperback/types/lib/compat/0.8";
 
 import { Forms } from "./forms";
 import type { MangaMetadata, WindowEntry } from "./models";
@@ -139,10 +143,14 @@ export abstract class MangaWorldGeneric
     return filters;
   }
 
+  async getAdvancedSearchForm(query: SearchQuery<SearchFilterValue[]>) {
+    return new SearchFilterForm(query.metadata, this.getSearchFilters());
+  }
+
   async getSearchResults(
-    query: SearchQuery,
+    query: SearchQuery<SearchFilterValue[]>,
     metadata: MangaMetadata | undefined,
-    sorting: SortingOption,
+    sorting: SortingOption | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
     const { url, excluded } = this.requestManager.constructSearchRequestURL(
@@ -308,7 +316,7 @@ export abstract class MangaWorldGeneric
     return await this.getSection(section.id, windowEntry, metadata);
   }
 
-  async getSortingOptions(): Promise<SortingOption[]> {
+  async getSortingOptions(_query: SearchQuery<SearchFilterValue[]>): Promise<SortingOption[]> {
     await filter.populateFilter(this);
     return filter.getOrderFilter().map((item) => ({
       id: item.id,
