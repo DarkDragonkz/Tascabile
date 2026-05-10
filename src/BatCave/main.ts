@@ -102,26 +102,26 @@ class BatCaveExtension
     storage: "stateManager",
   });
 
-async initialise(): Promise<void> {
-  this.requestManager.registerInterceptor();
-  this.cookieStorageInterceptor.registerInterceptor();
-}
+  async initialise(): Promise<void> {
+    this.requestManager.registerInterceptor();
+    this.cookieStorageInterceptor.registerInterceptor();
+  }
 
-async getSettingsForm(): Promise<Form> {
-  return new EmptySettingsForm();
-}
+  async getSettingsForm(): Promise<Form> {
+    return new EmptySettingsForm();
+  }
 
-async getCloudflareBypassRequest(): Promise<Request> {
-  return {
-    url: BASE_URL,
-    method: "GET",
-    headers: {
-      referer: BASE_URL,
-      origin: BASE_URL,
-      "user-agent": await Application.getDefaultUserAgent(),
-    },
-  } as Request;
-}
+  async getCloudflareBypassRequest(): Promise<Request> {
+    return {
+      url: BASE_URL,
+      method: "GET",
+      headers: {
+        referer: BASE_URL,
+        origin: BASE_URL,
+        "user-agent": await Application.getDefaultUserAgent(),
+      },
+    } as Request;
+  }
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     return [
@@ -444,16 +444,15 @@ async getCloudflareBypassRequest(): Promise<Request> {
     return `${BASE_URL}/${mangaId}.html`;
   }
 
-async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
-  for (const cookie of this.cookieStorageInterceptor.cookies) {
-    this.cookieStorageInterceptor.deleteCookie(cookie);
-  }
+  async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
+    for (const cookie of this.cookieStorageInterceptor.cookies) {
+      this.cookieStorageInterceptor.deleteCookie(cookie);
+    }
 
-  for (const cookie of cookies) {
-    if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;
-    this.cookieStorageInterceptor.setCookie(cookie);
-  }
-}
+    for (const cookie of cookies) {
+      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;
+      this.cookieStorageInterceptor.setCookie(cookie);
+    }
   }
 
   private async fetchCheerio(request: Request): Promise<CheerioAPI> {
