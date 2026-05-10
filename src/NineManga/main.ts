@@ -30,6 +30,7 @@ import type { CheerioAPI } from "cheerio";
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 80;
+const CHAPTER_IMAGES_PER_PAGE = 10;
 
 const NINEMANGA_SITES = {
   eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
@@ -280,8 +281,8 @@ class NineMangaExtension
 
     this.addChapterImages(pages, first$, firstHtml, baseUrl);
 
-    const pageCount = Math.min(getPageCount(firstHtml), MAX_CHAPTER_PAGE_REQUESTS);
-    const urls = this.getGeneratedChapterPageUrls(chapter.chapterId, baseUrl, pageCount);
+    const imageCount = getPageCount(firstHtml);
+    const urls = this.getGeneratedChapterPageUrls(chapter.chapterId, baseUrl, imageCount);
 
     for (const url of urls) {
       if (url === firstUrl) continue;
@@ -416,15 +417,16 @@ class NineMangaExtension
     }
   }
 
-  private getGeneratedChapterPageUrls(chapterId: string, baseUrl: string, pageCount: number): string[] {
-    if (pageCount <= 1) return [];
+  private getGeneratedChapterPageUrls(chapterId: string, baseUrl: string, imageCount: number): string[] {
+    const chunkCount = Math.min(Math.ceil(imageCount / CHAPTER_IMAGES_PER_PAGE), MAX_CHAPTER_PAGE_REQUESTS);
+    if (chunkCount <= 1) return [];
 
     const cleanChapterId = normalizeChapterId(chapterId);
     const basePath = cleanChapterId.replace(/(?:-\d+)?\.html$/u, "");
     const urls = [`${baseUrl}/${basePath}.html`];
 
-    for (let page = 2; page <= pageCount; page += 1) {
-      urls.push(`${baseUrl}/${basePath}-${page}.html`);
+    for (let chunk = 2; chunk <= chunkCount; chunk += 1) {
+      urls.push(`${baseUrl}/${basePath}-${chunk}.html`);
     }
 
     return urls;
