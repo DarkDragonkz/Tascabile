@@ -256,7 +256,7 @@ class BatCaveExtension
       .filter((_, element) => $(element).html()?.includes("__DATA__") ?? false)
       .first()
       .html() || "";
-    const jsonMatch = chapterScript.match(/window\.__DATA__\s*=\s*({[\s\S]*?});/u);
+    const jsonMatch = chapterScript.match(/window\.__DATA__\s*=\s*(\{[\s\S]*?\});/u);
 
     if (!jsonMatch?.[1]) return chapters;
 
@@ -297,7 +297,7 @@ class BatCaveExtension
       .filter((_, element) => $(element).html()?.includes("__DATA__") ?? false)
       .first()
       .html();
-    const jsonMatch = scriptData?.match(/window\.__DATA__\s*=\s*({[\s\S]*?})\s*;/u);
+    const jsonMatch = scriptData?.match(/window\.__DATA__\s*=\s*(\{[\s\S]*?\})\s*;/u);
 
     if (jsonMatch?.[1]) {
       try {
