@@ -26,7 +26,6 @@ import {
 import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
 import type { Cheerio, CheerioAPI } from "cheerio";
-import type { AnyNode } from "domhandler";
 
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
@@ -396,12 +395,12 @@ class NineMangaExtension
     chapters: Chapter[],
     seen: Set<string>,
     sourceManga: SourceManga,
-    link: Cheerio<AnyNode>,
+    link: Cheerio<unknown>,
     dateText: string,
   ): void {
     const chapterId = normalizeChapterId(link.attr("href") ?? "").replace(/\.html$/u, "");
     const title = cleanText(link.text()) || cleanText(link.attr("title")) || chapterId.split("/").pop() || "";
-    if (!chapterId || !chapterId.includes("/chapter/") || !title || seen.has(chapterId)) return;
+    if (!chapterId || !isChapterId(chapterId) || !title || seen.has(chapterId)) return;
 
     seen.add(chapterId);
     chapters.push({
@@ -535,6 +534,10 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&#39;/gu, "'")
     .replace(/&lt;/gu, "<")
     .replace(/&gt;/gu, ">");
+}
+
+function isChapterId(value: string): boolean {
+  return value === "chapter" || value.startsWith("chapter/") || value.includes("/chapter/");
 }
 
 function isValidImageUrl(value: string): boolean {
