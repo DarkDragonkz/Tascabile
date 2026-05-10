@@ -409,7 +409,12 @@ class NineMangaExtension
       if (pageUrl && !pages.includes(pageUrl)) pages.push(pageUrl);
     });
 
-    const imagePattern = /<img\b[^>]*(?:src|data-src)=["']([^"']+\.(?:webp|jpg|jpeg|png)(?:\?[^"']*)?)["'][^>]*>/giu;
+    $("a.pic_download[href]").each((_, element) => {
+      const pageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
+      if (pageUrl && !pages.includes(pageUrl)) pages.push(pageUrl);
+    });
+
+    const imagePattern = /<(?:img|a)\b[^>]*(?:src|data-src|href)=["']([^"']+\.(?:webp|jpg|jpeg|png)(?:\?[^"']*)?)["'][^>]*>/giu;
     let match: RegExpExecArray | null;
     while ((match = imagePattern.exec(html)) !== null) {
       const imageUrl = normalizeUrl(match[1] ?? "", baseUrl);
