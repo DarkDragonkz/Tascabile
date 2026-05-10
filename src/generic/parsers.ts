@@ -18,6 +18,12 @@ import type { Manga, MangaChapterList, MangaMetadata, TrendingManga, WindowEntry
 import { filter, jsonParser, tags, types } from "./utils";
 
 export class Parsers {
+  private normalizeCoverUrl(source: MangaWorldGeneric, imageT?: string, image?: string): string {
+    const rawUrl = imageT && imageT.trim().length > 0 ? imageT : image ?? "";
+    if (rawUrl.trim().length === 0) return "";
+    return new URL(rawUrl, source.base_url).toString();
+  }
+
   parseMangaDetails(
     mangaInfo: WindowEntry[],
     mangaId: string,
@@ -41,7 +47,7 @@ export class Parsers {
       mangaId,
       mangaInfo: {
         artist: parsed.artist.join(", "),
-        thumbnailUrl: parsed.imageT,
+        thumbnailUrl: this.normalizeCoverUrl(source, parsed.imageT, parsed.image),
         synopsis: parsed.trama,
         primaryTitle: parsed.title ?? "",
         contentRating: rating,
@@ -111,7 +117,10 @@ export class Parsers {
     };
   }
 
-  parsePage(json: WindowEntry[]): {
+  parsePage(
+    source: MangaWorldGeneric,
+    json: WindowEntry[],
+  ): {
     id: string;
     title: string;
     image: string;
@@ -125,7 +134,7 @@ export class Parsers {
         entry.data.mangas.map((manga) => ({
           id: `${manga.linkId}/${manga.slug}`,
           title: manga.title ?? "",
-          image: manga.imageT ?? "",
+          image: this.normalizeCoverUrl(source, manga.imageT, manga.image),
           tags: manga.genres?.map((genre) => genre.slug) ?? [],
           authors: manga.author.join(", ") ?? "",
           type: manga.typeT ?? "",
@@ -142,7 +151,7 @@ export class Parsers {
     const page = metadata?.page ?? 1;
     const items: SearchResultItem[] = [];
 
-    for (const item of this.parsePage(json)) {
+    for (const item of this.parsePage(source, json)) {
       if (
         !tags.excludedTags(item.tags, excluded.generi) &&
         !tags.blacklistedTags(item.tags) &&
@@ -239,7 +248,7 @@ export class Parsers {
       supertitle: chapter.name,
       mangaId: `${chapter.manga.linkId}/${chapter.manga.slug}`,
       title: chapter.manga.title ?? "",
-      imageUrl: chapter.manga.imageT ?? chapter.manga.image,
+      imageUrl: this.normalizeCoverUrl(source, chapter.manga.imageT, chapter.manga.image),
     }));
 
     return { items, metadata };
@@ -257,7 +266,7 @@ export class Parsers {
         source.defaultContentRating === ContentRating.ADULT
           ? ContentRating.ADULT
           : tags.getRating(manga.genres?.map((genre) => genre.slug) ?? []),
-      imageUrl: manga.imageT ?? manga.image,
+      imageUrl: this.normalizeCoverUrl(source, manga.imageT, manga.image),
       mangaId: `${manga.linkId}/${manga.slug}`,
       title: manga.title ?? "",
     }));
@@ -300,7 +309,7 @@ export class Parsers {
     json: WindowEntry[],
   ): Promise<DiscoverSectionItem[]> {
     const latest: DiscoverSectionItem[] = [];
-    const parsed = this.parsePage(json);
+    const parsed = this.parsePage(source, json);
     for (const item of parsed) {
       if (!tags.blacklistedTags(item.tags) && !types.blacklistedType(item.type)) {
         latest.push({
@@ -354,7 +363,7 @@ export class Parsers {
             source.defaultContentRating === ContentRating.ADULT
               ? ContentRating.ADULT
               : source.defaultContentRating,
-          imageUrl: manga.imageT ?? manga.image,
+          imageUrl: this.normalizeCoverUrl(source, manga.imageT, manga.image),
           mangaId: `${manga.linkId}/${manga.slug}`,
           title: manga.title ?? "",
           subtitle: firstChapter.name ?? "",
