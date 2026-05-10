@@ -44,7 +44,6 @@ type NineMangaLanguage = keyof typeof NINEMANGA_SITES;
 
 type NineMangaMetadata = {
   page?: number;
-  collectedIds?: string[];
 };
 
 type ParsedCard = {
@@ -131,9 +130,10 @@ class NineMangaExtension
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     const language = getSelectedSite().title;
     return [
-      { id: "updated_section", title: `Aggiornati · ${language}`, type: DiscoverSectionType.simpleCarousel },
-      { id: "popular_section", title: `Popolari · ${language}`, type: DiscoverSectionType.featured },
-      { id: "new_section", title: `Nuovi · ${language}`, type: DiscoverSectionType.simpleCarousel },
+      { id: "updated_section", title: `Ultimi aggiornamenti · ${language}`, type: DiscoverSectionType.simpleCarousel },
+      { id: "popular_section", title: `Più popolari · ${language}`, type: DiscoverSectionType.featured },
+      { id: "new_section", title: `Nuove serie · ${language}`, type: DiscoverSectionType.simpleCarousel },
+      { id: "catalog_section", title: `Catalogo · ${language}`, type: DiscoverSectionType.simpleCarousel },
     ];
   }
 
@@ -145,7 +145,7 @@ class NineMangaExtension
     const page = metadata?.page ?? 1;
     const url = this.getDiscoverUrl(section.id, page, baseUrl);
     const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const cards = this.parseSectionCards($, section.id);
+    const cards = this.parseCards($, section.id);
 
     const items = cards.map((card) => {
       if (section.type === DiscoverSectionType.featured) {
@@ -158,12 +158,13 @@ class NineMangaExtension
           contentRating: ContentRating.EVERYONE,
         };
       }
+
       return this.createSimpleItem(card.mangaId, card.imageUrl, card.title, card.subtitle);
     });
 
     return {
       items,
-      metadata: this.hasNextPage($) ? { page: page + 1, collectedIds: metadata?.collectedIds ?? [] } : undefined,
+      metadata: this.hasNextPage($) ? { page: page + 1 } : undefined,
     };
   }
 
@@ -178,7 +179,7 @@ class NineMangaExtension
     const baseUrl = getSelectedSite().baseUrl;
     const url = `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${page > 1 ? `&page=${page}` : ""}`;
     const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const items = this.parseDirectoryCards($).map((card) => ({
+    const items = this.parseCards($, "search_section").map((card) => ({
       mangaId: card.mangaId,
       title: card.title,
       subtitle: card.subtitle,
@@ -193,9 +194,17 @@ class NineMangaExtension
     const baseUrl = getSelectedSite().baseUrl;
     const url = `${baseUrl}/${mangaId}${mangaId.includes("?") ? "&" : "?"}waring=1`;
     const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
-    const title = cleanText($(".ttline h1[itemprop='name']").first().text()) || cleanText($(".book-title h1, h1.book-title, h1").first().text()) || cleanText($("meta[property='og:title']").attr("content"));
-    const image = normalizeUrl($(".bookintro .bookface img").first().attr("src") || $("meta[property='og:image']").attr("content") || "", baseUrl);
-    const synopsis = cleanText($(".bookintro p[itemprop='description']").first().text().replace(/^Sommario:\s*/iu, "") || $(".detail-info p, .summary, .book-summary").first().text());
+    const title = cleanText($(".ttline h1[itemprop='name']").first().text()) ||
+      cleanText($(".book-title h1, h1.book-title, h1").first().text()) ||
+      cleanText($("meta[property='og:title']").attr("content"));
+    const image = normalizeUrl(
+      $(".bookintro .bookface img").first().attr("src") || $("meta[property='og:image']").attr("content") || "",
+      baseUrl,
+    );
+    const synopsis = cleanText(
+      $(".bookintro p[itemprop='description']").first().text().replace(/^Sommario:\s*/iu, "") ||
+        $(".detail-info p, .summary, .book-summary").first().text(),
+    );
     const author = cleanText($(".bookintro [itemprop='author']").first().text());
     const status = cleanText($(".bookintro li:contains('Stato') a.red").first().text()) || "Unknown";
     const genres = $(".bookintro li[itemprop='genre'] a")
@@ -203,7 +212,16 @@ class NineMangaExtension
       .map((element) => cleanText($(element).text()))
       .filter((genre) => genre.length > 0);
     const tagGroups: TagSection[] = genres.length > 0
-      ? [{ id: "genres", title: "Genres", tags: genres.map((genre) => ({ id: genre.toLowerCase().replace(/[^a-z0-9]+/giu, "-"), title: genre })) }]
+      ? [
+          {
+            id: "genres",
+            title: "Genres",
+            tags: genres.map((genre) => ({
+              id: genre.toLowerCase().replace(/[^a-z0-9]+/giu, "-"),
+              title: genre,
+            })),
+          },
+        ]
       : [];
 
     return {
@@ -282,6 +300,8 @@ class NineMangaExtension
         return `${baseUrl}/list/Hot-Book/${pageSuffix}`;
       case "new_section":
         return `${baseUrl}/list/New-Book/${pageSuffix}`;
+      case "catalog_section":
+        return `${baseUrl}/category/${pageSuffix}`;
       default:
         return `${baseUrl}/list/New-Update/${pageSuffix}`;
     }
@@ -293,60 +313,58 @@ class NineMangaExtension
     return cheerio.load(Application.arrayBufferToUTF8String(data));
   }
 
-  private parseSectionCards($: CheerioAPI, sectionId: string): ParsedCard[] {
-    const mobileSelector = sectionId === "new_section" ? "#tab_content_1 li" : sectionId === "popular_section" ? "#tab_content_3 li" : "#tab_content_2 li";
-    const mobileCards = this.parseMobileCards($, mobileSelector);
+  private parseCards($: CheerioAPI, sectionId: string): ParsedCard[] {
+    const mobileSelector = this.getMobileSectionSelector(sectionId);
+    const mobileCards = this.parseCardsFromSelector($, mobileSelector);
     if (mobileCards.length > 0) return mobileCards;
 
-    return this.parseDirectoryCards($);
+    return this.parseCardsFromSelector($, "ul.direlist > li, dl.bookinfo");
   }
 
-  private parseDirectoryCards($: CheerioAPI): ParsedCard[] {
-    const cards: ParsedCard[] = [];
-    $("dl.bookinfo, .direlist li, .bookbox li, .book-content li, .manga-list li, .pic-list li, li dl, dl").each((_, element) => {
-      const unit = $(element);
-      const titleLink = unit.find("a.bookname").first().length > 0
-        ? unit.find("a.bookname").first()
-        : unit.find("dd.book-list a[href*='/manga/']").first().length > 0
-          ? unit.find("dd.book-list a[href*='/manga/']").first()
-          : unit.find("a[href*='/manga/']").first();
-      const coverLink = unit.find("dt a[href*='/manga/']").first();
-      const image = unit.find("dt img, img").first();
-      const chapterLink = unit.find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/']").first();
-      const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
-      const title = cleanText(titleLink.text()) || cleanText(titleLink.find("b").text()) || cleanText(titleLink.attr("title")) || cleanText(coverLink.attr("title")) || cleanText(image.attr("alt"));
-      const subtitle = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
-      const imageUrl = normalizeUrl(image.attr("src") ?? "", getSelectedSite().baseUrl);
-      if (!title || !mangaId) return;
-      cards.push({ mangaId, title, imageUrl, subtitle });
-    });
-    return dedupeCards(cards).slice(0, 48);
-  }
-
-  private parseMobileCards($: CheerioAPI, selector: string): ParsedCard[] {
-    const scopedCards = this.parseCardsFromSelector($, selector);
-    return scopedCards.length > 0 ? scopedCards : this.parseDirectoryCards($);
+  private getMobileSectionSelector(sectionId: string): string {
+    switch (sectionId) {
+      case "new_section":
+        return "#tab_content_1 > li";
+      case "popular_section":
+        return "#tab_content_3 > li";
+      case "updated_section":
+        return "#tab_content_2 > li";
+      default:
+        return "#tab_content_2 > li, ul.direlist > li, dl.bookinfo";
+    }
   }
 
   private parseCardsFromSelector($: CheerioAPI, selector: string): ParsedCard[] {
     const cards: ParsedCard[] = [];
+
     $(selector).each((_, element) => {
       const unit = $(element);
-      const titleLink = unit.find("dd.book-list a[href*='/manga/']").first().length > 0
-        ? unit.find("dd.book-list a[href*='/manga/']").first()
-        : unit.find("a.bookname").first().length > 0
-          ? unit.find("a.bookname").first()
-          : unit.find("a[href*='/manga/']").first();
-      const coverLink = unit.find("dt a[href*='/manga/']").first();
+      const titleLink = firstExisting(unit, [
+        "a.bookname",
+        "dd.book-list a[href*='/manga/']",
+        "dd a[href*='/manga/']",
+      ]);
+      const coverLink = unit.find("dt a[href*='/manga/'], a.bookface[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
-      const chapterLink = unit.find("dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a.chaptername, a[href*='/chapter/']").first();
+      const chapterLink = firstExisting(unit, [
+        "a.chaptername",
+        "dd.chapter a[href*='/chapter/']",
+        "dd.book-list a[href*='/chapter/']",
+        "a[href*='/chapter/']",
+      ]);
       const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
-      const title = cleanText(titleLink.find("b").text()) || cleanText(titleLink.text()) || cleanText(titleLink.attr("title")) || cleanText(coverLink.attr("title")) || cleanText(image.attr("alt"));
+      const title = cleanText(titleLink.text()) ||
+        cleanText(titleLink.find("b").text()) ||
+        cleanText(titleLink.attr("title")) ||
+        cleanText(coverLink.attr("title")) ||
+        cleanText(image.attr("alt"));
       const subtitle = cleanText(chapterLink.text()) || cleanText(chapterLink.attr("title"));
-      const imageUrl = normalizeUrl(image.attr("src") ?? "", getSelectedSite().baseUrl);
+      const imageUrl = normalizeUrl(image.attr("src") ?? image.attr("data-src") ?? "", getSelectedSite().baseUrl);
+
       if (!title || !mangaId) return;
       cards.push({ mangaId, title, imageUrl, subtitle });
     });
+
     return dedupeCards(cards).slice(0, 48);
   }
 
@@ -357,7 +375,10 @@ class NineMangaExtension
     if (!alternativeRow) return [];
     const cloned = $(alternativeRow).clone();
     cloned.find("b").remove();
-    return cleanText(cloned.text()).split(";").map((title) => cleanText(title)).filter((title) => title.length > 0);
+    return cleanText(cloned.text())
+      .split(";")
+      .map((title) => cleanText(title))
+      .filter((title) => title.length > 0);
   }
 
   private hasNextPage($: CheerioAPI): boolean {
@@ -380,6 +401,14 @@ function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
 
 function isNineMangaLanguage(value: string | undefined): value is NineMangaLanguage {
   return value !== undefined && value in NINEMANGA_SITES;
+}
+
+function firstExisting(unit: cheerio.Cheerio<cheerio.Element>, selectors: string[]): cheerio.Cheerio<cheerio.Element> {
+  for (const selector of selectors) {
+    const result = unit.find(selector).first();
+    if (result.length > 0) return result;
+  }
+  return unit.find("__missing__");
 }
 
 function normalizeUrl(value: string, baseUrl: string): string {
