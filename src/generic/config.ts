@@ -8,7 +8,7 @@ import {
   type SourceDeveloper,
 } from "@paperback/types";
 
-const BASE_VERSION = "1.0.0-alpha.19";
+const BASE_VERSION = "1.0.0-alpha.20";
 
 export const basePbConfig = {
   name: "",
