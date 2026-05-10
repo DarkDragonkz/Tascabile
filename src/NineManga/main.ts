@@ -477,7 +477,14 @@ class NineMangaExtension
       );
       if (!hasStatusLabel) continue;
 
-      const linkStatus = cleanText(unit.find("a").first().text());
+      const categoryStatusLink = unit.find("a[href*='/category/']").first();
+      const fallbackStatusLink = unit
+        .find("a")
+        .filter((_, link) => !($(link).attr("href") ?? "").includes("mangadogs.com"))
+        .first();
+      const linkStatus = cleanText(
+        categoryStatusLink.length > 0 ? categoryStatusLink.text() : fallbackStatusLink.text(),
+      );
       const textStatus = cleanText(fullText.replace(labelPattern, ""));
       return normalizeStatus(linkStatus || textStatus);
     }
