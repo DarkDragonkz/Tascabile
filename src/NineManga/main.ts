@@ -32,6 +32,8 @@ import { getNineMangaReaderParser } from "./parsers";
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
+const DESKTOP_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const ADVANCED_SEARCH_PARAMS =
   "name_sel=contain&wd=&author_sel=contain&author=&artist_sel=contain&artist=&category_id=&out_category_id=&completed_series=either";
 
@@ -164,9 +166,9 @@ class NineMangaInterceptor extends PaperbackInterceptor {
       ...request.headers,
       origin: baseUrl,
       referer: `${baseUrl}/`,
-      "user-agent": await Application.getDefaultUserAgent(),
+      "user-agent": DESKTOP_USER_AGENT,
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-      "accept-language": "en-US,en;q=0.5",
+      "accept-language": "en-US,en;q=0.9,it;q=0.8",
     };
     return request;
   }
@@ -458,7 +460,12 @@ class NineMangaExtension
           }
 
           if (pages.length > 0) {
-            const nextUrl = this.parseNextPageUrl(currentPage.html, baseUrl, cleanChapterId);
+            const pageUrls = this.parseChapterPageUrls($, baseUrl);
+            const currentIndex = pageUrls.indexOf(currentPage.url);
+            const nextFromSelect = currentIndex >= 0 ? pageUrls[currentIndex + 1] ?? "" : "";
+            const nextFromScript = this.parseNextPageUrl(currentPage.html, baseUrl, cleanChapterId);
+            const nextUrl = nextFromSelect || nextFromScript;
+
             if (!nextUrl || seenUrls.has(nextUrl)) break;
 
             try {
@@ -709,7 +716,7 @@ class NineMangaExtension
   private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
     const urls: string[] = [];
 
-    $("select.sl-page option, select#page option").each((_, element) => {
+    $("select.sl-page option, select#page option, select[name='page'] option").each((_, element) => {
       const value = $(element).attr("value") ?? "";
       if (!value || !isChapterId(value)) return;
 
