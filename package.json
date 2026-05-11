@@ -1,6 +1,6 @@
 {
   "name": "tascabile",
-  "version": "0.9.1",
+  "version": "1.0.0-alpha.31",
   "description": "Repository di estensioni Paperback 0.9 mantenuta da DarkDragonkz.",
   "private": true,
   "type": "module",
