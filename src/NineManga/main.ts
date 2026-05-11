@@ -339,10 +339,7 @@ class NineMangaExtension
       if (language === "eng") {
         const directReaderLink = unit
           .find(
-            [
-              "em.page_choose a[href*='/chapter/'][href*='-10-1.html']",
-              "em.page_choose a[href*='/chapter/'][href*='-10-1']",
-            ].join(", "),
+            "em.page_choose a[href*='/chapter/'][href*='-10-1.html'], em.page_choose a[href*='/chapter/'][href*='-10-1']",
           )
           .first();
 
@@ -385,22 +382,21 @@ class NineMangaExtension
     });
 
     if (chapters.length === 0) {
-      const fallbackSelector =
-        language === "eng"
-          ? "a[href*='/chapter/'], a[href*='/c/'], a[href*='/go/ennm/'], a[href*='type=enninemanga']"
-          : "a[href*='/chapter/'], a[href*='/c/']";
-
-      $(fallbackSelector).each((_, element) => {
-        const link = $(element);
-        if (link.closest("select").length > 0) return;
-
-        if (language === "eng" && isEnglishProxyChapterUrl(link.attr("href") ?? "")) {
+      if (language === "eng") {
+        $("a[href*='/go/ennm/'], a[href*='type=enninemanga']").each((_, element) => {
+          const link = $(element);
+          if (link.closest("select").length > 0) return;
           this.addEnglishChapterFromProxyLink(chapters, seen, sourceManga, link, "");
-          return;
-        }
+        });
+      }
 
-        this.addChapterFromLink(chapters, seen, sourceManga, link, "");
-      });
+      if (chapters.length === 0) {
+        $("a[href*='/chapter/'], a[href*='/c/']").each((_, element) => {
+          const link = $(element);
+          if (link.closest("select").length > 0) return;
+          this.addChapterFromLink(chapters, seen, sourceManga, link, "");
+        });
+      }
     }
 
     return chapters;
@@ -850,11 +846,6 @@ function extractMangaSlugFromMangaId(mangaId: string): string {
     .replace(/^manga\//u, "")
     .replace(/\.html$/u, "")
     .replace(/\/+$/u, "");
-}
-
-function isEnglishProxyChapterUrl(value: string): boolean {
-  const decoded = decodeHtmlEntities(value);
-  return /\/go\/ennm\/\d+/u.test(decoded) || /[?&]type=enninemanga(?:&|$)/u.test(decoded);
 }
 
 function decodeHtmlEntities(value: string): string {
