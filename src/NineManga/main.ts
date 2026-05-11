@@ -252,7 +252,9 @@ class NineMangaExtension
     const title = query.title.trim();
     const baseUrl = getSelectedSite().baseUrl;
     const url = title
-      ? `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${page > 1 ? `&page=${page}.html` : ""}`
+      ? `${baseUrl}/search/?wd=${encodeURIComponent(title).replace(/%20/gu, "+")}${
+          page > 1 ? `&page=${page}.html` : ""
+        }`
       : this.getAdvancedSearchUrl(baseUrl, page);
 
     const html = await this.fetchHtml({ url, method: "GET" } as Request);
@@ -524,12 +526,22 @@ class NineMangaExtension
   }
 
   private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
+    const language = getSelectedLanguage();
     const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
       ? cleanChapterId
       : `${cleanChapterId}-10-1`;
 
-    if (getSelectedLanguage() === "eng") {
+    if (language === "eng") {
       return dedupeStrings([`${baseUrl}/${readerChapterId}.html`]);
+    }
+
+    if (language === "esp") {
+      return dedupeStrings([
+        `${baseUrl}/${cleanChapterId}.html`,
+        `${baseUrl}/${readerChapterId}.html`,
+        `${baseUrl}/${cleanChapterId}/`,
+        `${baseUrl}/${cleanChapterId}`,
+      ]);
     }
 
     return dedupeStrings([
@@ -615,7 +627,9 @@ class NineMangaExtension
       const coverLink = unit.find("dt a[href*='/manga/'], a.bookface[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
       const chapterLink = unit
-        .find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/'], a[href*='/c/']")
+        .find(
+          "a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/'], a[href*='/c/']",
+        )
         .first();
 
       const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
@@ -728,14 +742,15 @@ class NineMangaExtension
   }
 
   private parseEnglishReaderUrlFromSourceLink($: CheerioAPI, baseUrl: string, mangaId: string): string {
-    const href = $(
-      [
-        "a[href*='/go/ennm/']",
-        "a[href*='type=enninemanga']",
-      ].join(", "),
-    )
-      .first()
-      .attr("href") ?? "";
+    const href =
+      $(
+        [
+          "a[href*='/go/ennm/']",
+          "a[href*='type=enninemanga']",
+        ].join(", "),
+      )
+        .first()
+        .attr("href") ?? "";
 
     const chapterNumberId = extractEnglishProxyChapterId(href);
     const mangaSlug = extractMangaSlugFromMangaId(mangaId);
@@ -901,38 +916,37 @@ function normalizeChapterId(value: string): string {
   return withoutQuery.replace(/^\/+|\/+$/gu, "").trim();
 }
 
+function normalizeEnglishChapterIdForReader(value: string): string {
+  const chapterId = normalizeChapterId(value).replace(/\.html$/u, "").replace(/\/+$/u, "");
+  if (/-\d+-\d+$/u.test(chapterId)) return chapterId;
+
+  const chapterNumberId = extractEnglishProxyChapterId(chapterId);
+  if (!chapterNumberId) return chapterId;
+
+  const mangaSlug = extractMangaSlugFromChapterId(chapterId);
+  if (!mangaSlug) return chapterId;
+
+  return `chapter/${mangaSlug}/${chapterNumberId}-10-1`;
+}
+
 function extractEnglishProxyChapterId(value: string): string {
   const decoded = decodeHtmlEntities(value);
+  const cidMatch = decoded.match(/[?&]cid=(\d+)/u)?.[1];
+  if (cidMatch) return cidMatch;
 
-  const cidMatch = decoded.match(/[?&]cid=(\d+)/u);
-  if (cidMatch?.[1]) return cidMatch[1];
-
-  const ennmMatch = decoded.match(/\/go\/ennm\/(\d+)/u);
-  if (ennmMatch?.[1]) return ennmMatch[1];
-
-  return "";
+  return decoded.match(/\/go\/(?:ennm|jump)\/?(\d+)?/u)?.[1] ?? decoded.match(/\/(\d+)(?:\.html)?(?:[?#].*)?$/u)?.[1] ?? "";
 }
 
 function extractMangaSlugFromMangaId(mangaId: string): string {
-  return normalizeMangaId(mangaId)
-    .replace(/^manga\//u, "")
-    .replace(/\.html$/u, "")
-    .replace(/\/+$/u, "")
-    .replace(/\+/gu, "%20");
+  const normalized = normalizeMangaId(mangaId);
+  const match = normalized.match(/^manga\/(.+?)\.html$/u);
+  return match?.[1] ?? "";
 }
 
-function normalizeEnglishChapterIdForReader(chapterId: string): string {
-  const normalized = normalizeChapterId(chapterId)
-    .replace(/\.html$/u, "")
-    .replace(/\/+$/u, "");
-
-  const parts = normalized.split("/");
-  if (parts.length < 3 || parts[0] !== "chapter") return normalized.replace(/\+/gu, "%20");
-
-  const chapterNumber = parts.pop() ?? "";
-  const mangaSlug = parts.slice(1).join("/").replace(/\+/gu, "%20");
-
-  return `chapter/${mangaSlug}/${chapterNumber}`;
+function extractMangaSlugFromChapterId(chapterId: string): string {
+  const normalized = normalizeChapterId(chapterId);
+  const match = normalized.match(/^chapter\/(.+)\/[^/]+$/u);
+  return match?.[1] ?? "";
 }
 
 function decodeHtmlEntities(value: string): string {
@@ -1026,7 +1040,7 @@ function parseDate(value: string): Date | undefined {
 
 function extractChapterNumber(title: string): number {
   const cleaned = cleanText(title);
-  const explicitChapter = cleaned.match(/(?:ch(?:apter)?\.?|cap(?:itolo)?\.?|vol\.[^\d]*)\s*(\d+(?:\.\d+)?)/iu)?.[1];
+  const explicitChapter = cleaned.match(/(?:ch(?:apter)?\.?|cap(?:itolo)?\.?|cap[ií]tulo\.?|vol\.[^\d]*)\s*(\d+(?:\.\d+)?)/iu)?.[1];
   const fallbackNumber = cleaned.match(/(\d+(?:\.\d+)?)/u)?.[1];
   const parsed = Number.parseFloat(explicitChapter ?? fallbackNumber ?? "");
   return Number.isFinite(parsed) ? parsed : 0;
