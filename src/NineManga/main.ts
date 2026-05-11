@@ -526,31 +526,29 @@ class NineMangaExtension
   }
 
   private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
-    const language = getSelectedLanguage();
-    const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
-      ? cleanChapterId
-      : `${cleanChapterId}-10-1`;
+  const language = getSelectedLanguage();
+  const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
+    ? cleanChapterId
+    : `${cleanChapterId}-10-1`;
 
-    if (language === "eng") {
-      return dedupeStrings([`${baseUrl}/${readerChapterId}.html`]);
-    }
+  if (language === "eng") {
+    return dedupeStrings([`${baseUrl}/${readerChapterId}.html`]);
+  }
 
-    if (language === "esp") {
-      return dedupeStrings([
-        `${baseUrl}/${cleanChapterId}.html`,
-        `${baseUrl}/${readerChapterId}.html`,
-        `${baseUrl}/${cleanChapterId}/`,
-        `${baseUrl}/${cleanChapterId}`,
-      ]);
-    }
-
+  if (language === "esp") {
     return dedupeStrings([
-      `${baseUrl}/${readerChapterId}.html`,
       `${baseUrl}/${cleanChapterId}.html`,
-      `${baseUrl}/${cleanChapterId}/`,
-      `${baseUrl}/${cleanChapterId}`,
+      `${baseUrl}/${readerChapterId}.html`,
     ]);
   }
+
+  return dedupeStrings([
+    `${baseUrl}/${readerChapterId}.html`,
+    `${baseUrl}/${cleanChapterId}.html`,
+    `${baseUrl}/${cleanChapterId}/`,
+    `${baseUrl}/${cleanChapterId}`,
+  ]);
+}
 
   private getAdvancedSearchUrl(baseUrl: string, page: number): string {
     return page > 1
