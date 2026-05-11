@@ -27,6 +27,8 @@ import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
 import type { CheerioAPI } from "cheerio";
 
+import { getNineMangaReaderParser } from "./parsers";
+
 const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
@@ -328,7 +330,7 @@ class NineMangaExtension
     });
 
     if (chapters.length === 0) {
-      $("a[href*='/chapter/']").each((_, element) => {
+      $("a[href*='/chapter/'], a[href*='/c/']").each((_, element) => {
         const link = $(element);
         if (link.closest("select").length > 0) return;
         this.addChapterFromLink(chapters, seen, sourceManga, link, "");
@@ -339,6 +341,8 @@ class NineMangaExtension
   }
 
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
+    const language = getSelectedLanguage();
+    const readerParser = getNineMangaReaderParser(language);
     const baseUrl = getSelectedSite().baseUrl;
     const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "").replace(/\/+$/u, "");
     const candidateUrls = this.getChapterReaderUrls(baseUrl, cleanChapterId);
@@ -348,17 +352,19 @@ class NineMangaExtension
     const urls = chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
     const pages: string[] = [];
 
-    this.addChapterImages(pages, selector$, baseUrl);
+    pages.push(...readerParser(firstPage.html, selector$, baseUrl));
 
-    for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
-      if (url === firstPage.url) continue;
+    if (language !== "eng" || pages.length === 0) {
+      for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
+        if (url === firstPage.url) continue;
 
-      try {
-        const html = await this.fetchHtml({ url, method: "GET" } as Request);
-        const $ = cheerio.load(html);
-        this.addChapterImages(pages, $, baseUrl);
-      } catch {
-        continue;
+        try {
+          const html = await this.fetchHtml({ url, method: "GET" } as Request);
+          const $ = cheerio.load(html);
+          pages.push(...readerParser(html, $, baseUrl));
+        } catch {
+          continue;
+        }
       }
     }
 
@@ -453,7 +459,7 @@ class NineMangaExtension
       const coverLink = unit.find("dt a[href*='/manga/'], a.bookface[href*='/manga/']").first();
       const image = unit.find("dt img, img").first();
       const chapterLink = unit
-        .find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/']")
+        .find("a.chaptername, dd.chapter a[href*='/chapter/'], dd.book-list a[href*='/chapter/'], a[href*='/chapter/'], a[href*='/c/']")
         .first();
       const mangaId = normalizeMangaId(titleLink.attr("href") || coverLink.attr("href") || "");
       const title = cleanText(titleLink.text()) ||
@@ -524,30 +530,13 @@ class NineMangaExtension
 
     $("select.sl-page option, select#page option").each((_, element) => {
       const value = $(element).attr("value") ?? "";
-      if (!value || !value.includes("/chapter/")) return;
+      if (!value || !isChapterId(value)) return;
 
       const url = normalizeUrl(value, baseUrl);
       if (url && !urls.includes(url)) urls.push(url);
-      return;
     });
 
     return urls;
-  }
-
-  private addChapterImages(pages: string[], $: CheerioAPI, baseUrl: string): void {
-    const beforeCount = pages.length;
-
-    $("div.pic_box a.pic_download[href]").each((_, element) => {
-      const imageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
-      if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
-    });
-
-    if (pages.length > beforeCount) return;
-
-    $("div.pic_box img.manga_pic").each((_, element) => {
-      const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
-      if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
-    });
   }
 
   private parseSecondaryTitles($: CheerioAPI): string[] {
@@ -584,7 +573,7 @@ class NineMangaExtension
       const categoryStatusLink = unit.find("a[href*='/category/']").first();
       const fallbackStatusLink = unit
         .find("a")
-        .filter((_, link) => !($(link).attr("href") ?? "").includes("mangadogs.com"))
+        .filter((_, statusLink) => !($(statusLink).attr("href") ?? "").includes("mangadogs.com"))
         .first();
       const linkStatus = cleanText(
         categoryStatusLink.length > 0 ? categoryStatusLink.text() : fallbackStatusLink.text(),
@@ -650,7 +639,7 @@ function getImageSrc(html: string): string {
 }
 
 function getFirstChapterTitle(html: string): string {
-  const chapterMatch = html.match(/<a\b[^>]*href=["'][^"']*\/chapter\/[^"']+["'][^>]*>([\s\S]*?)<\/a>/iu);
+  const chapterMatch = html.match(/<a\b[^>]*href=["'][^"']*\/(?:chapter|c)\/[^"']+["'][^>]*>([\s\S]*?)<\/a>/iu);
   return chapterMatch?.[1] ? stripHtml(chapterMatch[1]) : "";
 }
 
@@ -689,24 +678,23 @@ function normalizeChapterId(value: string): string {
 function decodeHtmlEntities(value: string): string {
   return value
     .replace(/&amp;/gu, "&")
+    .replace(/&#038;/gu, "&")
     .replace(/&quot;/gu, '"')
+    .replace(/&#34;/gu, '"')
     .replace(/&#039;/gu, "'")
     .replace(/&#39;/gu, "'")
+    .replace(/&apos;/gu, "'")
     .replace(/&lt;/gu, "<")
     .replace(/&gt;/gu, ">");
 }
 
 function isChapterId(value: string): boolean {
-  return value === "chapter" || value.startsWith("chapter/") || value.includes("/chapter/");
+  return value === "chapter" || value.startsWith("chapter/") || value.includes("/chapter/") || value.startsWith("c/") || value.includes("/c/");
 }
 
 function isPlaceholderImage(value: string): boolean {
   const normalized = value.toLowerCase();
   return normalized.startsWith("data:image/") || normalized.includes("blank") || normalized.includes("placeholder");
-}
-
-function isValidImageUrl(value: string): boolean {
-  return /\.(?:webp|jpg|jpeg|png)(?:\?|$)/iu.test(value);
 }
 
 function normalizeStatus(value: string): string {
@@ -757,8 +745,7 @@ function parseDate(value: string): Date | undefined {
 
 function extractChapterNumber(title: string): number {
   const numbers = title.match(/\d+(?:\.\d+)?/gu);
-  if (!numbers || numbers.length === 0) return 0;
-  return Number(numbers[numbers.length - 1]);
+  return numbers?.[0] ? Number.parseFloat(numbers[0]) : 0;
 }
 
 export const NineManga = new NineMangaExtension();
