@@ -64,15 +64,18 @@ export function parseAllImgsUrlArray(html: string, baseUrl: string): string[] {
 export function parsePicBoxImages($: CheerioAPI, baseUrl: string): string[] {
   const pages: string[] = [];
 
-  $("div.pic_box a.pic_download[href], div.pic_box .tool a[href]").each((_, element) => {
+  $("div.pic_box a.pic_download[href], a.pic_download[href]").each((_, element) => {
     const imageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
     if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
   });
 
-  if (pages.length > 0) return pages;
-
-  $("div.pic_box img.manga_pic, section.mangaread-img img[src]").each((_, element) => {
+  $("div.pic_box img.manga_pic[src], img.manga_pic[src], section.mangaread-img img[src]").each((_, element) => {
     const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
+    if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
+  });
+
+  $("meta[property='og:image'], meta[name='twitter:image']").each((_, element) => {
+    const imageUrl = normalizeUrl($(element).attr("content") ?? "", baseUrl);
     if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
   });
 
