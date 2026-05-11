@@ -411,30 +411,49 @@ class NineMangaExtension
       .replace(/\/+$/u, "");
 
     const candidateUrls = this.getChapterReaderUrls(baseUrl, cleanChapterId);
-    const firstPage = await this.fetchFirstAvailableHtml(candidateUrls);
     const pages: string[] = [];
 
     if (language === "eng") {
       const seenUrls = new Set<string>();
-      let currentPage: FetchedHtml | undefined = firstPage;
 
-      while (currentPage && !seenUrls.has(currentPage.url) && seenUrls.size < MAX_CHAPTER_PAGE_REQUESTS) {
-        seenUrls.add(currentPage.url);
-
-        const $ = cheerio.load(currentPage.html);
-        pages.push(...readerParser(currentPage.html, $, baseUrl));
-
-        const nextUrl = this.parseNextPageUrl(currentPage.html, baseUrl, cleanChapterId);
-        if (!nextUrl || seenUrls.has(nextUrl)) break;
+      for (const candidateUrl of candidateUrls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
+        let currentPage: FetchedHtml | undefined;
 
         try {
           currentPage = {
-            url: nextUrl,
-            html: await this.fetchHtml({ url: nextUrl, method: "GET" } as Request),
+            url: candidateUrl,
+            html: await this.fetchHtml({ url: candidateUrl, method: "GET" } as Request),
           };
         } catch {
+          continue;
+        }
+
+        while (currentPage && !seenUrls.has(currentPage.url) && seenUrls.size < MAX_CHAPTER_PAGE_REQUESTS) {
+          seenUrls.add(currentPage.url);
+
+          const $ = cheerio.load(currentPage.html);
+          pages.push(...readerParser(currentPage.html, $, baseUrl));
+
+          if (pages.length > 0) {
+            const nextUrl = this.parseNextPageUrl(currentPage.html, baseUrl, cleanChapterId);
+            if (!nextUrl || seenUrls.has(nextUrl)) break;
+
+            try {
+              currentPage = {
+                url: nextUrl,
+                html: await this.fetchHtml({ url: nextUrl, method: "GET" } as Request),
+              };
+            } catch {
+              break;
+            }
+
+            continue;
+          }
+
           break;
         }
+
+        if (pages.length > 0) break;
       }
 
       return {
@@ -444,6 +463,7 @@ class NineMangaExtension
       };
     }
 
+    const firstPage = await this.fetchFirstAvailableHtml(candidateUrls);
     const selector$ = cheerio.load(firstPage.html);
     const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
     const urls = chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
@@ -474,12 +494,16 @@ class NineMangaExtension
   }
 
   private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
+    const baseChapterId = cleanChapterId.replace(/-\d+-\d+$/u, "");
     const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
       ? cleanChapterId
       : `${cleanChapterId}-10-1`;
 
     return dedupeStrings([
       `${baseUrl}/${readerChapterId}.html`,
+      `${baseUrl}/${baseChapterId}.html`,
+      `${baseUrl}/${baseChapterId}/`,
+      `${baseUrl}/${baseChapterId}`,
       `${baseUrl}/${cleanChapterId}.html`,
       `${baseUrl}/${cleanChapterId}/`,
       `${baseUrl}/${cleanChapterId}`,
