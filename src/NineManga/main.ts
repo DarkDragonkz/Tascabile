@@ -353,16 +353,15 @@ class NineMangaExtension
     const language = getSelectedLanguage();
     const readerParser = getNineMangaReaderParser(language);
     const baseUrl = getSelectedSite().baseUrl;
-    const cleanChapterId = normalizeChapterId(chapter.chapterId).replace(/\.html$/u, "").replace(/\/+$/u, "");
+    const cleanChapterId = normalizeChapterId(chapter.chapterId)
+      .replace(/\.html$/u, "")
+      .replace(/\/+$/u, "");
+
     const candidateUrls = this.getChapterReaderUrls(baseUrl, cleanChapterId);
     const firstPage = await this.fetchFirstAvailableHtml(candidateUrls);
-    const selector$ = cheerio.load(firstPage.html);
-    const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
-    const sourceUrls = language === "eng" ? this.parseEnglishSourceUrls(selector$, baseUrl) : [];
-    const urls = sourceUrls.length > 0 ? sourceUrls : chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
     const pages: string[] = [];
 
-    if (language === "eng" && sourceUrls.length === 0) {
+    if (language === "eng") {
       const seenUrls = new Set<string>();
       let currentPage: FetchedHtml | undefined = firstPage;
 
@@ -385,30 +384,36 @@ class NineMangaExtension
         }
       }
 
-      return { id: chapter.chapterId, mangaId: chapter.sourceManga.mangaId, pages: dedupeStrings(pages) };
+      return {
+        id: chapter.chapterId,
+        mangaId: chapter.sourceManga.mangaId,
+        pages: dedupeStrings(pages),
+      };
     }
 
-    if (sourceUrls.length === 0) {
-      pages.push(...readerParser(firstPage.html, selector$, baseUrl));
-    }
+    const selector$ = cheerio.load(firstPage.html);
+    const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
+    const urls = chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
 
-    if (language !== "eng" || pages.length === 0 || sourceUrls.length > 0) {
-      for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
-        if (url === firstPage.url) continue;
+    pages.push(...readerParser(firstPage.html, selector$, baseUrl));
 
-        try {
-          const html = await this.fetchHtml({ url, method: "GET" } as Request);
-          const $ = cheerio.load(html);
-          pages.push(...readerParser(html, $, baseUrl));
+    for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
+      if (url === firstPage.url) continue;
 
-          if (language === "eng" && pages.length > 0) break;
-        } catch {
-          continue;
-        }
+      try {
+        const html = await this.fetchHtml({ url, method: "GET" } as Request);
+        const $ = cheerio.load(html);
+        pages.push(...readerParser(html, $, baseUrl));
+      } catch {
+        continue;
       }
     }
 
-    return { id: chapter.chapterId, mangaId: chapter.sourceManga.mangaId, pages: dedupeStrings(pages) };
+    return {
+      id: chapter.chapterId,
+      mangaId: chapter.sourceManga.mangaId,
+      pages: dedupeStrings(pages),
+    };
   }
 
   getMangaShareUrl(mangaId: string): string {
@@ -416,8 +421,12 @@ class NineMangaExtension
   }
 
   private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
+    const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
+      ? cleanChapterId
+      : `${cleanChapterId}-10-1`;
+
     return dedupeStrings([
-      `${baseUrl}/${cleanChapterId}-10-1.html`,
+      `${baseUrl}/${readerChapterId}.html`,
       `${baseUrl}/${cleanChapterId}.html`,
       `${baseUrl}/${cleanChapterId}/`,
       `${baseUrl}/${cleanChapterId}`,
@@ -576,17 +585,6 @@ class NineMangaExtension
       if (!value || !isChapterId(value)) return;
 
       const url = normalizeUrl(value, baseUrl);
-      if (url && !urls.includes(url)) urls.push(url);
-    });
-
-    return urls;
-  }
-
-  private parseEnglishSourceUrls($: CheerioAPI, baseUrl: string): string[] {
-    const urls: string[] = [];
-
-    $("a[href*='/go/jump/'], a[href*='type=enninemanga']").each((_, element) => {
-      const url = normalizeUrl($(element).attr("href") ?? "", baseUrl);
       if (url && !urls.includes(url)) urls.push(url);
     });
 
