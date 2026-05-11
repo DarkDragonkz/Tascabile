@@ -1,8 +1,8 @@
 {
-  "buildTime": "2026-05-10T21:23:38.586Z",
+  "buildTime": "2026-05-11T09:10:59.356Z",
   "builtWith": {
-    "toolchain": "1.0.0-alpha.86",
-    "types": "1.0.0-alpha.86"
+    "toolchain": "1.0.0-alpha.87",
+    "types": "1.0.0-alpha.87"
   },
   "repository": {
     "name": "tascabile",
