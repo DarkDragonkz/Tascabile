@@ -349,12 +349,15 @@ class NineMangaExtension
     const firstPage = await this.fetchFirstAvailableHtml(candidateUrls);
     const selector$ = cheerio.load(firstPage.html);
     const chapterPageUrls = this.parseChapterPageUrls(selector$, baseUrl);
-    const urls = chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
+    const sourceUrls = language === "eng" ? this.parseEnglishSourceUrls(selector$, baseUrl) : [];
+    const urls = sourceUrls.length > 0 ? sourceUrls : chapterPageUrls.length > 0 ? chapterPageUrls : candidateUrls;
     const pages: string[] = [];
 
-    pages.push(...readerParser(firstPage.html, selector$, baseUrl));
+    if (sourceUrls.length === 0) {
+      pages.push(...readerParser(firstPage.html, selector$, baseUrl));
+    }
 
-    if (language !== "eng" || pages.length === 0) {
+    if (language !== "eng" || pages.length === 0 || sourceUrls.length > 0) {
       for (const url of urls.slice(0, MAX_CHAPTER_PAGE_REQUESTS)) {
         if (url === firstPage.url) continue;
 
@@ -362,6 +365,8 @@ class NineMangaExtension
           const html = await this.fetchHtml({ url, method: "GET" } as Request);
           const $ = cheerio.load(html);
           pages.push(...readerParser(html, $, baseUrl));
+
+          if (language === "eng" && pages.length > 0) break;
         } catch {
           continue;
         }
@@ -533,6 +538,17 @@ class NineMangaExtension
       if (!value || !isChapterId(value)) return;
 
       const url = normalizeUrl(value, baseUrl);
+      if (url && !urls.includes(url)) urls.push(url);
+    });
+
+    return urls;
+  }
+
+  private parseEnglishSourceUrls($: CheerioAPI, baseUrl: string): string[] {
+    const urls: string[] = [];
+
+    $("a[href*='/go/jump/'], a[href*='type=enninemanga']").each((_, element) => {
+      const url = normalizeUrl($(element).attr("href") ?? "", baseUrl);
       if (url && !urls.includes(url)) urls.push(url);
     });
 
