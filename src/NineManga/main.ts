@@ -406,9 +406,12 @@ class NineMangaExtension
     const language = getSelectedLanguage();
     const readerParser = getNineMangaReaderParser(language);
     const baseUrl = getSelectedSite().baseUrl;
-    const cleanChapterId = normalizeChapterId(chapter.chapterId)
-      .replace(/\.html$/u, "")
-      .replace(/\/+$/u, "");
+    const cleanChapterId =
+      language === "eng"
+        ? normalizeEnglishChapterIdForReader(chapter.chapterId)
+        : normalizeChapterId(chapter.chapterId)
+            .replace(/\.html$/u, "")
+            .replace(/\/+$/u, "");
 
     const candidateUrls = this.getChapterReaderUrls(baseUrl, cleanChapterId);
     const pages: string[] = [];
@@ -907,7 +910,22 @@ function extractMangaSlugFromMangaId(mangaId: string): string {
   return normalizeMangaId(mangaId)
     .replace(/^manga\//u, "")
     .replace(/\.html$/u, "")
+    .replace(/\/+$/u, "")
+    .replace(/\+/gu, "%20");
+}
+
+function normalizeEnglishChapterIdForReader(chapterId: string): string {
+  const normalized = normalizeChapterId(chapterId)
+    .replace(/\.html$/u, "")
     .replace(/\/+$/u, "");
+
+  const parts = normalized.split("/");
+  if (parts.length < 3 || parts[0] !== "chapter") return normalized.replace(/\+/gu, "%20");
+
+  const chapterNumber = parts.pop() ?? "";
+  const mangaSlug = parts.slice(1).join("/").replace(/\+/gu, "%20");
+
+  return `chapter/${mangaSlug}/${chapterNumber}`;
 }
 
 function decodeHtmlEntities(value: string): string {
