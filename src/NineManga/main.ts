@@ -327,6 +327,7 @@ class NineMangaExtension
 
   async getChapters(sourceManga: SourceManga): Promise<Chapter[]> {
     const baseUrl = getSelectedSite().baseUrl;
+    const language = getSelectedLanguage();
     const url = `${baseUrl}/${sourceManga.mangaId}${sourceManga.mangaId.includes("?") ? "&" : "?"}waring=1`;
     const $ = await this.fetchCheerio({ url, method: "GET" } as Request);
     const chapters: Chapter[] = [];
@@ -334,14 +335,70 @@ class NineMangaExtension
 
     $(".sub_vol_ul li").each((_, element) => {
       const unit = $(element);
+
+      if (language === "eng") {
+        const directReaderLink = unit
+          .find(
+            [
+              "em.page_choose a[href*='/chapter/'][href*='-10-1.html']",
+              "em.page_choose a[href*='/chapter/'][href*='-10-1']",
+            ].join(", "),
+          )
+          .first();
+
+        if (directReaderLink.length > 0) {
+          this.addChapterFromLink(
+            chapters,
+            seen,
+            sourceManga,
+            directReaderLink,
+            cleanText(unit.find("span").last().text()),
+          );
+          return;
+        }
+
+        const proxyChapterLink = unit
+          .find(
+            [
+              "a.chapter_list_a[href*='/go/ennm/']",
+              "a.chapter_list_a[href*='type=enninemanga']",
+              "a[href*='/go/ennm/']",
+              "a[href*='type=enninemanga']",
+            ].join(", "),
+          )
+          .first();
+
+        if (proxyChapterLink.length > 0) {
+          this.addEnglishChapterFromProxyLink(
+            chapters,
+            seen,
+            sourceManga,
+            proxyChapterLink,
+            cleanText(unit.find("span").last().text()),
+          );
+          return;
+        }
+      }
+
       const chapterLink = unit.find("a.chapter_list_a[href*='/chapter/']").first();
       this.addChapterFromLink(chapters, seen, sourceManga, chapterLink, cleanText(unit.find("span").last().text()));
     });
 
     if (chapters.length === 0) {
-      $("a[href*='/chapter/'], a[href*='/c/']").each((_, element) => {
+      const fallbackSelector =
+        language === "eng"
+          ? "a[href*='/chapter/'], a[href*='/c/'], a[href*='/go/ennm/'], a[href*='type=enninemanga']"
+          : "a[href*='/chapter/'], a[href*='/c/']";
+
+      $(fallbackSelector).each((_, element) => {
         const link = $(element);
         if (link.closest("select").length > 0) return;
+
+        if (language === "eng" && isEnglishProxyChapterUrl(link.attr("href") ?? "")) {
+          this.addEnglishChapterFromProxyLink(chapters, seen, sourceManga, link, "");
+          return;
+        }
+
         this.addChapterFromLink(chapters, seen, sourceManga, link, "");
       });
     }
@@ -577,6 +634,35 @@ class NineMangaExtension
     });
   }
 
+  private addEnglishChapterFromProxyLink(
+    chapters: Chapter[],
+    seen: Set<string>,
+    sourceManga: SourceManga,
+    link: ChapterLink,
+    dateText: string,
+  ): void {
+    const href = link.attr("href") ?? "";
+    const chapterNumberId = extractEnglishProxyChapterId(href);
+    const mangaSlug = extractMangaSlugFromMangaId(sourceManga.mangaId);
+
+    if (!chapterNumberId || !mangaSlug) return;
+
+    const chapterId = `chapter/${mangaSlug}/${chapterNumberId}-10-1`;
+    const title = cleanText(link.text()) || cleanText(link.attr("title")) || chapterNumberId;
+
+    if (!chapterId || !isChapterId(chapterId) || !title || seen.has(chapterId)) return;
+
+    seen.add(chapterId);
+    chapters.push({
+      chapterId,
+      title,
+      sourceManga,
+      chapNum: extractChapterNumber(title),
+      publishDate: parseDate(dateText),
+      langCode: getSelectedSite().languageCode,
+    });
+  }
+
   private parseChapterPageUrls($: CheerioAPI, baseUrl: string): string[] {
     const urls: string[] = [];
 
@@ -745,6 +831,30 @@ function normalizeChapterId(value: string): string {
   const withoutHost = decodeHtmlEntities(value).replace(/^https?:\/\/[^/]+\//iu, "");
   const withoutQuery = withoutHost.split("?")[0] ?? "";
   return withoutQuery.replace(/^\/+|\/+$/gu, "").trim();
+}
+
+function extractEnglishProxyChapterId(value: string): string {
+  const decoded = decodeHtmlEntities(value);
+
+  const cidMatch = decoded.match(/[?&]cid=(\d+)/u);
+  if (cidMatch?.[1]) return cidMatch[1];
+
+  const ennmMatch = decoded.match(/\/go\/ennm\/(\d+)/u);
+  if (ennmMatch?.[1]) return ennmMatch[1];
+
+  return "";
+}
+
+function extractMangaSlugFromMangaId(mangaId: string): string {
+  return normalizeMangaId(mangaId)
+    .replace(/^manga\//u, "")
+    .replace(/\.html$/u, "")
+    .replace(/\/+$/u, "");
+}
+
+function isEnglishProxyChapterUrl(value: string): boolean {
+  const decoded = decodeHtmlEntities(value);
+  return /\/go\/ennm\/\d+/u.test(decoded) || /[?&]type=enninemanga(?:&|$)/u.test(decoded);
 }
 
 function decodeHtmlEntities(value: string): string {
