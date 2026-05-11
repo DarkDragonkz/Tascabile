@@ -34,7 +34,17 @@ export function isPlaceholderImage(value: string): boolean {
 }
 
 export function isValidImageUrl(value: string): boolean {
-  return /\.(?:webp|jpg|jpeg|png|gif)(?:\?|$)/iu.test(value);
+  const normalized = value.toLowerCase();
+  if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) return false;
+  if (isPlaceholderImage(normalized)) return false;
+
+  return (
+    /\.(?:webp|jpg|jpeg|png|gif)(?:[?#].*)?$/iu.test(normalized) ||
+    normalized.includes("/comics/") ||
+    normalized.includes("/manga/") ||
+    normalized.includes("/uploads/") ||
+    normalized.includes("movietop.cc")
+  );
 }
 
 export function dedupeStrings(values: string[]): string[] {
@@ -51,7 +61,7 @@ export function dedupeStrings(values: string[]): string[] {
 }
 
 export function parseAllImgsUrlArray(html: string, baseUrl: string): string[] {
-  const match = html.match(/all_imgs_url\s*:\s*\[([\s\S]*?)\]/u);
+  const match = html.match(/all_imgs_url\s*[:=]\s*\[([\s\S]*?)\]/u);
   if (!match?.[1]) return [];
 
   return dedupeStrings(
@@ -61,22 +71,42 @@ export function parseAllImgsUrlArray(html: string, baseUrl: string): string[] {
   );
 }
 
+function getImageCandidate($: CheerioAPI, element: Parameters<CheerioAPI>[0]): string {
+  const unit = $(element);
+  return (
+    unit.attr("href") ||
+    unit.attr("src") ||
+    unit.attr("data-original") ||
+    unit.attr("data-src") ||
+    unit.attr("data-lazy-src") ||
+    unit.attr("data-url") ||
+    unit.attr("content") ||
+    ""
+  );
+}
+
+function pushImage(pages: string[], imageUrl: string): void {
+  if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
+}
+
 export function parsePicBoxImages($: CheerioAPI, baseUrl: string): string[] {
   const pages: string[] = [];
 
-  $("div.pic_box a.pic_download[href], a.pic_download[href]").each((_, element) => {
-    const imageUrl = normalizeUrl($(element).attr("href") ?? "", baseUrl);
-    if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
-  });
-
-  $("div.pic_box img.manga_pic[src], img.manga_pic[src], section.mangaread-img img[src]").each((_, element) => {
-    const imageUrl = normalizeUrl($(element).attr("src") ?? "", baseUrl);
-    if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
-  });
-
-  $("meta[property='og:image'], meta[name='twitter:image']").each((_, element) => {
-    const imageUrl = normalizeUrl($(element).attr("content") ?? "", baseUrl);
-    if (isValidImageUrl(imageUrl) && !pages.includes(imageUrl)) pages.push(imageUrl);
+  $(
+    [
+      "div.pic_box a.pic_download[href]",
+      "a.pic_download[href]",
+      "div.pic_box img.manga_pic",
+      "img.manga_pic",
+      "section.mangaread-img img",
+      "div.mangaread-img img",
+      "div.chapter-content img",
+      "article img",
+      "meta[property='og:image']",
+      "meta[name='twitter:image']",
+    ].join(", "),
+  ).each((_, element) => {
+    pushImage(pages, normalizeUrl(getImageCandidate($, element), baseUrl));
   });
 
   return pages;
