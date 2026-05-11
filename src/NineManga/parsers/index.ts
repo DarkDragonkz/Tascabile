@@ -1,23 +1,15 @@
-import type { CheerioAPI } from "cheerio";
-
 import type { NineMangaReaderParser } from "./common";
+import { englishReaderParser } from "./english";
 import { italianReaderParser } from "./italian";
 
 export type { NineMangaReaderParser } from "./common";
+export { englishReaderParser } from "./english";
 export { italianReaderParser } from "./italian";
-
-function emptyEnglishReaderParser(
-  _html: string,
-  _$: CheerioAPI,
-  _baseUrl: string,
-): string[] {
-  return [];
-}
 
 export function getNineMangaReaderParser(language: string): NineMangaReaderParser {
   switch (language) {
     case "eng":
-      return emptyEnglishReaderParser;
+      return englishReaderParser;
     case "ita":
     case "esp":
     case "rus":
