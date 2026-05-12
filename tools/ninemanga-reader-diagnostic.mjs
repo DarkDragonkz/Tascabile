@@ -15,7 +15,7 @@ function headersFor(url, userAgent) {
   return {
     accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "accept-language": "en-US,en;q=0.9,it;q=0.8",
-    referer: `${origin}/`,
+    referer: origin + "/",
     "user-agent": userAgent,
   };
 }
@@ -35,7 +35,7 @@ function decodeHtmlEntities(value) {
 function normalizeUrl(value, baseUrl) {
   const trimmed = decodeHtmlEntities(value || "").trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("//")) return "https:" + trimmed;
   try {
     return new URL(trimmed, baseUrl).toString();
   } catch {
@@ -75,9 +75,9 @@ function analyzeHtml(html, baseUrl) {
   for (const match of html.matchAll(/<iframe\b[^>]*src=["']([^"']+)["'][^>]*>/gi)) iframes.push(normalizeUrl(match[1], baseUrl));
 
   for (const name of ["book_id", "chapter_id", "list_num", "pre_page_url", "next_page_url", "all_imgs_url"]) {
-    const re = new RegExp(`\\bvar\\s+${name}\\s*=\\s*([^;]+);`, "i");
+    const re = new RegExp("\\bvar\\s+" + name + "\\s*=\\s*([^;]+);", "i");
     const match = html.match(re);
-    if (match) variables.push(`${name} = ${match[1].trim()}`);
+    if (match) variables.push(name + " = " + String(match[1]).trim());
   }
 
   return {
@@ -115,54 +115,55 @@ async function fetchWithLog(url, label, userAgent) {
 }
 
 function printResult(result) {
-  console.log(`\n=== ${result.label} ===`);
-  console.log(`requested: ${result.requestedUrl}`);
-  console.log(`status: ${result.status}`);
-  console.log(`responseUrl: ${result.finalUrl}`);
-  if (result.location) console.log(`location: ${result.location}`);
-  console.log(`content-type: ${result.contentType}`);
-  if (result.setCookieNames.length) console.log(`set-cookie names: ${result.setCookieNames.join(", ")}`);
+  console.log("\n=== " + result.label + " ===");
+  console.log("requested: " + result.requestedUrl);
+  console.log("status: " + String(result.status));
+  console.log("responseUrl: " + result.finalUrl);
+  if (result.location) console.log("location: " + result.location);
+  console.log("content-type: " + result.contentType);
+  if (result.setCookieNames.length) console.log("set-cookie names: " + result.setCookieNames.join(", "));
   const analysis = result.analysis;
   if (!analysis) return;
-  console.log(`title: ${analysis.title}`);
-  console.log(`html length: ${analysis.length}`);
-  console.log(`source gate: ${analysis.sourceGate}`);
-  console.log(`contains pic_box/manga_pic/pic_download: ${analysis.containsPicBox}`);
-  console.log(`contains movietop.cc: ${analysis.containsMovietop}`);
-  if (analysis.variables.length) console.log(`vars:\n  ${analysis.variables.join("\n  ")}`);
-  if (analysis.imageUrls.length) console.log(`images (${analysis.imageUrls.length}):\n  ${analysis.imageUrls.slice(0, 20).join("\n  ")}`);
-  if (analysis.sourceLinks.length) console.log(`source links:\n  ${analysis.sourceLinks.join("\n  ")}`);
-  if (analysis.readerLinks.length) console.log(`reader links:\n  ${analysis.readerLinks.slice(0, 20).join("\n  ")}`);
-  if (analysis.iframes.length) console.log(`iframes:\n  ${analysis.iframes.join("\n  ")}`);
-  if (analysis.scripts.length) console.log(`scripts:\n  ${analysis.scripts.slice(0, 30).join("\n  ")}`);
+  console.log("title: " + analysis.title);
+  console.log("html length: " + String(analysis.length));
+  console.log("source gate: " + String(analysis.sourceGate));
+  console.log("contains pic_box/manga_pic/pic_download: " + String(analysis.containsPicBox));
+  console.log("contains movietop.cc: " + String(analysis.containsMovietop));
+  if (analysis.variables.length) console.log("vars:\n  " + analysis.variables.join("\n  "));
+  if (analysis.imageUrls.length) console.log("images (" + String(analysis.imageUrls.length) + "):\n  " + analysis.imageUrls.slice(0, 20).join("\n  "));
+  if (analysis.sourceLinks.length) console.log("source links:\n  " + analysis.sourceLinks.join("\n  "));
+  if (analysis.readerLinks.length) console.log("reader links:\n  " + analysis.readerLinks.slice(0, 20).join("\n  "));
+  if (analysis.iframes.length) console.log("iframes:\n  " + analysis.iframes.join("\n  "));
+  if (analysis.scripts.length) console.log("scripts:\n  " + analysis.scripts.slice(0, 30).join("\n  "));
 }
 
 async function run() {
-  console.log(`NineManga reader diagnostic`);
-  console.log(`target: ${targetUrl}`);
-  console.log(`max source depth: ${maxDepth}`);
+  console.log("NineManga reader diagnostic");
+  console.log("target: " + targetUrl);
+  console.log("max source depth: " + String(maxDepth));
   const queue = [];
   const seen = new Set();
 
   for (const [label, ua] of [["desktop initial", DESKTOP_USER_AGENT], ["mobile initial", MOBILE_USER_AGENT]]) {
     const result = await fetchWithLog(targetUrl, label, ua);
     printResult(result);
-    for (const link of result.analysis?.sourceLinks || []) queue.push({ url: link, label: `source from ${label}`, depth: 1, ua });
+    for (const link of result.analysis?.sourceLinks || []) queue.push({ url: link, label: "source from " + label, depth: 1, ua });
   }
 
   while (queue.length > 0) {
     const item = queue.shift();
-    const key = `${item.depth}:${item.url}`;
-    if (!item || seen.has(key) || item.depth > maxDepth) continue;
+    if (!item) continue;
+    const key = String(item.depth) + ":" + item.url;
+    if (seen.has(key) || item.depth > maxDepth) continue;
     seen.add(key);
     try {
-      const result = await fetchWithLog(item.url, `${item.label} depth ${item.depth}`, item.ua);
+      const result = await fetchWithLog(item.url, item.label + " depth " + String(item.depth), item.ua);
       printResult(result);
       if (result.location) queue.push({ url: result.location, label: "redirect location", depth: item.depth + 1, ua: item.ua });
       for (const link of result.analysis?.sourceLinks || []) queue.push({ url: link, label: "nested source", depth: item.depth + 1, ua: item.ua });
       for (const iframe of result.analysis?.iframes || []) queue.push({ url: iframe, label: "iframe", depth: item.depth + 1, ua: item.ua });
     } catch (error) {
-      console.log(`\n=== failed ${item.url} ===`);
+      console.log("\n=== failed " + item.url + " ===");
       console.log(error instanceof Error ? error.stack : error);
     }
   }
