@@ -113,7 +113,6 @@ class NineMangaSettingsForm extends Form {
           }),
           InputRow("ninemanga_english_cf_clearance", {
             title: labels.cfClearanceTitle,
-            subtitle: labels.cfClearanceSubtitle,
             value: getEnglishCfClearance(),
             isSecureEntry: true,
             onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleCfClearanceChange"),
