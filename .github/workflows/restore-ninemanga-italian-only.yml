@@ -1,0 +1,84 @@
+name: Restore NineManga Italian Only
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    name: Restore NineManga as Italian-only source
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Restore clean NineManga baseline
+        run: |
+          git checkout 69174a082e13eb445a90cf965ad8a0f08f01ac78 -- src/NineManga/main.ts src/NineManga/pbconfig.ts
+
+      - name: Convert NineManga to Italian-only
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const mainPath = 'src/NineManga/main.ts';
+          let main = fs.readFileSync(mainPath, 'utf8');
+
+          main = main.replace(/\n  Form,/u, '');
+          main = main.replace(/\n  Section,/u, '');
+          main = main.replace(/\n  SelectRow,/u, '');
+          main = main.replace(/\n  type SettingsFormProviding,/u, '');
+
+          main = main.replace(/const LANGUAGE_STATE_KEY = "ninemanga_language";\n/u, '');
+
+          main = main.replace(/\nclass NineMangaSettingsForm extends Form \{[\s\S]*?\n\}\n\nclass NineMangaInterceptor/u, '\nclass NineMangaInterceptor');
+
+          main = main.replace(/,\n    SettingsFormProviding/u, '');
+
+          main = main.replace(/\n  async getSettingsForm\(\): Promise<Form> \{\n    return new NineMangaSettingsForm\(\);\n  \}\n/u, '\n');
+
+          main = main.replace(/\nfunction getSelectedLanguage\(\): NineMangaLanguage \{[\s\S]*?\n\}\n\nfunction getSelectedSite/u, '\nfunction getSelectedLanguage(): NineMangaLanguage {\n  return DEFAULT_LANGUAGE;\n}\n\nfunction getSelectedSite');
+
+          fs.writeFileSync(mainPath, main);
+
+          const configPath = 'src/NineManga/pbconfig.ts';
+          let config = fs.readFileSync(configPath, 'utf8');
+          config = config.replace('pbConfig.name = "NineManga DEBUG";', 'pbConfig.name = "NineManga";');
+          config = config.replace('pbConfig.description = "Temporary debug build of NineManga for English reader diagnostics.";', 'pbConfig.description = "Extension that pulls Italian manga content from NineManga.";');
+          config = config.replace(/pbConfig.version = "[^"]+";/u, 'pbConfig.version = "1.0.0-alpha.36";');
+          config = config.replace(/,\n  SourceIntents.SETTINGS_FORM_PROVIDING/u, '');
+          fs.writeFileSync(configPath, config);
+          NODE
+
+      - name: Remove temporary debug files and workflows
+        run: |
+          rm -f tools/ninemanga-cookie-diagnostic.mjs
+          rm -f tools/ninemanga-reader-diagnostic.mjs
+          rm -f tools/apply-ninemanga-paperback-log.mjs
+          rm -f tools/apply-ninemanga-source-follow.mjs
+          rm -f tools/fix-ninemanga-debug-regex.mjs
+          rm -f .github/workflows/ninemanga-reader-diagnostic.yml
+          rm -f .github/workflows/apply-ninemanga-paperback-log.yml
+          rm -f .github/workflows/apply-ninemanga-source-follow.yml
+          rm -f .github/workflows/fix-ninemanga-debug-regex.yml
+          rm -f .github/workflows/restore-ninemanga-clean.yml
+          rm -f .github/workflows/restore-ninemanga-italian-only.yml
+
+      - name: Commit and push restore
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Restore NineManga as Italian-only source"
+            git push
+          fi
