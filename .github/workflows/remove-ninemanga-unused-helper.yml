@@ -54,3 +54,6 @@ jobs:
             git commit -m "Remove unused NineManga language helper"
             git push origin HEAD:fix/ninemanga-language-readers
           fi
+
+      - name: Marker
+        run: echo "trigger 2"
