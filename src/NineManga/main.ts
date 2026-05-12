@@ -497,6 +497,38 @@ class NineMangaExtension
           });
 
           if (pages.length === 0) {
+            const sourceGateUrl = normalizeUrl(
+              $("a[href*='/go/ennm/'], a[href*='type=enninemanga']").first().attr("href") ?? "",
+              baseUrl,
+            );
+
+            if (sourceGateUrl && !seenUrls.has(sourceGateUrl)) {
+              logNineMangaEnglishDiagnostic("source-gate-direct-fetch", {
+                currentUrl: currentPage.url,
+                sourceGateUrl,
+              });
+
+              try {
+                const sourceHtml = await this.fetchHtml({ url: sourceGateUrl, method: "GET" } as Request);
+                const source$ = cheerio.load(sourceHtml);
+                const sourcePages = readerParser(sourceHtml, source$, baseUrl);
+                pages.push(...sourcePages);
+                seenUrls.add(sourceGateUrl);
+                logNineMangaEnglishDiagnostic("source-gate-direct-fetch-result", {
+                  sourceGateUrl,
+                  parsedPages: sourcePages.length,
+                  totalPages: pages.length,
+                  ...collectNineMangaHtmlDiagnostics(sourceHtml),
+                });
+
+                if (pages.length > 0) break;
+              } catch {
+                logNineMangaEnglishDiagnostic("source-gate-direct-fetch-failed", {
+                  sourceGateUrl,
+                });
+              }
+            }
+
             const rebuiltReaderUrl = this.parseEnglishReaderUrlFromSourceLink(
               $,
               baseUrl,
