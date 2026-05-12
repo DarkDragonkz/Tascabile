@@ -128,6 +128,46 @@ type FetchedHtml = {
   html: string;
 };
 
+type NineMangaDebugPayload = Record<string, string | number | boolean | string[]>;
+
+function logNineMangaEnglishDiagnostic(label: string, payload: NineMangaDebugPayload): void {
+  try {
+    console.log("[NineManga EN Diagnostic] " + label + " " + JSON.stringify(payload));
+  } catch {
+    console.log("[NineManga EN Diagnostic] " + label);
+  }
+}
+
+function collectNineMangaHtmlDiagnostics(html: string): NineMangaDebugPayload {
+  const sourceLinks = [...html.matchAll(/href=[\"']([^\"']*(?:\/go\/ennm\/|type=enninemanga|financemasterpro|sweettoothrecipes)[^\"']*)[\"']/giu)]
+    .map((match) => cleanText(match[1]))
+    .filter((href) => href.length > 0)
+    .slice(0, 10);
+
+  const scripts = [...html.matchAll(/<script\b[^>]*src=[\"']([^\"']+)[\"'][^>]*>/giu)]
+    .map((match) => cleanText(match[1]))
+    .filter((src) => src.length > 0)
+    .slice(0, 10);
+
+  const variables = ["book_id", "chapter_id", "list_num", "pre_page_url", "next_page_url", "all_imgs_url"]
+    .map((name) => {
+      const match = html.match(new RegExp("\\bvar\\s+" + name + "\\s*=\\s*([^;]+);", "iu"));
+      return match?.[1] ? name + "=" + cleanText(match[1]).slice(0, 200) : "";
+    })
+    .filter((value) => value.length > 0);
+
+  return {
+    bytes: html.length,
+    sourceGate: /Choose a source to start reading/iu.test(html),
+    hasPicBox: /pic_box|manga_pic|pic_download/iu.test(html),
+    hasMovietop: /movietop\.cc/iu.test(html),
+    hasCloudflare: /Attention Required|challenge-platform|cf-chl|__CF\$cv/iu.test(html),
+    sourceLinks,
+    scripts,
+    variables,
+  };
+}
+
 class NineMangaSettingsForm extends Form {
   override getSections() {
     const selectedSite = getSelectedSite();
@@ -447,7 +487,14 @@ class NineMangaExtension
           seenUrls.add(currentPage.url);
 
           const $ = cheerio.load(currentPage.html);
-          pages.push(...readerParser(currentPage.html, $, baseUrl));
+          const parsedPages = readerParser(currentPage.html, $, baseUrl);
+          pages.push(...parsedPages);
+          logNineMangaEnglishDiagnostic("reader-page", {
+            url: currentPage.url,
+            parsedPages: parsedPages.length,
+            totalPages: pages.length,
+            ...collectNineMangaHtmlDiagnostics(currentPage.html),
+          });
 
           if (pages.length === 0) {
             const rebuiltReaderUrl = this.parseEnglishReaderUrlFromSourceLink(
@@ -455,6 +502,10 @@ class NineMangaExtension
               baseUrl,
               chapter.sourceManga.mangaId,
             );
+            logNineMangaEnglishDiagnostic("source-gate-resolver", {
+              currentUrl: currentPage.url,
+              rebuiltReaderUrl,
+            });
 
             if (rebuiltReaderUrl && !seenUrls.has(rebuiltReaderUrl)) {
               try {
@@ -464,6 +515,9 @@ class NineMangaExtension
                 };
                 continue;
               } catch {
+                logNineMangaEnglishDiagnostic("source-gate-resolver-fetch-failed", {
+                  rebuiltReaderUrl,
+                });
                 break;
               }
             }
@@ -495,6 +549,12 @@ class NineMangaExtension
 
         if (pages.length > 0) break;
       }
+
+      logNineMangaEnglishDiagnostic("final-result", {
+        chapterId: chapter.chapterId,
+        mangaId: chapter.sourceManga.mangaId,
+        pages: dedupeStrings(pages).length,
+      });
 
       return {
         id: chapter.chapterId,
