@@ -1,0 +1,56 @@
+name: Patch Main NineManga Lint
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove unused NineManga language helper
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const filePath = 'src/NineManga/main.ts';
+          let content = fs.readFileSync(filePath, 'utf8');
+
+          content = content.replace(
+            '  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;',
+            '  return stored && Object.prototype.hasOwnProperty.call(NINEMANGA_SITES, stored)\n    ? (stored as NineMangaLanguage)\n    : DEFAULT_LANGUAGE;',
+          );
+
+          content = content.replace(
+            /\nfunction isNineMangaLanguage\([^)]*\):[^\n]+\{[\s\S]*?\n\}\n(?=\nfunction getSelectedLanguage)/u,
+            '\n',
+          );
+
+          fs.writeFileSync(filePath, content);
+          NODE
+
+      - name: Commit main changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/NineManga/main.ts
+          if git diff --cached --quiet; then
+            echo "No main changes"
+          else
+            git commit -m "Fix NineManga lint warning"
+            git push origin HEAD:main
+          fi
