@@ -1,0 +1,125 @@
+name: Apply NineManga Language Settings
+
+on:
+  push:
+    branches:
+      - fix/ninemanga-language-readers
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    name: Apply NineManga language settings patch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Patch NineManga main and config
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const mainPath = 'src/NineManga/main.ts';
+          let main = fs.readFileSync(mainPath, 'utf8');
+
+          if (!main.includes('  Form,\n')) {
+            main = main.replace('  DiscoverSectionType,\n', '  DiscoverSectionType,\n  Form,\n');
+          }
+          if (!main.includes('  Section,\n')) {
+            main = main.replace('  PaperbackInterceptor,\n', '  PaperbackInterceptor,\n  Section,\n');
+          }
+          if (!main.includes('  SelectRow,\n')) {
+            main = main.replace('  Section,\n', '  Section,\n  SelectRow,\n');
+          }
+          if (!main.includes('  type SettingsFormProviding,\n')) {
+            main = main.replace('  type SearchResultsProviding,\n', '  type SearchResultsProviding,\n  type SettingsFormProviding,\n');
+          }
+
+          if (!main.includes('const LANGUAGE_STATE_KEY = "ninemanga_language";')) {
+            main = main.replace('const DEFAULT_LANGUAGE = "ita";\n', 'const LANGUAGE_STATE_KEY = "ninemanga_language";\nconst DEFAULT_LANGUAGE = "ita";\n');
+          }
+
+          if (!main.includes('class NineMangaSettingsForm extends Form')) {
+            const settingsClass = `
+class NineMangaSettingsForm extends Form {
+  override getSections() {
+    const selectedSite = getSelectedSite();
+    const labels = getSelectedLabels();
+
+    return [
+      Section(
+        {
+          id: "ninemanga_language_settings",
+          footer: labels.settingsFooter,
+        },
+        [
+          SelectRow("ninemanga_language", {
+            title: labels.languageSettingTitle,
+            subtitle: `${labels.selectedLanguage}: ${selectedSite.title}`,
+            value: [getSelectedLanguage()],
+            options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
+            minItemCount: 1,
+            maxItemCount: 1,
+            onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleLanguageChange"),
+          }),
+        ],
+      ),
+    ];
+  }
+
+  async handleLanguageChange(value: string[]): Promise<void> {
+    Application.setState(value[0] ?? DEFAULT_LANGUAGE, LANGUAGE_STATE_KEY);
+    this.reloadForm();
+    Application.invalidateDiscoverSections();
+  }
+}
+`;
+            main = main.replace('\nclass NineMangaInterceptor extends PaperbackInterceptor {', `${settingsClass}\nclass NineMangaInterceptor extends PaperbackInterceptor {`);
+          }
+
+          main = main.replace(
+            '    ChapterProviding,\n    DiscoverSectionProviding\n{',
+            '    ChapterProviding,\n    DiscoverSectionProviding,\n    SettingsFormProviding\n{',
+          );
+
+          if (!main.includes('async getSettingsForm(): Promise<Form>')) {
+            main = main.replace(
+              '  async initialise(): Promise<void> {\n    this.requestManager.registerInterceptor();\n  }\n',
+              '  async initialise(): Promise<void> {\n    this.requestManager.registerInterceptor();\n  }\n\n  async getSettingsForm(): Promise<Form> {\n    return new NineMangaSettingsForm();\n  }\n',
+            );
+          }
+
+          main = main.replace(
+            'function getSelectedLanguage(): NineMangaLanguage {\n  return DEFAULT_LANGUAGE;\n}',
+            'function getSelectedLanguage(): NineMangaLanguage {\n  const stored = Application.getState(LANGUAGE_STATE_KEY) as string | undefined;\n  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;\n}',
+          );
+
+          fs.writeFileSync(mainPath, main);
+
+          const configPath = 'src/NineManga/pbconfig.ts';
+          let config = fs.readFileSync(configPath, 'utf8');
+          config = config.replace('SourceIntents.SEARCH_RESULT_PROVIDING,\n]', 'SourceIntents.SEARCH_RESULT_PROVIDING,\n  SourceIntents.SETTINGS_FORM_PROVIDING,\n]');
+          config = config.replace('Extension that pulls Italian manga content from NineManga.', 'Extension that pulls multilingual manga content from NineManga.');
+          config = config.replace(/pbConfig.version = "([^"]+)";/u, 'pbConfig.version = "1.0.0-alpha.37";');
+          fs.writeFileSync(configPath, config);
+          NODE
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/NineManga/main.ts src/NineManga/pbconfig.ts
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Enable NineManga language selection"
+            git push
+          fi
