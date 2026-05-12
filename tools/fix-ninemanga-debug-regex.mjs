@@ -5,15 +5,14 @@ import { readFileSync, writeFileSync } from "node:fs";
 const filePath = "src/NineManga/main.ts";
 let content = readFileSync(filePath, "utf8");
 
-content = content.replace(
-  /\/href=\[\\\\\\\"'\]\(\[\^\\\\\\\"'\]\*\(\?:\\\/go\\\/ennm\\\/\|type=enninemanga\|financemasterpro\|sweettoothrecipes\)\[\^\\\\\\\"'\]\*\)\[\\\\\\\"'\]\/giu/g,
-  "/href=[\"']([^\"']*(?:\\/go\\/ennm\\/|type=enninemanga|financemasterpro|sweettoothrecipes)[^\"']*)[\"']/giu",
-);
+const badSourceLinks = "html.matchAll(/href=[\\\\\\\"']([^\\\\\\\"']*(?:\\/go\\/ennm\\/|type=enninemanga|financemasterpro|sweettoothrecipes)[^\\\\\\\"']*)[\\\\\\\"']/giu)";
+const goodSourceLinks = "html.matchAll(/href=[\"']([^\"']*(?:\\/go\\/ennm\\/|type=enninemanga|financemasterpro|sweettoothrecipes)[^\"']*)[\"']/giu)";
 
-content = content.replace(
-  /\/<script\\\\b\[\^>\]\*src=\[\\\\\\\"'\]\(\[\^\\\\\\\"'\]\+\)\[\\\\\\\"'\]\[\^>\]\*>\/giu/g,
-  "/<script\\b[^>]*src=[\"']([^\"']+)[\"'][^>]*>/giu",
-);
+const badScripts = "html.matchAll(/<script\\b[^>]*src=[\\\\\\\"']([^\\\\\\\"']+)[\\\\\\\"'][^>]*>/giu)";
+const goodScripts = "html.matchAll(/<script\\b[^>]*src=[\"']([^\"']+)[\"'][^>]*>/giu)";
+
+content = content.split(badSourceLinks).join(goodSourceLinks);
+content = content.split(badScripts).join(goodScripts);
 
 writeFileSync(filePath, content);
 console.log("Fixed NineManga debug regex escaping in " + filePath);
