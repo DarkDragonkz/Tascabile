@@ -6,6 +6,20 @@ export type NineMangaReaderParser = (
   baseUrl: string,
 ) => string[];
 
+const SCRIPT_IMAGE_ARRAY_NAMES = [
+  "all_imgs_url",
+  "allImgsUrl",
+  "all_img_url",
+  "allImages",
+  "chapterImages",
+  "chapter_imgs",
+  "imageList",
+  "imgList",
+  "img_list",
+  "pages",
+  "pageList",
+] as const;
+
 export function decodeHtmlEntities(value: string): string {
   return value
     .replace(/&amp;/gu, "&")
@@ -16,7 +30,8 @@ export function decodeHtmlEntities(value: string): string {
     .replace(/&#39;/gu, "'")
     .replace(/&apos;/gu, "'")
     .replace(/&lt;/gu, "<")
-    .replace(/&gt;/gu, ">");
+    .replace(/&gt;/gu, ">")
+    .replace(/\\\//gu, "/");
 }
 
 export function normalizeUrl(value: string, baseUrl: string): string {
@@ -43,6 +58,10 @@ export function isValidImageUrl(value: string): boolean {
     normalized.includes("/comics/") ||
     normalized.includes("/manga/") ||
     normalized.includes("/uploads/") ||
+    normalized.includes("/chapter/") ||
+    normalized.includes("/images/") ||
+    normalized.includes("/image/") ||
+    normalized.includes("/pic/") ||
     normalized.includes("movietop.cc")
   );
 }
@@ -60,12 +79,29 @@ export function dedupeStrings(values: string[]): string[] {
   return result;
 }
 
-export function parseAllImgsUrlArray(html: string, baseUrl: string): string[] {
-  const match = html.match(/all_imgs_url\s*[:=]\s*\[([\s\S]*?)\]/u);
-  if (!match?.[1]) return [];
-
+function parseQuotedImages(value: string, baseUrl: string): string[] {
   return dedupeStrings(
-    [...match[1].matchAll(/["']([^"']+)["']/gu)]
+    [...value.matchAll(/["']([^"']+)["']/gu)]
+      .map((urlMatch) => normalizeUrl(urlMatch[1] ?? "", baseUrl))
+      .filter(isValidImageUrl),
+  );
+}
+
+export function parseAllImgsUrlArray(html: string, baseUrl: string): string[] {
+  const pages: string[] = [];
+
+  for (const arrayName of SCRIPT_IMAGE_ARRAY_NAMES) {
+    const match = html.match(new RegExp(`\\b${arrayName}\\s*[:=]\\s*\\[([\\s\\S]*?)\\]`, "u"));
+    if (!match?.[1]) continue;
+    pages.push(...parseQuotedImages(match[1], baseUrl));
+  }
+
+  return dedupeStrings(pages);
+}
+
+export function parseScriptImageUrls(html: string, baseUrl: string): string[] {
+  return dedupeStrings(
+    [...html.matchAll(/["']([^"']*(?:\.(?:webp|jpg|jpeg|png|gif)(?:[?#][^"']*)?|\/(?:comics|manga|uploads|chapter|images?|pic)\/[^"']+))["']/giu)]
       .map((urlMatch) => normalizeUrl(urlMatch[1] ?? "", baseUrl))
       .filter(isValidImageUrl),
   );
@@ -101,7 +137,13 @@ export function parsePicBoxImages($: CheerioAPI, baseUrl: string): string[] {
       "section.mangaread-img img",
       "div.mangaread-img img",
       "div.chapter-content img",
+      "div.chapter-reader img",
+      "div.reading-content img",
+      "div.reader img",
+      "div.viewer img",
+      "#viewer img",
       "article img",
+      "main img",
       "meta[property='og:image']",
       "meta[name='twitter:image']",
     ].join(", "),
