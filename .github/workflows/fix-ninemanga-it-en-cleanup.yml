@@ -29,19 +29,7 @@ jobs:
           const filePath = 'src/NineManga/main.ts';
           let content = fs.readFileSync(filePath, 'utf8');
 
-          const espBranch = `
-
-  if (language === "esp") {
-    return dedupeStrings([
-      \`${'${baseUrl}'}/${'${cleanChapterId}'}.html\`,
-      \`${'${baseUrl}'}/${'${readerChapterId}'}.html\`,
-    ]);
-  }
-`;
-
-          if (content.includes(espBranch)) {
-            content = content.split(espBranch).join('\n');
-          }
+          content = content.replace(/\n\s*if \(language === "esp"\) \{\n\s*return dedupeStrings\(\[\n\s*`\$\{baseUrl\}\/\$\{cleanChapterId\}\.html`,\n\s*`\$\{baseUrl\}\/\$\{readerChapterId\}\.html`,\n\s*\]\);\n\s*\}\n/u, '\n');
 
           content = content.replace(
             '  private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {\n  const language = getSelectedLanguage();',
