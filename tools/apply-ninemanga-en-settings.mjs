@@ -2,6 +2,15 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 
+function replaceVersionLine(content, nextVersion) {
+  const prefix = "pbConfig.version = \"";
+  const start = content.indexOf(prefix);
+  if (start === -1) return content;
+  const end = content.indexOf("\";", start + prefix.length);
+  if (end === -1) return content;
+  return content.slice(0, start) + prefix + nextVersion + content.slice(end);
+}
+
 const mainPath = "src/NineManga/main.ts";
 let main = readFileSync(mainPath, "utf8");
 
@@ -122,7 +131,7 @@ config = config.replace(
   "pbConfig.description = \"Extension that pulls Italian manga content from NineManga.\";",
   "pbConfig.description = \"Extension that pulls Italian and English manga content from NineManga.\";",
 );
-config = config.replace(/pbConfig\.version = \"[^\"]+\";/u, "pbConfig.version = \"1.0.0-alpha.37\";");
+config = replaceVersionLine(config, "1.0.0-alpha.37");
 if (!config.includes("SourceIntents.SETTINGS_FORM_PROVIDING")) {
   config = config.replace(
     "  SourceIntents.SEARCH_RESULT_PROVIDING,\n] as unknown as typeof pbConfig.capabilities;",
