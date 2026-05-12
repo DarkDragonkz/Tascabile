@@ -14,7 +14,7 @@ function headersFor(url, userAgent, cookie = "") {
   return {
     accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "accept-language": "en-US,en;q=0.9,it;q=0.8",
-    referer: `${origin}/`,
+    referer: origin + "/",
     "user-agent": userAgent,
     ...(cookie ? { cookie } : {}),
   };
@@ -37,7 +37,7 @@ function parseSetCookie(headers) {
 function toCookieHeader(cookies) {
   const latest = new Map();
   for (const cookie of cookies) latest.set(cookie.name, cookie.value);
-  return [...latest.entries()].map(([name, value]) => `${name}=${value}`).join("; ");
+  return [...latest.entries()].map(([name, value]) => String(name) + "=" + String(value)).join("; ");
 }
 
 function summarizeHtml(html) {
@@ -58,21 +58,21 @@ async function requestOnce(label, url, userAgent, cookie = "") {
   const html = await response.text();
   const receivedCookies = parseSetCookie(response.headers);
 
-  console.log(`\n=== ${label} ===`);
-  console.log(`url: ${url}`);
-  console.log(`status: ${response.status}`);
-  console.log(`location: ${response.headers.get("location") || ""}`);
-  console.log(`sent cookie names: ${cookie ? cookie.split(";").map((x) => x.trim().split("=")[0]).join(", ") : "none"}`);
-  console.log(`received cookie names: ${receivedCookies.map((cookie) => cookie.name).join(", ") || "none"}`);
+  console.log("\n=== " + label + " ===");
+  console.log("url: " + url);
+  console.log("status: " + String(response.status));
+  console.log("location: " + (response.headers.get("location") || ""));
+  console.log("sent cookie names: " + (cookie ? cookie.split(";").map((x) => x.trim().split("=")[0]).join(", ") : "none"));
+  console.log("received cookie names: " + (receivedCookies.map((receivedCookie) => receivedCookie.name).join(", ") || "none"));
   console.log(JSON.stringify(summarizeHtml(html), null, 2));
 
   return { html, receivedCookies };
 }
 
 async function runScenario(name, userAgent) {
-  console.log(`\n######## ${name.toUpperCase()} ########`);
+  console.log("\n######## " + name.toUpperCase() + " ########");
 
-  const first = await requestOnce(`${name} first request`, targetUrl, userAgent);
+  const first = await requestOnce(name + " first request", targetUrl, userAgent);
   const cookieHeader = toCookieHeader(first.receivedCookies);
 
   if (!cookieHeader) {
@@ -80,7 +80,7 @@ async function runScenario(name, userAgent) {
     return;
   }
 
-  await requestOnce(`${name} second request with replayed cookies`, targetUrl, userAgent, cookieHeader);
+  await requestOnce(name + " second request with replayed cookies", targetUrl, userAgent, cookieHeader);
 }
 
 await runScenario("desktop", USER_AGENTS.desktop);
