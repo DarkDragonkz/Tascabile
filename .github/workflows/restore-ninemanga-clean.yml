@@ -1,0 +1,48 @@
+name: Restore NineManga Clean State
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    name: Restore clean NineManga files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Restore NineManga source files from clean commit
+        run: |
+          git checkout 69174a082e13eb445a90cf965ad8a0f08f01ac78 -- src/NineManga/main.ts src/NineManga/pbconfig.ts
+
+      - name: Remove temporary diagnostic files
+        run: |
+          rm -f tools/ninemanga-cookie-diagnostic.mjs
+          rm -f tools/ninemanga-reader-diagnostic.mjs
+          rm -f tools/apply-ninemanga-paperback-log.mjs
+          rm -f tools/apply-ninemanga-source-follow.mjs
+          rm -f tools/fix-ninemanga-debug-regex.mjs
+          rm -f .github/workflows/ninemanga-reader-diagnostic.yml
+          rm -f .github/workflows/apply-ninemanga-paperback-log.yml
+          rm -f .github/workflows/apply-ninemanga-source-follow.yml
+          rm -f .github/workflows/fix-ninemanga-debug-regex.yml
+
+      - name: Commit and push restore
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A src/NineManga/main.ts src/NineManga/pbconfig.ts tools .github/workflows
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Restore clean NineManga source state"
+            git push
+          fi
