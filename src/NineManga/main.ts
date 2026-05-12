@@ -1,7 +1,10 @@
 import {
   ContentRating,
   DiscoverSectionType,
+  Form,
   PaperbackInterceptor,
+  Section,
+  SelectRow,
   type Chapter,
   type ChapterDetails,
   type ChapterProviding,
@@ -16,6 +19,7 @@ import {
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
+  type SettingsFormProviding,
   type SourceManga,
   type TagSection,
 } from "@paperback/types";
@@ -25,6 +29,7 @@ import type { CheerioAPI } from "cheerio";
 
 import { getNineMangaReaderParser } from "./parsers";
 
+const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
 const DESKTOP_USER_AGENT =
@@ -35,48 +40,11 @@ const ADVANCED_SEARCH_PARAMS =
   "name_sel=contain&wd=&author_sel=contain&author=&artist_sel=contain&artist=&category_id=&out_category_id=&completed_series=either";
 
 const NINEMANGA_SITES = {
-  eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
-  esp: { title: "Español", baseUrl: "https://es.ninemanga.com", languageCode: "es" },
-  rus: { title: "Русский", baseUrl: "https://ru.ninemanga.com", languageCode: "ru" },
-  deu: { title: "Deutsch", baseUrl: "https://de.ninemanga.com", languageCode: "de" },
   ita: { title: "Italiano", baseUrl: "https://it.ninemanga.com", languageCode: "it" },
-  fra: { title: "Français", baseUrl: "https://fr.ninemanga.com", languageCode: "fr" },
-  br: { title: "Português BR", baseUrl: "https://br.ninemanga.com", languageCode: "pt-BR" },
+  eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
 } as const;
 
 const NINEMANGA_LABELS = {
-  eng: {
-    updated: "Latest Updates",
-    popular: "Popular Series",
-    newest: "New Series",
-    languageSettingTitle: "NineManga Language",
-    selectedLanguage: "Selected",
-    settingsFooter: "Choose the NineManga domain used for home, search, details, and reading.",
-  },
-  esp: {
-    updated: "Últimas actualizaciones",
-    popular: "Series populares",
-    newest: "Nuevas series",
-    languageSettingTitle: "Idioma de NineManga",
-    selectedLanguage: "Seleccionado",
-    settingsFooter: "Elige el dominio de NineManga usado para inicio, búsqueda, detalles y lectura.",
-  },
-  rus: {
-    updated: "Последние обновления",
-    popular: "Популярные серии",
-    newest: "Новые серии",
-    languageSettingTitle: "Язык NineManga",
-    selectedLanguage: "Выбрано",
-    settingsFooter: "Выберите домен NineManga для главной страницы, поиска, описаний и чтения.",
-  },
-  deu: {
-    updated: "Neueste Updates",
-    popular: "Beliebte Serien",
-    newest: "Neue Serien",
-    languageSettingTitle: "NineManga-Sprache",
-    selectedLanguage: "Ausgewählt",
-    settingsFooter: "Wähle die NineManga-Domain für Startseite, Suche, Details und Reader.",
-  },
   ita: {
     updated: "Ultimi aggiornamenti",
     popular: "Più popolari",
@@ -85,21 +53,13 @@ const NINEMANGA_LABELS = {
     selectedLanguage: "Selezionata",
     settingsFooter: "Seleziona il dominio NineManga usato da home, ricerca, dettagli e lettura.",
   },
-  fra: {
-    updated: "Dernières mises à jour",
-    popular: "Séries populaires",
-    newest: "Nouvelles séries",
-    languageSettingTitle: "Langue NineManga",
-    selectedLanguage: "Sélectionnée",
-    settingsFooter: "Choisis le domaine NineManga utilisé pour l’accueil, la recherche, les détails et la lecture.",
-  },
-  br: {
-    updated: "Últimas atualizações",
-    popular: "Séries populares",
-    newest: "Novas séries",
-    languageSettingTitle: "Idioma do NineManga",
-    selectedLanguage: "Selecionado",
-    settingsFooter: "Escolha o domínio NineManga usado na página inicial, busca, detalhes e leitura.",
+  eng: {
+    updated: "Latest Updates",
+    popular: "Popular Series",
+    newest: "New Series",
+    languageSettingTitle: "NineManga Language",
+    selectedLanguage: "Selected",
+    settingsFooter: "Choose the NineManga domain used for home, search, details, and reading. English chapters may require a valid Cloudflare cf_clearance session.",
   },
 } as const;
 
@@ -122,6 +82,39 @@ type FetchedHtml = {
   url: string;
   html: string;
 };
+
+class NineMangaSettingsForm extends Form {
+  override getSections() {
+    const selectedSite = getSelectedSite();
+    const labels = getSelectedLabels();
+
+    return [
+      Section(
+        {
+          id: "ninemanga_language_settings",
+          footer: labels.settingsFooter,
+        },
+        [
+          SelectRow("ninemanga_language", {
+            title: labels.languageSettingTitle,
+            subtitle: labels.selectedLanguage + ": " + selectedSite.title,
+            value: [getSelectedLanguage()],
+            options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
+            minItemCount: 1,
+            maxItemCount: 1,
+            onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleLanguageChange"),
+          }),
+        ],
+      ),
+    ];
+  }
+
+  async handleLanguageChange(value: string[]): Promise<void> {
+    Application.setState(value[0] ?? DEFAULT_LANGUAGE, LANGUAGE_STATE_KEY);
+    this.reloadForm();
+    Application.invalidateDiscoverSections();
+  }
+}
 
 class NineMangaInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
@@ -160,7 +153,8 @@ class NineMangaExtension
     SearchResultsProviding,
     MangaProviding,
     ChapterProviding,
-    DiscoverSectionProviding
+    DiscoverSectionProviding,
+    SettingsFormProviding
 {
   readonly requestManager = new NineMangaInterceptor("ninemanga-main");
 
@@ -168,6 +162,9 @@ class NineMangaExtension
     this.requestManager.registerInterceptor();
   }
 
+  async getSettingsForm(): Promise<Form> {
+    return new NineMangaSettingsForm();
+  }
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     const labels = getSelectedLabels();
@@ -804,7 +801,8 @@ class NineMangaExtension
 }
 
 function getSelectedLanguage(): NineMangaLanguage {
-  return DEFAULT_LANGUAGE;
+  const stored = Application.getState(LANGUAGE_STATE_KEY) as string | undefined;
+  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;
 }
 
 function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
