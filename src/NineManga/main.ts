@@ -154,7 +154,9 @@ class NineMangaInterceptor extends PaperbackInterceptor {
 
     const cfClearance = getEnglishCfClearance();
     if (isEnglishRequest && cfClearance.length > 0) {
-      request.headers.cookie = appendCookie(request.headers.cookie, `cf_clearance=${cfClearance}`);
+      const existingCookie = request.headers.Cookie ?? request.headers.cookie;
+      request.headers.Cookie = appendCookie(existingCookie, `cf_clearance=${cfClearance}`);
+      delete request.headers.cookie;
     }
 
     return request;
