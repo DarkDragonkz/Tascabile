@@ -34,6 +34,8 @@ const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
 const DESKTOP_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const MOBILE_USER_AGENT =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
 const ADVANCED_SEARCH_PARAMS =
   "name_sel=contain&wd=&author_sel=contain&author=&artist_sel=contain&artist=&category_id=&out_category_id=&completed_series=either";
 
@@ -162,13 +164,19 @@ class NineMangaSettingsForm extends Form {
 class NineMangaInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
     const baseUrl = getSelectedSite().baseUrl;
+    const language = getSelectedLanguage();
+    const isEnglishReaderRequest =
+      language === "eng" && request.url.startsWith(`${baseUrl}/chapter/`);
+
     request.headers = {
       ...request.headers,
       origin: baseUrl,
       referer: `${baseUrl}/`,
-      "user-agent": DESKTOP_USER_AGENT,
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-      "accept-language": "en-US,en;q=0.9,it;q=0.8",
+      "user-agent": isEnglishReaderRequest ? MOBILE_USER_AGENT : DESKTOP_USER_AGENT,
+      accept: isEnglishReaderRequest
+        ? "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+        : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "accept-language": isEnglishReaderRequest ? "en-US,en;q=0.9" : "en-US,en;q=0.9,it;q=0.8",
     };
     return request;
   }
