@@ -848,7 +848,9 @@ class NineMangaExtension
 
 function getSelectedLanguage(): NineMangaLanguage {
   const stored = Application.getState(LANGUAGE_STATE_KEY) as string | undefined;
-  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;
+  return stored && Object.prototype.hasOwnProperty.call(NINEMANGA_SITES, stored)
+    ? (stored as NineMangaLanguage)
+    : DEFAULT_LANGUAGE;
 }
 
 function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
