@@ -1,0 +1,39 @@
+name: Apply NineManga Source Follow Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    name: Apply source follow diagnostic
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Apply source follow diagnostic
+        run: node tools/apply-ninemanga-source-follow.mjs
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/NineManga/main.ts
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Follow NineManga EN source gate for diagnostics"
+            git push
+          fi
