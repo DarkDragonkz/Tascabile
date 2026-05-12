@@ -1,0 +1,101 @@
+name: Patch NineManga Diagnostic
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  patch-build-deploy:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Patch NineManga diagnostic headers
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          main_path = Path('src/NineManga/main.ts')
+          main = main_path.read_text()
+
+          old = '''    if (isEnglishRequest && cfClearance.length > 0) {
+      const existingCookie = request.headers.Cookie ?? request.headers.cookie;
+      request.headers.Cookie = appendCookie(existingCookie, `cf_clearance=${cfClearance}`);
+      delete request.headers.cookie;
+    }
+
+    return request;'''
+
+          new = '''    if (isEnglishRequest && cfClearance.length > 0) {
+      const existingCookie = request.headers.Cookie ?? request.headers.cookie;
+      request.headers.Cookie = appendCookie(existingCookie, `cf_clearance=${cfClearance}`);
+      delete request.headers.cookie;
+    }
+
+    if (language === "eng" && request.url.startsWith("https://www.ninemanga.com/")) {
+      request.headers["x-ninemanga-language"] = language;
+      request.headers["x-ninemanga-cf-state"] = cfClearance.length > 0 ? "present" : "empty";
+    }
+
+    return request;'''
+
+          if 'x-ninemanga-cf-state' not in main:
+              main = main.replace(old, new)
+
+          main = main.replace('    cfClearanceSubtitle: "Opzionale, usato solo per il reader inglese",\n', '')
+          main = main.replace('    cfClearanceSubtitle: "Optional, used only for the English reader",\n', '')
+          main_path.write_text(main)
+
+          config_path = Path('src/NineManga/pbconfig.ts')
+          config = config_path.read_text()
+          config = re.sub(r'pbConfig\.version = "[^"]+";', 'pbConfig.version = "1.0.0-alpha.41";', config)
+          config_path.write_text(config)
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/NineManga/main.ts src/NineManga/pbconfig.ts
+          if git diff --cached --quiet; then
+            echo "No source changes to commit"
+          else
+            git commit -m "Add NineManga English cf_clearance diagnostics"
+            git push
+          fi
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: TypeScript Check
+        run: npm run tsc
+
+      - name: Lint Check
+        run: npm run lint:check
+
+      - name: Format Check
+        run: npm run format:check
+
+      - name: Bundle Extensions
+        run: npm run bundle
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: bundles
