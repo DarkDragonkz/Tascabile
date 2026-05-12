@@ -6,7 +6,7 @@ const pbConfig = { ...basePbConfig };
 
 pbConfig.name = "NineManga";
 pbConfig.description = "Extension that pulls Italian and English manga content from NineManga.";
-pbConfig.version = "1.0.0-alpha.37";
+pbConfig.version = "1.0.0-alpha.38";
 pbConfig.language = "it";
 pbConfig.contentRating = ContentRating.EVERYONE;
 pbConfig.capabilities = [
