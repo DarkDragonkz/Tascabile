@@ -1,0 +1,36 @@
+name: NineManga Reader Diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      chapter_url:
+        description: "NineManga chapter URL to diagnose"
+        required: true
+        default: "https://www.ninemanga.com/chapter/Painter+of+the+Night/6220291-10-1.html"
+      max_depth:
+        description: "Maximum source/redirect depth for reader diagnostic"
+        required: true
+        default: "3"
+
+jobs:
+  diagnose:
+    name: Diagnose NineManga reader
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run cookie replay diagnostic
+        run: |
+          node tools/ninemanga-cookie-diagnostic.mjs "${{ inputs.chapter_url }}"
+
+      - name: Run reader/source diagnostic
+        run: |
+          node tools/ninemanga-reader-diagnostic.mjs "${{ inputs.chapter_url }}" "${{ inputs.max_depth }}"
