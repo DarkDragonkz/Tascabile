@@ -122,3 +122,6 @@ jobs:
             git commit -m "Enable NineManga language selection"
             git push origin HEAD:fix/ninemanga-language-readers
           fi
+
+      - name: Marker
+        run: echo "trigger 2"
