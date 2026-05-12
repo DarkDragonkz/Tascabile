@@ -2,6 +2,7 @@ import {
   ContentRating,
   DiscoverSectionType,
   Form,
+  InputRow,
   PaperbackInterceptor,
   Section,
   SelectRow,
@@ -30,6 +31,7 @@ import type { CheerioAPI } from "cheerio";
 import { getNineMangaReaderParser } from "./parsers";
 
 const LANGUAGE_STATE_KEY = "ninemanga_language";
+const ENGLISH_CF_CLEARANCE_STATE_KEY = "ninemanga_english_cf_clearance";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
 const DESKTOP_USER_AGENT =
@@ -40,71 +42,31 @@ const ADVANCED_SEARCH_PARAMS =
   "name_sel=contain&wd=&author_sel=contain&author=&artist_sel=contain&artist=&category_id=&out_category_id=&completed_series=either";
 
 const NINEMANGA_SITES = {
-  eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
-  esp: { title: "Español", baseUrl: "https://es.ninemanga.com", languageCode: "es" },
-  rus: { title: "Русский", baseUrl: "https://ru.ninemanga.com", languageCode: "ru" },
-  deu: { title: "Deutsch", baseUrl: "https://de.ninemanga.com", languageCode: "de" },
   ita: { title: "Italiano", baseUrl: "https://it.ninemanga.com", languageCode: "it" },
-  fra: { title: "Français", baseUrl: "https://fr.ninemanga.com", languageCode: "fr" },
-  br: { title: "Português BR", baseUrl: "https://br.ninemanga.com", languageCode: "pt-BR" },
+  eng: { title: "English", baseUrl: "https://www.ninemanga.com", languageCode: "en" },
 } as const;
 
 const NINEMANGA_LABELS = {
-  eng: {
-    updated: "Latest Updates",
-    popular: "Popular Series",
-    newest: "New Series",
-    languageSettingTitle: "NineManga Language",
-    selectedLanguage: "Selected",
-    settingsFooter: "Choose the NineManga domain used for home, search, details, and reading.",
-  },
-  esp: {
-    updated: "Últimas actualizaciones",
-    popular: "Series populares",
-    newest: "Nuevas series",
-    languageSettingTitle: "Idioma de NineManga",
-    selectedLanguage: "Seleccionado",
-    settingsFooter: "Elige el dominio de NineManga usado para inicio, búsqueda, detalles y lectura.",
-  },
-  rus: {
-    updated: "Последние обновления",
-    popular: "Популярные серии",
-    newest: "Новые серии",
-    languageSettingTitle: "Язык NineManga",
-    selectedLanguage: "Выбрано",
-    settingsFooter: "Выберите домен NineManga для главной страницы, поиска, описаний и чтения.",
-  },
-  deu: {
-    updated: "Neueste Updates",
-    popular: "Beliebte Serien",
-    newest: "Neue Serien",
-    languageSettingTitle: "NineManga-Sprache",
-    selectedLanguage: "Ausgewählt",
-    settingsFooter: "Wähle die NineManga-Domain für Startseite, Suche, Details und Reader.",
-  },
   ita: {
     updated: "Ultimi aggiornamenti",
     popular: "Più popolari",
     newest: "Nuove serie",
     languageSettingTitle: "Lingua NineManga",
     selectedLanguage: "Selezionata",
+    cfClearanceTitle: "NineManga English cf_clearance",
+    cfClearanceSubtitle: "Opzionale, usato solo per il reader inglese",
     settingsFooter: "Seleziona il dominio NineManga usato da home, ricerca, dettagli e lettura.",
   },
-  fra: {
-    updated: "Dernières mises à jour",
-    popular: "Séries populaires",
-    newest: "Nouvelles séries",
-    languageSettingTitle: "Langue NineManga",
-    selectedLanguage: "Sélectionnée",
-    settingsFooter: "Choisis le domaine NineManga utilisé pour l’accueil, la recherche, les détails et la lecture.",
-  },
-  br: {
-    updated: "Últimas atualizações",
-    popular: "Séries populares",
-    newest: "Novas séries",
-    languageSettingTitle: "Idioma do NineManga",
-    selectedLanguage: "Selecionado",
-    settingsFooter: "Escolha o domínio NineManga usado na página inicial, busca, detalhes e leitura.",
+  eng: {
+    updated: "Latest Updates",
+    popular: "Popular Series",
+    newest: "New Series",
+    languageSettingTitle: "NineManga Language",
+    selectedLanguage: "Selected",
+    cfClearanceTitle: "NineManga English cf_clearance",
+    cfClearanceSubtitle: "Optional, used only for the English reader",
+    settingsFooter:
+      "Choose the NineManga domain used for home, search, details, and reading. English chapters may require a valid Cloudflare cf_clearance session.",
   },
 } as const;
 
@@ -142,12 +104,18 @@ class NineMangaSettingsForm extends Form {
         [
           SelectRow("ninemanga_language", {
             title: labels.languageSettingTitle,
-            subtitle: `${labels.selectedLanguage}: ${selectedSite.title}`,
+            subtitle: labels.selectedLanguage + ": " + selectedSite.title,
             value: [getSelectedLanguage()],
             options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
             minItemCount: 1,
             maxItemCount: 1,
             onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleLanguageChange"),
+          }),
+          InputRow("ninemanga_english_cf_clearance", {
+            title: labels.cfClearanceTitle,
+            value: getEnglishCfClearance(),
+            isSecureEntry: true,
+            onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleCfClearanceChange"),
           }),
         ],
       ),
@@ -159,14 +127,19 @@ class NineMangaSettingsForm extends Form {
     this.reloadForm();
     Application.invalidateDiscoverSections();
   }
+
+  async handleCfClearanceChange(value: string): Promise<void> {
+    Application.setState(value.trim(), ENGLISH_CF_CLEARANCE_STATE_KEY);
+    this.reloadForm();
+  }
 }
 
 class NineMangaInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
     const baseUrl = getSelectedSite().baseUrl;
     const language = getSelectedLanguage();
-    const isEnglishReaderRequest =
-      language === "eng" && request.url.startsWith(`${baseUrl}/chapter/`);
+    const isEnglishRequest = language === "eng" && request.url.startsWith("https://www.ninemanga.com/");
+    const isEnglishReaderRequest = isEnglishRequest && request.url.startsWith(`${baseUrl}/chapter/`);
 
     request.headers = {
       ...request.headers,
@@ -176,8 +149,16 @@ class NineMangaInterceptor extends PaperbackInterceptor {
       accept: isEnglishReaderRequest
         ? "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
         : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-      "accept-language": isEnglishReaderRequest ? "en-US,en;q=0.9" : "en-US,en;q=0.9,it;q=0.8",
+      "accept-language": language === "eng" ? "en-US,en;q=0.9" : "en-US,en;q=0.9,it;q=0.8",
     };
+
+    const cfClearance = getEnglishCfClearance();
+    if (isEnglishRequest && cfClearance.length > 0) {
+      const existingCookie = request.headers.Cookie ?? request.headers.cookie;
+      request.headers.Cookie = appendCookie(existingCookie, `cf_clearance=${cfClearance}`);
+      delete request.headers.cookie;
+    }
+
     return request;
   }
 
@@ -210,7 +191,6 @@ class NineMangaExtension
   async getSettingsForm(): Promise<Form> {
     return new NineMangaSettingsForm();
   }
-
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     const labels = getSelectedLabels();
@@ -535,29 +515,22 @@ class NineMangaExtension
   }
 
   private getChapterReaderUrls(baseUrl: string, cleanChapterId: string): string[] {
-  const language = getSelectedLanguage();
-  const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
-    ? cleanChapterId
-    : `${cleanChapterId}-10-1`;
+    const language = getSelectedLanguage();
+    const readerChapterId = /-\d+-\d+$/u.test(cleanChapterId)
+      ? cleanChapterId
+      : `${cleanChapterId}-10-1`;
 
-  if (language === "eng") {
-    return dedupeStrings([`${baseUrl}/${readerChapterId}.html`]);
-  }
+    if (language === "eng") {
+      return dedupeStrings([`${baseUrl}/${readerChapterId}.html`]);
+    }
 
-  if (language === "esp") {
     return dedupeStrings([
-      `${baseUrl}/${cleanChapterId}.html`,
       `${baseUrl}/${readerChapterId}.html`,
+      `${baseUrl}/${cleanChapterId}.html`,
+      `${baseUrl}/${cleanChapterId}/`,
+      `${baseUrl}/${cleanChapterId}`,
     ]);
   }
-
-  return dedupeStrings([
-    `${baseUrl}/${readerChapterId}.html`,
-    `${baseUrl}/${cleanChapterId}.html`,
-    `${baseUrl}/${cleanChapterId}/`,
-    `${baseUrl}/${cleanChapterId}`,
-  ]);
-}
 
   private getAdvancedSearchUrl(baseUrl: string, page: number): string {
     return page > 1
@@ -848,9 +821,16 @@ class NineMangaExtension
 
 function getSelectedLanguage(): NineMangaLanguage {
   const stored = Application.getState(LANGUAGE_STATE_KEY) as string | undefined;
-  return stored && Object.prototype.hasOwnProperty.call(NINEMANGA_SITES, stored)
-    ? (stored as NineMangaLanguage)
-    : DEFAULT_LANGUAGE;
+  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;
+}
+
+function getEnglishCfClearance(): string {
+  return ((Application.getState(ENGLISH_CF_CLEARANCE_STATE_KEY) as string | undefined) ?? "").trim();
+}
+
+function appendCookie(existingCookie: string | undefined, nextCookie: string): string {
+  const cookie = existingCookie?.trim();
+  return cookie ? `${cookie}; ${nextCookie}` : nextCookie;
 }
 
 function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {

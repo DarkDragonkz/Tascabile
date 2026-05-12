@@ -5,8 +5,8 @@ import { basePbConfig } from "../generic/config";
 const pbConfig = { ...basePbConfig };
 
 pbConfig.name = "NineManga";
-pbConfig.description = "Extension that pulls multilingual manga content from NineManga.";
-pbConfig.version = "1.0.0-alpha.37";
+pbConfig.description = "Extension that pulls Italian and English manga content from NineManga.";
+pbConfig.version = "1.0.0-alpha.39";
 pbConfig.language = "it";
 pbConfig.contentRating = ContentRating.EVERYONE;
 pbConfig.capabilities = [
