@@ -316,7 +316,7 @@ export abstract class MangaWorldGeneric
     return await this.getSection(section.id, windowEntry, metadata);
   }
 
-  async getSortingOptions(_query: SearchQuery<SearchFilterValue[]>): Promise<SortingOption[]> {
+  async getSortingOptions(): Promise<SortingOption[]> {
     await filter.populateFilter(this);
     return filter.getOrderFilter().map((item) => ({
       id: item.id,
