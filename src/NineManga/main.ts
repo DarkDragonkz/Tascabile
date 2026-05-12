@@ -1,10 +1,7 @@
 import {
   ContentRating,
   DiscoverSectionType,
-  Form,
   PaperbackInterceptor,
-  Section,
-  SelectRow,
   type Chapter,
   type ChapterDetails,
   type ChapterProviding,
@@ -19,7 +16,6 @@ import {
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
-  type SettingsFormProviding,
   type SourceManga,
   type TagSection,
 } from "@paperback/types";
@@ -29,7 +25,6 @@ import type { CheerioAPI } from "cheerio";
 
 import { getNineMangaReaderParser } from "./parsers";
 
-const LANGUAGE_STATE_KEY = "ninemanga_language";
 const DEFAULT_LANGUAGE = "ita";
 const MAX_CHAPTER_PAGE_REQUESTS = 120;
 const DESKTOP_USER_AGENT =
@@ -128,39 +123,6 @@ type FetchedHtml = {
   html: string;
 };
 
-class NineMangaSettingsForm extends Form {
-  override getSections() {
-    const selectedSite = getSelectedSite();
-    const labels = getSelectedLabels();
-
-    return [
-      Section(
-        {
-          id: "ninemanga_language_settings",
-          footer: labels.settingsFooter,
-        },
-        [
-          SelectRow("ninemanga_language", {
-            title: labels.languageSettingTitle,
-            subtitle: `${labels.selectedLanguage}: ${selectedSite.title}`,
-            value: [getSelectedLanguage()],
-            options: Object.entries(NINEMANGA_SITES).map(([id, site]) => ({ id, title: site.title })),
-            minItemCount: 1,
-            maxItemCount: 1,
-            onValueChange: Application.Selector(this as NineMangaSettingsForm, "handleLanguageChange"),
-          }),
-        ],
-      ),
-    ];
-  }
-
-  async handleLanguageChange(value: string[]): Promise<void> {
-    Application.setState(value[0] ?? DEFAULT_LANGUAGE, LANGUAGE_STATE_KEY);
-    this.reloadForm();
-    Application.invalidateDiscoverSections();
-  }
-}
-
 class NineMangaInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
     const baseUrl = getSelectedSite().baseUrl;
@@ -198,8 +160,7 @@ class NineMangaExtension
     SearchResultsProviding,
     MangaProviding,
     ChapterProviding,
-    DiscoverSectionProviding,
-    SettingsFormProviding
+    DiscoverSectionProviding
 {
   readonly requestManager = new NineMangaInterceptor("ninemanga-main");
 
@@ -207,9 +168,6 @@ class NineMangaExtension
     this.requestManager.registerInterceptor();
   }
 
-  async getSettingsForm(): Promise<Form> {
-    return new NineMangaSettingsForm();
-  }
 
   async getDiscoverSections(): Promise<DiscoverSection[]> {
     const labels = getSelectedLabels();
@@ -846,8 +804,7 @@ class NineMangaExtension
 }
 
 function getSelectedLanguage(): NineMangaLanguage {
-  const stored = Application.getState(LANGUAGE_STATE_KEY) as string | undefined;
-  return isNineMangaLanguage(stored) ? stored : DEFAULT_LANGUAGE;
+  return DEFAULT_LANGUAGE;
 }
 
 function getSelectedSite(): (typeof NINEMANGA_SITES)[NineMangaLanguage] {
