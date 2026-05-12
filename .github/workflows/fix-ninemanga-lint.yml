@@ -54,3 +54,6 @@ jobs:
             git commit -m "Fix NineManga language lint warning"
             git push origin HEAD:fix/ninemanga-language-readers
           fi
+
+      - name: Marker
+        run: echo "trigger 2"
