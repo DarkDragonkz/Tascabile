@@ -1,14 +1,36 @@
 {
-  "buildTime": "2026-05-12T20:10:07.689Z",
+  "buildTime": "2026-08-12T19:46:17.914Z",
   "builtWith": {
-    "toolchain": "1.0.0-alpha.87",
-    "types": "1.0.0-alpha.87"
+    "toolchain": "1.0.0-alpha.92",
+    "types": "1.0.0-alpha.92"
   },
   "repository": {
     "name": "tascabile",
     "description": "Repository di estensioni Paperback 0.9 mantenuta da DarkDragonkz."
   },
   "sources": [
+    {
+      "name": "Atsumaru",
+      "description": "Extension that pulls content from atsu.moe.",
+      "version": "1.0.0-alpha.24",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        16,
+        4,
+        64,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Lucifers Circle"
+        }
+      ],
+      "id": "Atsumaru"
+    },
     {
       "name": "BatCave",
       "description": "Extension that pulls comic content from batcave.biz.",
@@ -30,6 +52,76 @@
         }
       ],
       "id": "BatCave"
+    },
+    {
+      "name": "Comix",
+      "description": "Extension that pulls content from Comix.to.",
+      "version": "1.0.0-alpha.46",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        16,
+        4,
+        64,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Catta1997",
+          "github": "https://github.com/Catta1997"
+        }
+      ],
+      "id": "Comix"
+    },
+    {
+      "name": "MangaDot",
+      "description": "Extension that pulls content from MangaDot.net",
+      "version": "1.0.0-alpha.4",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        16,
+        4,
+        64,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Catta1997",
+          "github": "https://github.com/Catta1997"
+        }
+      ],
+      "id": "MangaDot"
+    },
+    {
+      "name": "MangaFire",
+      "description": "Extension that pulls content from mangafire.to.",
+      "version": "1.0.0-alpha.21",
+      "icon": "icon.png",
+      "language": "multi",
+      "contentRating": "MATURE",
+      "capabilities": [
+        4,
+        64,
+        1,
+        32,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Inkdex",
+          "website": "https://inkdex.github.io",
+          "github": "https://github.com/inkdex"
+        }
+      ],
+      "id": "MangaFire"
     },
     {
       "name": "MangaWorld",
@@ -54,6 +146,51 @@
       "id": "MangaWorld"
     },
     {
+      "name": "Mangaball",
+      "description": "Extension that pulls content from mangaball.net.",
+      "version": "1.1",
+      "icon": "icon.png",
+      "language": "multi",
+      "contentRating": "ADULT",
+      "capabilities": [
+        1,
+        4,
+        64,
+        16,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Karrot"
+        }
+      ],
+      "id": "Mangaball"
+    },
+    {
+      "name": "Mangago",
+      "description": "Extension that pulls content from mangago.me.",
+      "version": "1.0.0-alpha.1",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "ADULT",
+      "capabilities": [
+        1,
+        16,
+        4,
+        64,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Popmango",
+          "github": "https://github.com/PoppingMangoSources"
+        }
+      ],
+      "id": "Mangago"
+    },
+    {
       "name": "NineManga",
       "description": "Extension that pulls Italian and English manga content from NineManga.",
       "version": "1.0.0-alpha.39",
@@ -76,6 +213,27 @@
       "id": "NineManga"
     },
     {
+      "name": "OniSaga",
+      "description": "Extension that pulls manga content from onisaga.com.",
+      "version": "1.0.0-alpha.1",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        64
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "DarkDragonkz",
+          "github": "https://github.com/DarkDragonkz"
+        }
+      ],
+      "id": "OniSaga"
+    },
+    {
       "name": "ReadAllComics",
       "description": "Extension that pulls comic content from readallcomics.com.",
       "version": "1.0.0-alpha.30",
@@ -96,6 +254,29 @@
         }
       ],
       "id": "ReadAllComics"
+    },
+    {
+      "name": "WeebCentral",
+      "description": "Extension that pulls content from weebcentral.com.",
+      "version": "1.0.0-alpha.25",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        16,
+        4,
+        64,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "GabrielCWT",
+          "github": "https://github.com/GabrielCWT"
+        }
+      ],
+      "id": "WeebCentral"
     }
   ]
 }
