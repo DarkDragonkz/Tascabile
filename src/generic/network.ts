@@ -139,7 +139,10 @@ export class Requests {
 
 export class MainInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
-    if (request.url.includes("cdn.mangaworld.in")) {
+    if (
+      request.url.includes("cdn.mangaworld.mx") ||
+      request.url.includes("cdn.mangaworld.in")
+    ) {
       request.headers = {
         ...request.headers,
         Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
