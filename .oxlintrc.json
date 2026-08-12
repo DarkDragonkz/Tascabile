@@ -4,7 +4,8 @@
     "eslint/no-unused-vars": [
       "warn",
       {
-        "varsIgnorePattern": "^isNineMangaLanguage$"
+        "varsIgnorePattern": "^(?:_|isNineMangaLanguage$)",
+        "argsIgnorePattern": "^_"
       }
     ]
   }
