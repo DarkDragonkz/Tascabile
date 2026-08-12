@@ -85,6 +85,16 @@ async function syncUpstream(upstream) {
   );
 }
 
+async function ensureOniSagaIcon() {
+  const iconPath = path.join(root, "src/OniSaga/static/icon.png");
+  const pngBase64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+  await mkdir(path.dirname(iconPath), { recursive: true });
+  await writeFile(iconPath, Buffer.from(pngBase64, "base64"));
+}
+
 for (const upstream of upstreams) {
   await syncUpstream(upstream);
 }
+
+await ensureOniSagaIcon();
