@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
@@ -85,6 +85,21 @@ async function syncUpstream(upstream) {
   );
 }
 
+async function patchMangaballTypes() {
+  const settingsPath = path.join(root, "src/Mangaball/forms/SettingsForm.ts");
+  const source = await readFile(settingsPath, "utf8");
+  const patched = source.replace(
+    '  FormSectionElement,\n',
+    '  type FormSectionElement,\n',
+  );
+
+  if (patched === source) {
+    throw new Error("Could not apply MangaBall FormSectionElement type-only import patch");
+  }
+
+  await writeFile(settingsPath, patched);
+}
+
 async function ensureOniSagaIcon() {
   const iconPath = path.join(root, "src/OniSaga/static/icon.png");
   const pngBase64 =
@@ -97,4 +112,5 @@ for (const upstream of upstreams) {
   await syncUpstream(upstream);
 }
 
+await patchMangaballTypes();
 await ensureOniSagaIcon();
