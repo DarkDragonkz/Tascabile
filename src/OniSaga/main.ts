@@ -160,7 +160,7 @@ class OniSagaExtension
   }
 
   async getSearchResults(
-    query: SearchQuery,
+    query: SearchQuery<undefined>,
     _metadata: undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const title = query.title.toString().trim();
@@ -194,6 +194,7 @@ class OniSagaExtension
       mangaId,
       mangaInfo: {
         primaryTitle: title,
+        secondaryTitles: [],
         thumbnailUrl,
         synopsis: description,
         author,
