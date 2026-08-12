@@ -28,8 +28,8 @@ jobs:
           node-version: 24
       - name: Install Dependencies
         run: npm install
-      - name: Sync EverythingMoe Top 10 Sources
-        run: npm run sync:top10
+      - name: Sync EverythingMoe Reader Sources
+        run: npm run sync:readers
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: TypeScript Check
@@ -55,8 +55,8 @@ jobs:
           node-version: 24
       - name: Install Dependencies
         run: npm install
-      - name: Sync EverythingMoe Top 10 Sources
-        run: npm run sync:top10
+      - name: Sync EverythingMoe Reader Sources
+        run: npm run sync:readers
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Bundle Extensions
