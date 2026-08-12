@@ -11,11 +11,13 @@ import {
   type DiscoverSectionItem,
   type DiscoverSectionProviding,
   type Extension,
+  type JSONValue,
   type MangaProviding,
   type PagedResults,
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
+  type SortingOption,
   type SourceManga,
 } from "@paperback/types";
 import * as cheerio from "cheerio";
@@ -160,8 +162,9 @@ class OniSagaExtension
   }
 
   async getSearchResults(
-    query: SearchQuery<undefined>,
-    _metadata: undefined,
+    query: SearchQuery<JSONValue>,
+    _metadata: JSONValue | undefined,
+    _sortingOption: SortingOption | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const title = query.title.toString().trim();
     const url = title.length > 0 ? `${BASE_URL}/search/${encodeURIComponent(title)}` : `${BASE_URL}/browse`;
