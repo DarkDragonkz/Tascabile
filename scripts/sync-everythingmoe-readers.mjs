@@ -85,19 +85,30 @@ async function syncUpstream(upstream) {
   );
 }
 
-async function patchMangaballTypes() {
+async function patchMangaballCompatibility() {
   const settingsPath = path.join(root, "src/Mangaball/forms/SettingsForm.ts");
-  const source = await readFile(settingsPath, "utf8");
-  const patched = source.replace(
+  const settingsSource = await readFile(settingsPath, "utf8");
+  const patchedSettings = settingsSource.replace(
     '  FormSectionElement,\n',
     '  type FormSectionElement,\n',
   );
 
-  if (patched === source) {
+  if (patchedSettings === settingsSource) {
     throw new Error("Could not apply MangaBall FormSectionElement type-only import patch");
   }
+  await writeFile(settingsPath, patchedSettings);
 
-  await writeFile(settingsPath, patched);
+  const searchPath = path.join(root, "src/Mangaball/forms/SearchForm.ts");
+  const searchSource = await readFile(searchPath, "utf8");
+  const patchedSearch = searchSource.replace(
+    'import { ShowcaseForm } from "./ShowcaseForm";\n',
+    "",
+  );
+
+  if (patchedSearch === searchSource) {
+    throw new Error("Could not remove unused MangaBall ShowcaseForm import");
+  }
+  await writeFile(searchPath, patchedSearch);
 }
 
 async function ensureOniSagaIcon() {
@@ -112,5 +123,5 @@ for (const upstream of upstreams) {
   await syncUpstream(upstream);
 }
 
-await patchMangaballTypes();
+await patchMangaballCompatibility();
 await ensureOniSagaIcon();
