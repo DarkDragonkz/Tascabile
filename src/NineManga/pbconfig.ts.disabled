@@ -1,3 +1,6 @@
+// NineManga disabled on 2026-08-12 because the service is currently unavailable/unreliable.
+// Restore this file as pbconfig.ts to re-enable the extension after the site is confirmed operational.
+
 import { ContentRating, SourceIntents } from "@paperback/types";
 
 import { basePbConfig } from "../generic/config";
