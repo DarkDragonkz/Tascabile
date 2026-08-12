@@ -1,0 +1,22 @@
+// NineManga disabled on 2026-08-12 because the service is currently unavailable/unreliable.
+// Restore this file as pbconfig.ts to re-enable the extension after the site is confirmed operational.
+
+import { ContentRating, SourceIntents } from "@paperback/types";
+
+import { basePbConfig } from "../generic/config";
+
+const pbConfig = { ...basePbConfig };
+
+pbConfig.name = "NineManga";
+pbConfig.description = "Extension that pulls Italian and English manga content from NineManga.";
+pbConfig.version = "1.0.0-alpha.39";
+pbConfig.language = "it";
+pbConfig.contentRating = ContentRating.EVERYONE;
+pbConfig.capabilities = [
+  SourceIntents.CHAPTER_PROVIDING,
+  SourceIntents.DISCOVER_SECTION_PROVIDING,
+  SourceIntents.SEARCH_RESULT_PROVIDING,
+  SourceIntents.SETTINGS_FORM_PROVIDING,
+] as unknown as typeof pbConfig.capabilities;
+
+export default pbConfig;
