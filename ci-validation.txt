@@ -1,0 +1,1 @@
+Temporary CI validation for the MangaWorld modernization already committed directly to main.
