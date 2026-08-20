@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright © 2026 Inkdex */
+/* Modifications Copyright © 2026 DarkDragonkz */
 
 import {
   PaperbackInterceptor,
@@ -9,141 +10,157 @@ import {
   type SearchQuery,
   type SortingOption,
 } from "@paperback/types";
-import type { SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 
-import { filter, MangaWorldGeneric } from "./main";
+import type { MangaWorldGeneric } from "./main";
+import type { CacheItem, MangaWorldSearchMetadata } from "./models";
+import { ARCHIVE_CACHE_SECONDS, getFavoriteGenres } from "./preferences";
 
 export class Requests {
+  private cache = new Map<string, CacheItem>();
+  private inFlight = new Map<string, Promise<ArrayBuffer>>();
+
   constructSearchRequestURL(
     page: number,
-    query: SearchQuery<SearchFilterValue[]> = { title: "", metadata: [] },
+    query: SearchQuery<MangaWorldSearchMetadata> = { title: "", metadata: {} },
     sorting: SortingOption | undefined,
     source: MangaWorldGeneric,
   ): {
     url: string;
     excluded: { generi: string[]; tipi: string[] };
   } {
-    const generi: string[] = [];
-    const generiEsclusi: string[] = [];
-    const tipiEsclusi: string[] = [];
-    const tipologia: string[] = [];
-    const queryFilters = query.metadata ?? [];
-    const getFilterValue = (id: string) => queryFilters.find((item) => item.id == id)?.value;
-    const genres: string | Record<string, "included" | "excluded"> = getFilterValue("genres") ?? "";
-    const types: string | Record<string, "included" | "excluded"> = getFilterValue("types") ?? "";
-    const status: string | Record<string, "included" | "excluded"> = getFilterValue("status") ?? "";
-    const year: string | Record<string, "included" | "excluded"> = getFilterValue("year") ?? "";
-    if (genres && typeof genres === "object") {
-      for (const tag of Object.entries(genres)) {
-        if (tag[1] == "included") generi.push(tag[0]);
-        if (tag[1] == "excluded")
-          generiEsclusi.push(
-            filter.getGenreFilter().find((item) => item.id === tag[0])?.value ?? "",
-          );
-      }
+    const metadata = query.metadata ?? {};
+    const genres = metadata.genres ?? {};
+    const mangaTypes = metadata.types ?? {};
+    const includedGenres: string[] = [];
+    const excludedGenres: string[] = [];
+    const includedTypes: string[] = [];
+    const excludedTypes: string[] = [];
+
+    for (const [id, state] of Object.entries(genres)) {
+      if (state === "included") includedGenres.push(id);
+      if (state === "excluded") excludedGenres.push(id);
     }
 
-    if (types && typeof types === "object") {
-      for (const tag of Object.entries(types)) {
-        if (tag[1] == "included") tipologia.push(tag[0]);
-        if (tag[1] == "excluded") tipiEsclusi.push(tag[0]);
-      }
+    for (const [id, state] of Object.entries(mangaTypes)) {
+      if (state === "included") includedTypes.push(id);
+      if (state === "excluded") excludedTypes.push(id);
     }
-    const statusFilter = status as string;
-    const yearFilter = year as string;
+
     const url = new URL(source.base_url).addPathComponent("archive");
-    if (query.title.toString().length > 0)
-      url.setQueryItem("keyword", query.title.toString() ?? "");
+    const title = query.title.toString().trim();
+    if (title.length > 0) url.setQueryItem("keyword", title);
     url.setQueryItem("page", page.toString());
-    if (sorting?.id) url.setQueryItem("sort", sorting?.id);
-    if (generi.length > 0) url.setQueryItem("genre", generi);
-    if (tipologia.length > 0) url.setQueryItem("type", tipologia);
-    if (statusFilter.length > 0) url.setQueryItem("status", statusFilter ?? "");
-    if (yearFilter.length > 0) url.setQueryItem("year", yearFilter ?? "");
+    if (sorting?.id) url.setQueryItem("sort", sorting.id);
+    if (includedGenres.length > 0) url.setQueryItem("genre", includedGenres);
+    if (includedTypes.length > 0) url.setQueryItem("type", includedTypes);
+    if (metadata.status) url.setQueryItem("status", metadata.status);
+    if (metadata.year) url.setQueryItem("year", metadata.year);
+
     return {
       url: url.toString(),
-      excluded: { generi: generiEsclusi, tipi: tipiEsclusi },
+      excluded: { generi: excludedGenres, tipi: excludedTypes },
     };
   }
 
-  async parseFilters(source: MangaWorldGeneric) {
-    return Application.arrayBufferToUTF8String(
-      await source.requestManager.fetchPage(`${source.base_url}/archive`),
-    );
+  clearCache(): void {
+    this.cache.clear();
+    this.inFlight.clear();
+  }
+
+  async parseFilters(source: MangaWorldGeneric): Promise<string> {
+    return this.fetchText(`${source.base_url}/archive`, ARCHIVE_CACHE_SECONDS);
   }
 
   async parseLastMangaAddedTagsSectionRequests(
     page: number,
     source: MangaWorldGeneric,
     favTags: boolean,
-  ) {
-    let html = "";
-    const tags = favTags ? (Application.getState("fav_tags_new") as string[]).join("&genre=") : "";
-    if (page > 1) {
-      const data = (
-        await Application.scheduleRequest({
-          url: `${source.base_url}/archive?sort=newest&page=${page}&genre=${tags}`,
-          method: "GET",
-        })
-      )[1];
-      html = Application.arrayBufferToUTF8String(data);
-    } else {
-      html = Application.arrayBufferToUTF8String(
-        await source.requestManager.fetchPage(
-          `${source.base_url}/archive?sort=newest&page=${page}&genre=${tags}`,
-        ),
-      );
+  ): Promise<string> {
+    const url = new URL(source.base_url).addPathComponent("archive");
+    url.setQueryItem("sort", "newest");
+    url.setQueryItem("page", page.toString());
+    if (favTags) {
+      const favoriteGenres = getFavoriteGenres();
+      if (favoriteGenres.length > 0) url.setQueryItem("genre", favoriteGenres);
     }
-    return html;
+    return this.fetchText(url.toString(), ARCHIVE_CACHE_SECONDS);
   }
 
-  async parsePopularSectionRequests(page: number, source: MangaWorldGeneric) {
-    let html = "";
-    if (page > 1) {
-      const data = (
-        await Application.scheduleRequest({
-          url: `${source.base_url}/archive?sort=most_read&page=${page}`,
-          method: "GET",
-        })
-      )[1];
-      html = Application.arrayBufferToUTF8String(data);
-    } else {
-      html = Application.arrayBufferToUTF8String(
-        await source.requestManager.fetchPage(
-          `${source.base_url}/archive?sort=most_read&page=${page}`,
-        ),
-      );
-    }
-    return html;
+  async parsePopularSectionRequests(page: number, source: MangaWorldGeneric): Promise<string> {
+    const url = new URL(source.base_url).addPathComponent("archive");
+    url.setQueryItem("sort", "most_read");
+    url.setQueryItem("page", page.toString());
+    return this.fetchText(url.toString(), ARCHIVE_CACHE_SECONDS);
   }
 
-  async getSearchResultsRequests(url: string) {
-    const data = (
-      await Application.scheduleRequest({
-        url: url,
-        method: "GET",
-      })
-    )[1];
-    return Application.arrayBufferToUTF8String(data);
+  async getSearchResultsRequests(url: string): Promise<string> {
+    return this.fetchText(url, 2);
   }
 
-  async fetchPage(url: string): Promise<ArrayBuffer> {
-    return (
-      await Application.scheduleRequest({
+  async fetchText(url: string, cacheSeconds = 0): Promise<string> {
+    return Application.arrayBufferToUTF8String(await this.fetchPage(url, cacheSeconds));
+  }
+
+  async fetchPage(url: string, cacheSeconds = 0): Promise<ArrayBuffer> {
+    const now = Date.now();
+    const cached = this.cache.get(url);
+    if (cached && cached.expires > now) return cached.data;
+    if (cached) this.cache.delete(url);
+
+    const pending = this.inFlight.get(url);
+    if (pending) return pending;
+
+    const request = (async () => {
+      const [response, data] = await Application.scheduleRequest({
         url,
         method: "GET",
-      })
-    )[1];
+      });
+      if (response.status >= 400) {
+        throw new Error(`MangaWorld HTTP ${response.status}: ${url}`);
+      }
+      if (cacheSeconds > 0) {
+        if (this.cache.size >= 64) {
+          const oldestKey = this.cache.keys().next().value as string | undefined;
+          if (oldestKey) this.cache.delete(oldestKey);
+        }
+        this.cache.set(url, {
+          expires: Date.now() + cacheSeconds * 1000,
+          data,
+        });
+      }
+      return data;
+    })();
+
+    this.inFlight.set(url, request);
+    try {
+      return await request;
+    } finally {
+      this.inFlight.delete(url);
+    }
   }
 }
 
 export class MainInterceptor extends PaperbackInterceptor {
   override async interceptRequest(request: Request): Promise<Request> {
-    if (request.url.includes("cdn.mangaworld.mx") || request.url.includes("cdn.mangaworld.in")) {
+    const isMangaWorldCdn =
+      request.url.includes("cdn.mangaworld.mx") || request.url.includes("cdn.mangaworld.in");
+
+    if (isMangaWorldCdn) {
       request.headers = {
         ...request.headers,
         Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
         Origin: "https://www.mangaworld.mx",
+        Referer: "https://www.mangaworld.mx/",
+        "User-Agent": await Application.getDefaultUserAgent(),
+      };
+      return request;
+    }
+
+    if (request.url.includes("mangaworld.mx")) {
+      request.headers = {
+        ...request.headers,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "it-IT,it;q=0.9,en;q=0.7",
         Referer: "https://www.mangaworld.mx/",
         "User-Agent": await Application.getDefaultUserAgent(),
       };
@@ -159,7 +176,6 @@ export class MainInterceptor extends PaperbackInterceptor {
   ): Promise<ArrayBuffer> {
     void request;
     void response;
-
     return data;
   }
 }

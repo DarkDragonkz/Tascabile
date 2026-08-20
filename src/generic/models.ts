@@ -1,13 +1,23 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright © 2026 Inkdex */
+/* Modifications Copyright © 2026 DarkDragonkz */
 
 export type MangaMetadata = {
-  page: number;
+  page?: number;
 };
+
+export type MangaWorldSearchMetadata = {
+  genres?: Record<string, "included" | "excluded">;
+  types?: Record<string, "included" | "excluded">;
+  status?: string;
+  year?: string;
+};
+
 export type OptionItem = {
   value: string;
   id: string;
 };
+
 export type CacheItem = {
   expires: number;
   data: ArrayBuffer;
