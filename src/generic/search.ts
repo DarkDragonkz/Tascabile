@@ -28,8 +28,8 @@ export class MangaWorldAdvancedSearchForm extends AdvancedSearchForm {
   constructor(searchQuery: SearchQuery<MangaWorldSearchMetadata>) {
     super();
     const metadata = searchQuery.metadata ?? {};
-    this.genres = { ...(metadata.genres ?? {}) };
-    this.mangaTypes = { ...(metadata.types ?? {}) };
+    this.genres = { ...metadata.genres };
+    this.mangaTypes = { ...metadata.types };
     this.status = metadata.status ?? "";
     this.year = metadata.year ?? "";
 
