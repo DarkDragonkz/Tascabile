@@ -176,7 +176,7 @@ export abstract class MangaWorldGeneric
         jsonParser.getWindowEntry(mangaHtml),
         chapter.chapterId,
       );
-      if (details.pages.length > 0) return details;
+      if (!("pages" in details) || details.pages.length > 0) return details;
     } catch {
       // Fall through to the actual reader page.
     }
@@ -351,7 +351,7 @@ export abstract class MangaWorldGeneric
     metadata: MangaMetadata | undefined,
   ): Promise<PagedResults<DiscoverSectionItem>> {
     try {
-      return await this.parser.parseChapterUpdateSection(metadata, this);
+      return await this.parser.parseChapterUpdateSection(metadata ?? {}, this);
     } catch {
       const page = metadata?.page ?? 1;
       const url = page === 1 ? this.base_url : `${this.base_url}/?page=${page}`;
