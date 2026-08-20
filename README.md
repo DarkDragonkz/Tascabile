@@ -2,25 +2,34 @@
 
 Repository di estensioni Paperback 0.9 mantenuta da **DarkDragonkz**.
 
-Questa repository è impostata come base TypeScript per Paperback 0.9, usando `@paperback/toolchain`, `@paperback/types`, `cheerio`, `oxlint`, `oxfmt`, `husky` e GitHub Actions.
+Questa repository usa `@paperback/toolchain`, `@paperback/types`, TypeScript, `cheerio`, `oxlint`, `oxfmt`, `husky` e GitHub Actions.
 
-## Stato attuale
+## MangaWorld
 
-La source **MangaWorld** è stata aggiunta usando come riferimento tecnico i file reali dello ZIP `mangaworld-extensions-0.9-stable`.
-
-Dati source:
+La source **MangaWorld** usa `https://www.mangaworld.mx` ed è ottimizzata per le API native di Paperback 0.9.
 
 | Campo | Valore |
 |---|---|
 | Nome | MangaWorld |
 | URL base | `https://www.mangaworld.mx` |
 | Lingua | Italiano |
-| Rating | Adult |
+| Rating source | Everyone, con rating per singolo titolo/genere |
 | Tipologia | Manga, manhwa, manhua, novel |
 | Login | No |
 | Tracker | No |
 
-Nota: il codice di riferimento ricava i dati dal JSON `$MC` incorporato nelle pagine HTML MangaWorld. Non è stata verificata una API JSON pubblica separata. Il sito live non è risultato recuperabile dagli strumenti web disponibili durante questa modifica, quindi Cloudflare/protezioni anti-bot e referer immagini devono essere verificati da ambiente locale/Paperback.
+Funzionalità principali:
+
+- ricerca avanzata nativa Paperback 0.9 con generi inclusi/esclusi, tipologia, stato e anno;
+- Home con contenuti in tendenza, aggiornamenti, manga del mese, nuove aggiunte, più letti e sezione personalizzata **Per te**;
+- preferenze per generi preferiti, generi/tipologie nascosti e tipologia predefinita;
+- cache breve e deduplicazione delle richieste simultanee per ridurre il traffico verso MangaWorld;
+- parser `$MC` come percorso principale, con fallback HTML per ricerca, dettagli, capitoli e reader;
+- gestione del CDN `cdn.mangaworld.mx` con compatibilità per il vecchio dominio `.in`;
+- filtro predefinito dei contenuti +18/Doujinshi trasferiti da MangaWorld al sito dedicato MangaWorldAdult;
+- strumenti di manutenzione per test connessione, aggiornamento filtri e pulizia cache.
+
+Non viene assunta l'esistenza di una API JSON pubblica separata: la source usa i dati `$MC` incorporati nelle pagine e, quando necessario, il markup HTML visibile.
 
 ## Requisiti
 
@@ -49,40 +58,27 @@ npm run dev
 npm run logcat
 ```
 
-## Struttura
+## Struttura MangaWorld
 
 ```text
-.github/workflows/build.yml
-.vscode/extensions.json
-.vscode/settings.json
-.husky/pre-push
 src/MangaWorld/main.ts
 src/MangaWorld/pbconfig.ts
+src/MangaWorld/static/icon.png
 src/generic/config.ts
 src/generic/forms.ts
+src/generic/htmlFallbacks.ts
 src/generic/main.ts
 src/generic/models.ts
 src/generic/network.ts
 src/generic/parsers.ts
+src/generic/preferences.ts
+src/generic/search.ts
 src/generic/utils.ts
-src/common/errors.ts
-src/common/http.ts
-src/common/html.ts
-src/common/dates.ts
-src/common/urls.ts
-src/common/images.ts
-README.md
-package.json
-tsconfig.json
-.oxlintrc.json
-.oxfmtrc.json
-.gitignore
-LICENSE
 ```
 
 ## Pattern source Paperback 0.9
 
-Dalle repository di riferimento analizzate, una source reale Paperback 0.9 usa questo schema:
+Una source Paperback 0.9 usa normalmente questo schema:
 
 ```text
 src/<NomeSource>/main.ts
@@ -90,26 +86,21 @@ src/<NomeSource>/pbconfig.ts
 src/<NomeSource>/static/icon.png
 ```
 
-File aggiuntivi come `network.ts`, `parsers.ts`, `models.ts`, `forms.ts`, `settings.ts`, `interceptors.ts` o cartelle `implementations/` vengono creati solo quando servono alla source.
+File aggiuntivi come `network.ts`, `parsers.ts`, `models.ts`, `forms.ts`, `settings.ts`, `interceptors.ts` o cartelle `implementations/` vengono aggiunti quando servono alla source.
 
 ## Pubblicazione GitHub Pages
 
 Il workflow `Build and Deploy` esegue:
 
 1. installazione dipendenze;
-2. controllo TypeScript;
-3. controllo lint;
-4. controllo format;
-5. bundle con `paperback-cli bundle`;
-6. deploy della cartella `bundles` su branch `gh-pages`.
+2. sincronizzazione delle source esterne configurate;
+3. controllo TypeScript;
+4. controllo lint;
+5. controllo format;
+6. bundle con `paperback-cli bundle`;
+7. deploy della cartella `bundles` sul branch `gh-pages`.
 
-Dopo il primo deploy, in GitHub abilita Pages da:
-
-```text
-Settings > Pages > Deploy from a branch > gh-pages > /(root)
-```
-
-URL previsto della repository Paperback:
+Repository Paperback pubblicata:
 
 ```text
 https://darkdragonkz.github.io/Tascabile
