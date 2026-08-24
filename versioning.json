@@ -1,30 +1,60 @@
 {
-  "buildTime": "2026-08-24T11:49:24.753Z",
+  "buildTime": "2026-08-24T12:26:41.136Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
   },
   "repository": {
     "name": "tascabile",
-    "description": "Repository italiana di estensioni Paperback 0.9 mantenuta da DarkDragonkz."
+    "description": "Repository Paperback 0.9 principalmente italiana, con fonti manga/fansub italiane e una sezione Comics internazionale."
   },
   "sources": [
     {
+      "name": "BatCave",
+      "description": "BatCave - custom source (batcave.biz). Converted from keiyoushi.",
+      "version": "1.4.9.1",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        4,
+        64,
+        1,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "nicartjay"
+        },
+        {
+          "name": "keiyoushi"
+        }
+      ],
+      "id": "Batcave"
+    },
+    {
       "name": "GTOTheGreatSite",
       "description": "Manga e scanlation in italiano da GTOTheGreatSite.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
@@ -43,19 +73,25 @@
     {
       "name": "HastaTeam",
       "description": "Manga e scanlation in italiano da HastaTeam.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
@@ -74,19 +110,25 @@
     {
       "name": "HastaTeamDDT",
       "description": "Manga e scanlation in italiano da HastaTeam DDT.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
@@ -105,19 +147,25 @@
     {
       "name": "LupiTeam",
       "description": "Manga e scanlation in italiano da LupiTeam.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
@@ -158,19 +206,25 @@
     {
       "name": "PhoenixScans",
       "description": "Manga e scanlation in italiano da Phoenix Scans.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
@@ -187,21 +241,83 @@
       "id": "PhoenixScans"
     },
     {
+      "name": "ReadComicOnline",
+      "description": "ReadComicOnline - custom source (readcomiconline.li). Converted from keiyoushi.",
+      "version": "1.4.43.13",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        4,
+        64,
+        1,
+        16,
+        32
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "nicartjay"
+        },
+        {
+          "name": "keiyoushi"
+        }
+      ],
+      "id": "ReadComicOnline"
+    },
+    {
+      "name": "Read Comics Online",
+      "description": "Read Comics Online - MMRCMS source (readcomicsonline.ru). Converted from keiyoushi.",
+      "version": "1.4.14.1",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        4,
+        64,
+        1,
+        16,
+        32
+      ],
+      "badges": [
+        {
+          "label": "MMRCMS",
+          "textColor": "#FFFFFF",
+          "backgroundColor": "#455A64"
+        }
+      ],
+      "developers": [
+        {
+          "name": "nicartjay"
+        },
+        {
+          "name": "keiyoushi"
+        }
+      ],
+      "id": "ReadComicsOnline"
+    },
+    {
       "name": "TuttoAnimeManga",
       "description": "Manga e scanlation in italiano da TuttoAnimeManga.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
         1,
         4,
-        64
+        64,
+        32
       ],
       "badges": [
         {
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Fansub",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
