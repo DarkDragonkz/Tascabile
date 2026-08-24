@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-08-24T11:41:46.431Z",
+  "buildTime": "2026-08-24T11:49:24.753Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -135,8 +135,8 @@
     },
     {
       "name": "MangaWorld",
-      "description": "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata e reader CDN aggiornato.",
-      "version": "1.0.0-alpha.32",
+      "description": "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata e caricamento completo dei capitoli.",
+      "version": "1.0.0-alpha.33",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
