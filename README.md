@@ -1,10 +1,10 @@
 # Tascabile
 
-Repository di estensioni **Paperback 0.9 dedicate esclusivamente a fonti italiane**, mantenuta da **DarkDragonkz**.
+Repository di estensioni **Paperback 0.9 principalmente dedicata a fonti italiane**, mantenuta da **DarkDragonkz**.
 
-## Fonti
+L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali, dove non sono disponibili almeno tre reader italiani affidabili e leggibili da Paperback, Tascabile include tre fonti Comics in inglese selezionate e mantenute separatamente.
 
-Le estensioni attive sono:
+## Manga e scanlation in italiano
 
 - MangaWorld
 - GTOTheGreatSite
@@ -14,17 +14,29 @@ Le estensioni attive sono:
 - PhoenixScans
 - TuttoAnimeManga
 
-NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile e quindi non viene pubblicata nel bundle.
+NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile.
 
-Le precedenti sorgenti internazionali/inglesi e la sincronizzazione EverythingMoe sono state rimosse: Tascabile non scarica più sorgenti esterne durante la build.
+Le fonti fansub condividono una UI Paperback 0.9 con **In evidenza**, **Aggiornati di recente**, **Catalogo**, ordinamento ricerca e impostazioni per Home, contenuti e manutenzione.
+
+## Comics in inglese
+
+- Batcave
+- ReadComicOnline
+- Read Comics Online
+
+I tre reader Comics vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `cf43397bb1b90521629291599cee312fcf30f0f5` del 22 agosto 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+
+## Prestazioni immagini
+
+Tascabile normalizza gli URL immagine su HTTPS, elimina URL duplicati/non validi, usa header `Referer`/`User-Agent` coerenti e mantiene cache brevi delle risposte API. MangaWorld usa direttamente gli URL finali del CDN e recupera l'intero elenco pagine del capitolo prima di aprire il reader.
+
+La velocità finale delle immagini dipende comunque anche dal server/CDN della singola fonte: l'estensione evita ritardi e redirect evitabili, ma non riduce qualità o risoluzione delle tavole.
 
 ## MangaWorld
 
 URL base: `https://www.mangaworld.mx`
 
-MangaWorld usa il JSON `$MC` quando disponibile e fallback HTML per resistere ai cambiamenti del sito. Il reader apre la pagina reale `/manga/<id>/<slug>/read/<chapterId>`, normalizza gli URL del CDN `cdn.mangaworld.mx` e scarta URL vuoti/non validi prima di restituirli a Paperback.
-
-Il sito classico segnala che Doujinshi e contenuti +18 sono stati trasferiti su MangaWorldAdult; Tascabile mantiene MangaWorld classico come fonte italiana generalista.
+MangaWorld usa il JSON `$MC` quando disponibile e fallback HTML per resistere ai cambiamenti del sito. Il reader recupera prima l'elenco completo delle pagine dal payload manga e usa la pagina `/read/<chapterId>` solo come fallback.
 
 ## Requisiti
 
@@ -36,6 +48,7 @@ Il sito classico segnala che Doujinshi e contenuti +18 sono stati trasferiti su 
 
 ```bash
 npm install
+npm run sync:comics
 npm run tsc
 npm run lint:check
 npm run format:check
@@ -52,4 +65,4 @@ https://darkdragonkz.github.io/Tascabile
 
 ## Crediti
 
-MangaWorld deriva dal lavoro GPL-3.0-or-later di Inkdex, con modifiche mantenute in Tascabile. Le fonti fansub italiane ripristinate derivano da Sinon-Paperback-Extensions/Catta1997, distribuito con licenza MIT.
+MangaWorld deriva dal lavoro GPL-3.0-or-later di Inkdex. Le fonti fansub italiane derivano da Sinon-Paperback-Extensions/Catta1997 (MIT). I reader Comics derivano da Nicartjay/PaperbackExt e dai relativi port Keiyoushi (MIT); vedere `THIRD_PARTY_NOTICES.md`.

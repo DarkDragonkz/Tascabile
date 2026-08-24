@@ -29,6 +29,10 @@ jobs:
           package-manager-cache: false
       - name: Install Dependencies
         run: npm install
+      - name: Sync Comic Reader Sources
+        run: npm run sync:comics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: TypeScript Check
         run: npm run tsc
       - name: Lint Check
@@ -53,6 +57,10 @@ jobs:
           package-manager-cache: false
       - name: Install Dependencies
         run: npm install
+      - name: Sync Comic Reader Sources
+        run: npm run sync:comics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Bundle Extensions
         run: npm run bundle
       - name: Deploy to GitHub Pages

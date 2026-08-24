@@ -8,19 +8,25 @@ import {
 export const basePbConfig = {
   name: "",
   description: "",
-  version: "1.0.2",
+  version: "1.1.0",
   icon: "icon.png",
   language: "it",
   capabilities: [
     SourceIntents.CHAPTER_PROVIDING,
     SourceIntents.DISCOVER_SECTION_PROVIDING,
     SourceIntents.SEARCH_RESULT_PROVIDING,
+    SourceIntents.SETTINGS_FORM_PROVIDING,
   ],
   badges: [
     {
       label: "Italiano 🇮🇹",
       textColor: "#ffffff",
       backgroundColor: "#28eac2",
+    },
+    {
+      label: "Fansub",
+      textColor: "#ffffff",
+      backgroundColor: "#5965f2",
     },
   ],
   developers: [

@@ -8,7 +8,7 @@ export interface ComicListItem {
   adult: number;
   slug: string;
   author: string;
-  last_chapter: ComicDetailChapter;
+  last_chapter?: ComicDetailChapter | null;
 }
 
 export interface Genre {
