@@ -23,9 +23,7 @@ async function getJson(url) {
 }
 
 async function writeRemoteFile(item, destination) {
-  const url =
-    item.download_url ??
-    `https://raw.githubusercontent.com/${UPSTREAM}/${REVISION}/${item.path}`;
+  const url = item.download_url ?? `https://raw.githubusercontent.com/${UPSTREAM}/${REVISION}/${item.path}`;
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`Download ${response.status}: ${url}`);
   await mkdir(dirname(destination), { recursive: true });
@@ -49,7 +47,9 @@ async function applyCompatibilityPatches() {
   const source = await readFile(rcoPath, "utf8");
   const target = "      const result = eval(wrappedScript) as string;";
   if (!source.includes(target)) {
-    throw new Error("ReadComicOnline eval hook changed upstream; review the pinned source before building.");
+    throw new Error(
+      "ReadComicOnline eval hook changed upstream; review the pinned source before building.",
+    );
   }
   await writeFile(
     rcoPath,
