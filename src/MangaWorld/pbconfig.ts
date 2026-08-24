@@ -10,8 +10,8 @@ const pbConfig = { ...basePbConfig };
 
 pbConfig.name = "MangaWorld";
 pbConfig.description =
-  "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata nativa e Home ottimizzata per Paperback 0.9.";
-pbConfig.version = customVersion({ increasePrerelease: 1 });
+  "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata e reader CDN aggiornato.";
+pbConfig.version = customVersion({ increasePrerelease: 2 });
 pbConfig.language = "it";
 pbConfig.contentRating = ContentRating.EVERYONE;
 
