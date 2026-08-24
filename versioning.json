@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-08-24T12:38:29.136Z",
+  "buildTime": "2026-08-24T12:53:30.322Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -12,7 +12,7 @@
     {
       "name": "BatCave",
       "description": "BatCave - custom source (batcave.biz). Converted from keiyoushi.",
-      "version": "1.4.9.2",
+      "version": "1.4.9.3",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -243,7 +243,7 @@
     {
       "name": "ReadComicOnline",
       "description": "ReadComicOnline - custom source (readcomiconline.li). Converted from keiyoushi.",
-      "version": "1.4.43.13",
+      "version": "1.4.43.14",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -268,7 +268,7 @@
     {
       "name": "Read Comics Online",
       "description": "Read Comics Online - MMRCMS source (readcomicsonline.ru). Converted from keiyoushi.",
-      "version": "1.4.14.2",
+      "version": "1.4.14.3",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
