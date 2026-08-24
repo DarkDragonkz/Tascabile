@@ -16,6 +16,41 @@ const headers = {
   ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
 };
 
+const SAFE_ID_REPLACEMENT = `  private toSafeId(slug: string): string {
+    let safe = "";
+    for (let index = 0; index < slug.length; index += 1) {
+      const unit = slug.charCodeAt(index);
+      let char = slug[index] ?? "";
+
+      if (unit >= 0xd800 && unit <= 0xdbff) {
+        const next = slug.charCodeAt(index + 1);
+        if (next >= 0xdc00 && next <= 0xdfff) {
+          char = slug.slice(index, index + 2);
+          index += 1;
+        } else {
+          char = "\\uFFFD";
+        }
+      } else if (unit >= 0xdc00 && unit <= 0xdfff) {
+        char = "\\uFFFD";
+      }
+
+      if (/^[A-Za-z0-9._\\-@()[\\]%?#+=/&:]$/u.test(char)) {
+        safe += char;
+      } else {
+        safe += encodeURIComponent(char);
+      }
+    }
+    return safe;
+  }`;
+
+const SAFE_ID_TARGET = `  private toSafeId(slug: string): string {
+    return slug.replace(/[^A-Za-z0-9._\\-@()[\\]%?#+=/&:]/g, (c) => {
+      const enc = encodeURIComponent(c);
+      if (enc !== c) return enc;
+      return "%" + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0");
+    });
+  }`;
+
 async function getJson(url) {
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`GitHub ${response.status}: ${url}`);
@@ -63,6 +98,63 @@ async function applyCompatibilityPatches() {
         "      // eslint-disable-next-line no-eval -- Required by the upstream reader decrypt routine.\n" +
         "      const result = eval(wrappedScript) as string;",
     },
+    {
+      label: "ReadComicOnline request HTTPS upgrade",
+      target:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n    const baseUrl = this.getBaseUrl();",
+      replacement:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n" +
+        '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
+        "    const baseUrl = this.getBaseUrl().replace(/^http:\\/\\//u, \"https://\");",
+    },
+    {
+      label: "ReadComicOnline base URL HTTPS normalization",
+      target: "  get baseUrl(): string {\n    return getMirrorBaseUrl();\n  }",
+      replacement:
+        "  get baseUrl(): string {\n" +
+        '    return getMirrorBaseUrl().replace(/^http:\\/\\//u, "https://");\n' +
+        "  }",
+    },
+    {
+      label: "ReadComicOnline tag ID sanitization",
+      target: '          id: g.toLowerCase().replace(/\\s+/g, "-"),',
+      replacement: '          id: this.toSafeId(g.toLowerCase().replace(/\\s+/g, "-")),',
+    },
+    {
+      label: "ReadComicOnline decrypted image normalization",
+      target: "    const pages = await this.decryptPages(combinedScripts, useServer2);",
+      replacement:
+        "    const decryptedPages = await this.decryptPages(combinedScripts, useServer2);\n" +
+        "    const pages = decryptedPages\n" +
+        "      .map((page) => this.absoluteUrl(page))\n" +
+        "      .filter((page) => page.length > 0);",
+    },
+    {
+      label: "ReadComicOnline absolute URL ATS normalization",
+      target:
+        '    if (s.startsWith("http")) return s;\n    return s.startsWith("/") ? `${this.baseUrl}${s}` : `${this.baseUrl}/${s}`;',
+      replacement:
+        '    if (s.startsWith("http://")) {\n' +
+        '      const origin = s.replace(/^http:\\/\\//u, "");\n' +
+        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
+        '    }\n' +
+        '    if (s.startsWith("https://")) return s;\n' +
+        '    if (s.startsWith("//")) return `https:${s}`;\n' +
+        '    return s.startsWith("/") ? `${this.baseUrl}${s}` : `${this.baseUrl}/${s}`;',
+    },
+    {
+      label: "ReadComicOnline Unicode-safe IDs",
+      target: SAFE_ID_TARGET,
+      replacement: SAFE_ID_REPLACEMENT,
+    },
+  ]);
+
+  await patchFile("src/ReadComicOnline/pbconfig.ts", [
+    {
+      label: "ReadComicOnline Tascabile version bump",
+      target: '  version: "1.4.43.13",',
+      replacement: '  version: "1.4.43.14",',
+    },
   ]);
 
   await patchFile("src/Batcave/main.ts", [
@@ -87,14 +179,22 @@ async function applyCompatibilityPatches() {
       replacement: "      pages.push(this.absoluteUrl(trimmed));",
     },
     {
-      label: "Batcave absolute URL HTTPS normalization",
+      label: "Batcave absolute URL ATS normalization",
       target:
         '    if (s.startsWith("http")) return s;\n    return s.startsWith("/") ? `${BASE_URL}${s}` : `${BASE_URL}/${s}`;',
       replacement:
-        '    if (s.startsWith("http://")) return s.replace(/^http:\\/\\//u, "https://");\n' +
+        '    if (s.startsWith("http://")) {\n' +
+        '      const origin = s.replace(/^http:\\/\\//u, "");\n' +
+        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
+        '    }\n' +
         '    if (s.startsWith("https://")) return s;\n' +
         '    if (s.startsWith("//")) return `https:${s}`;\n' +
         '    return s.startsWith("/") ? `${BASE_URL}${s}` : `${BASE_URL}/${s}`;',
+    },
+    {
+      label: "Batcave Unicode-safe IDs",
+      target: SAFE_ID_TARGET,
+      replacement: SAFE_ID_REPLACEMENT,
     },
   ]);
 
@@ -102,7 +202,7 @@ async function applyCompatibilityPatches() {
     {
       label: "Batcave Tascabile version bump",
       target: '  version: "1.4.9.1",',
-      replacement: '  version: "1.4.9.2",',
+      replacement: '  version: "1.4.9.3",',
     },
   ]);
 
@@ -132,20 +232,28 @@ async function applyCompatibilityPatches() {
       replacement: '          id: this.toSafeId(g.toLowerCase().replace(/\\s+/g, "-")),',
     },
     {
-      label: "MMRCMS absolute URL HTTPS normalization",
+      label: "MMRCMS absolute URL ATS normalization",
       target:
         '    if (!src.startsWith("http")) {\n      src = src.startsWith("/")\n        ? `${this.baseUrl}${src}`\n        : `${this.baseUrl}/${src}`;\n    }\n    return src;',
       replacement:
-        '    if (src.startsWith("http://")) return src.replace(/^http:\\/\\//u, "https://");\n' +
+        '    if (src.startsWith("http://")) {\n' +
+        '      const origin = src.replace(/^http:\\/\\//u, "");\n' +
+        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
+        '    }\n' +
         '    if (src.startsWith("https://")) return src;\n' +
         '    if (src.startsWith("//")) return `https:${src}`;\n' +
         '    return src.startsWith("/") ? `${this.baseUrl}${src}` : `${this.baseUrl}/${src}`;',
     },
     {
-      label: "MMRCMS image URL HTTPS normalization",
+      label: "MMRCMS image URL ATS normalization",
       target:
         '    src = src.trim().replace(/#.*$/, "");\n    if (src && !src.startsWith("http")) {\n      src = src.startsWith("/")\n        ? `${this.baseUrl}${src}`\n        : `${this.baseUrl}/${src}`;\n    }\n    return src;',
       replacement: '    return this.absUrl(src.trim().replace(/#.*$/, ""));',
+    },
+    {
+      label: "MMRCMS Unicode-safe IDs",
+      target: SAFE_ID_TARGET,
+      replacement: SAFE_ID_REPLACEMENT,
     },
   ]);
 
@@ -153,7 +261,7 @@ async function applyCompatibilityPatches() {
     {
       label: "Read Comics Online Tascabile version bump",
       target: '  version: "1.4.14.1",',
-      replacement: '  version: "1.4.14.2",',
+      replacement: '  version: "1.4.14.3",',
     },
   ]);
 }
