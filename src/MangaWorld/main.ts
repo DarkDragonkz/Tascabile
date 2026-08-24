@@ -134,9 +134,7 @@ class MangaWorldExtension extends MangaWorldGeneric {
   private normalizePages(pages: string[]): string[] {
     return [
       ...new Set(
-        pages
-          .map((page) => this.normalizeUrl(page))
-          .filter((page): page is string => !!page),
+        pages.map((page) => this.normalizeUrl(page)).filter((page): page is string => !!page),
       ),
     ];
   }

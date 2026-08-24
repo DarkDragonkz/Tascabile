@@ -13,6 +13,7 @@ import {
   type Tag,
   type TagSection,
 } from "@paperback/types";
+
 import FansubGeneral from "./main";
 import type { ComicDetailResponse, ComicListItem, ComicsListResponse } from "./models";
 

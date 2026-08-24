@@ -18,6 +18,7 @@ import {
   type SortingOption,
   type SourceManga,
 } from "@paperback/types";
+
 import { APIRequests, MainInterceptor } from "./network";
 import { FansubGeneralParsers } from "./parsers";
 

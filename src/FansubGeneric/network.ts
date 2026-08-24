@@ -6,6 +6,7 @@ import {
   type Response,
   type SearchQuery,
 } from "@paperback/types";
+
 import type { ReadChapterResponse } from "./models";
 
 export class MainInterceptor extends PaperbackInterceptor {

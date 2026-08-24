@@ -1,4 +1,5 @@
 import { ContentRating } from "@paperback/types";
+
 import { basePbConfig } from "../FansubGeneric/basePbConfig";
 
 const pbConfig = { ...basePbConfig };
