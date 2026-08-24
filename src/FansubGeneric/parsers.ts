@@ -40,7 +40,8 @@ export class FansubGeneralParsers {
   ): Promise<PagedResults<SearchResultItem>> {
     const jsonRequest = await source.requestManager.apiSearchResult(query);
     const json = JSON.parse(jsonRequest) as ComicsListResponse;
-    const searchMeta = (query.metadata as { searchMeta?: FansubSearchMeta } | undefined)?.searchMeta;
+    const searchMeta = (query.metadata as { searchMeta?: FansubSearchMeta } | undefined)
+      ?.searchMeta;
     const sort = searchMeta?.sort?.[0] ?? "recent";
     const comics = json.comics.filter((comic) => !source.shouldHideAdult(comic.adult));
 
@@ -158,7 +159,9 @@ export class FansubGeneralParsers {
   }
 
   async parseChapterDetails(chapter: Chapter, source: FansubGeneral): Promise<ChapterDetails> {
-    const pages = source.normalizePages(await source.requestManager.getChapterPages(chapter.chapterId));
+    const pages = source.normalizePages(
+      await source.requestManager.getChapterPages(chapter.chapterId),
+    );
     if (pages.length === 0) throw new Error("Nessuna pagina valida trovata per questo capitolo.");
     return {
       id: chapter.chapterId,
