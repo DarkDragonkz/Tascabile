@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 const UPSTREAM = "Nicartjay/PaperbackExt";
@@ -44,9 +44,27 @@ async function walk(remotePath, localPath) {
   }
 }
 
+async function applyCompatibilityPatches() {
+  const rcoPath = "src/ReadComicOnline/main.ts";
+  const source = await readFile(rcoPath, "utf8");
+  const target = "      const result = eval(wrappedScript) as string;";
+  if (!source.includes(target)) {
+    throw new Error("ReadComicOnline eval hook changed upstream; review the pinned source before building.");
+  }
+  await writeFile(
+    rcoPath,
+    source.replace(
+      target,
+      "      // eslint-disable-next-line no-eval -- Required by the upstream reader decrypt routine.\n" +
+        target,
+    ),
+  );
+}
+
 for (const [remotePath, localPath] of TARGETS) {
   await rm(localPath, { recursive: true, force: true });
   await walk(remotePath, localPath);
 }
 
+await applyCompatibilityPatches();
 console.log(`Synced comic readers from ${UPSTREAM}@${REVISION}`);
