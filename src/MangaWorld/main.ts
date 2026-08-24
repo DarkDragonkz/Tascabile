@@ -10,10 +10,9 @@ import {
   type PagedResults,
 } from "@paperback/types";
 
-import { parseChapterDetailsHtml } from "../generic/htmlFallbacks";
 import { MangaWorldGeneric, jsonParser } from "../generic/main";
 import type { MangaMetadata } from "../generic/models";
-import { HOME_CACHE_SECONDS, READER_CACHE_SECONDS } from "../generic/preferences";
+import { HOME_CACHE_SECONDS } from "../generic/preferences";
 import pbconfig from "./pbconfig";
 
 const DOMAIN = "https://www.mangaworld.mx";
@@ -29,42 +28,24 @@ class MangaWorldExtension extends MangaWorldGeneric {
   }
 
   override async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
-    const mangaUrl = `${DOMAIN}/manga/${chapter.sourceManga.mangaId}`;
-    const readerUrl = `${mangaUrl}/read/${chapter.chapterId}`;
-    const readerHtml = await this.requestManager.fetchText(readerUrl, READER_CACHE_SECONDS);
+    // Prefer the manga payload: MangaWorld exposes the complete page list there.
+    // The generic implementation falls back to the reader page only when that
+    // payload is unavailable. This avoids the progressive single-page reader
+    // behaviour which can leave Paperback stuck while loading a chapter.
+    const details = await super.getChapterDetails(chapter);
+    if (!("pages" in details)) return details;
 
-    try {
-      const details = this.parser.parseChapterDetails(
-        jsonParser.getWindowEntry(readerHtml),
-        chapter.chapterId,
-      );
-      if ("pages" in details) {
-        const pages = this.normalizePages(details.pages);
-        if (pages.length > 0) {
-          return {
-            id: chapter.chapterId,
-            mangaId: chapter.sourceManga.mangaId,
-            pages,
-          };
-        }
-      }
-    } catch {
-      // The current reader page may omit the embedded JSON. Parse visible CDN images instead.
+    const pages = this.normalizePages(details.pages);
+    if (pages.length === 0) {
+      throw new Error("MangaWorld: nessuna pagina valida trovata per questo capitolo.");
     }
 
-    const fallback = parseChapterDetailsHtml(readerHtml, chapter, this);
-    if ("pages" in fallback) {
-      const pages = this.normalizePages(fallback.pages);
-      if (pages.length > 0) {
-        return {
-          id: chapter.chapterId,
-          mangaId: chapter.sourceManga.mangaId,
-          pages,
-        };
-      }
-    }
-
-    throw new Error("MangaWorld: nessuna pagina valida trovata per questo capitolo.");
+    return {
+      ...details,
+      id: chapter.chapterId,
+      mangaId: chapter.sourceManga.mangaId,
+      pages,
+    };
   }
 
   override async getDiscoverSectionItems(
