@@ -43,23 +43,103 @@ async function walk(remotePath, localPath) {
   }
 }
 
-async function applyCompatibilityPatches() {
-  const rcoPath = "src/ReadComicOnline/main.ts";
-  const source = await readFile(rcoPath, "utf8");
-  const target = "      const result = eval(wrappedScript) as string;";
-  if (!source.includes(target)) {
-    throw new Error(
-      "ReadComicOnline eval hook changed upstream; review the pinned source before building.",
-    );
+async function patchFile(path, replacements) {
+  let source = await readFile(path, "utf8");
+  for (const { label, target, replacement } of replacements) {
+    if (!source.includes(target)) {
+      throw new Error(`${label} changed upstream; review the pinned source before building.`);
+    }
+    source = source.replace(target, replacement);
   }
-  await writeFile(
-    rcoPath,
-    source.replace(
-      target,
-      "      // eslint-disable-next-line no-eval -- Required by the upstream reader decrypt routine.\n" +
-        target,
-    ),
-  );
+  await writeFile(path, source);
+}
+
+async function applyCompatibilityPatches() {
+  await patchFile("src/ReadComicOnline/main.ts", [
+    {
+      label: "ReadComicOnline eval hook",
+      target: "      const result = eval(wrappedScript) as string;",
+      replacement:
+        "      // eslint-disable-next-line no-eval -- Required by the upstream reader decrypt routine.\n" +
+        "      const result = eval(wrappedScript) as string;",
+    },
+  ]);
+
+  await patchFile("src/Batcave/main.ts", [
+    {
+      label: "Batcave request HTTPS upgrade",
+      target:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n    request.headers = {",
+      replacement:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n" +
+        '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
+        "    request.headers = {",
+    },
+    {
+      label: "Batcave tag ID sanitization",
+      target: '          id: g.toLowerCase().replace(/\\s+/g, "-"),',
+      replacement: '          id: this.toSafeId(g.toLowerCase().replace(/\\s+/g, "-")),',
+    },
+    {
+      label: "Batcave chapter image normalization",
+      target:
+        '      pages.push(\n        trimmed.startsWith("http") ? trimmed : `${BASE_URL}${trimmed}`,\n      );',
+      replacement: "      pages.push(this.absoluteUrl(trimmed));",
+    },
+    {
+      label: "Batcave absolute URL HTTPS normalization",
+      target:
+        '    if (s.startsWith("http")) return s;\n    return s.startsWith("/") ? `${BASE_URL}${s}` : `${BASE_URL}/${s}`;',
+      replacement:
+        '    if (s.startsWith("http://")) return s.replace(/^http:\\/\\//u, "https://");\n' +
+        '    if (s.startsWith("https://")) return s;\n' +
+        '    if (s.startsWith("//")) return `https:${s}`;\n' +
+        '    return s.startsWith("/") ? `${BASE_URL}${s}` : `${BASE_URL}/${s}`;',
+    },
+  ]);
+
+  await patchFile("src/utils/mmrcms/template.ts", [
+    {
+      label: "MMRCMS request HTTPS upgrade",
+      target:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n    const baseUrl = this.getBaseUrl();",
+      replacement:
+        "  override async interceptRequest(request: Request): Promise<Request> {\n" +
+        '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
+        "    const baseUrl = this.getBaseUrl();",
+    },
+    {
+      label: "MMRCMS base URL HTTPS normalization",
+      target:
+        "  get baseUrl(): string {\n    return getBaseUrlOverride(this.sourceName) ?? this.defaultBaseUrl;\n  }",
+      replacement:
+        "  get baseUrl(): string {\n" +
+        "    const configured = getBaseUrlOverride(this.sourceName) ?? this.defaultBaseUrl;\n" +
+        '    return configured.replace(/^http:\\/\\//u, "https://");\n' +
+        "  }",
+    },
+    {
+      label: "MMRCMS tag ID sanitization",
+      target: '          id: g.toLowerCase().replace(/\\s+/g, "-"),',
+      replacement: '          id: this.toSafeId(g.toLowerCase().replace(/\\s+/g, "-")),',
+    },
+    {
+      label: "MMRCMS absolute URL HTTPS normalization",
+      target:
+        '    if (!src.startsWith("http")) {\n      src = src.startsWith("/")\n        ? `${this.baseUrl}${src}`\n        : `${this.baseUrl}/${src}`;\n    }\n    return src;',
+      replacement:
+        '    if (src.startsWith("http://")) return src.replace(/^http:\\/\\//u, "https://");\n' +
+        '    if (src.startsWith("https://")) return src;\n' +
+        '    if (src.startsWith("//")) return `https:${src}`;\n' +
+        '    return src.startsWith("/") ? `${this.baseUrl}${src}` : `${this.baseUrl}/${src}`;',
+    },
+    {
+      label: "MMRCMS image URL HTTPS normalization",
+      target:
+        '    src = src.trim().replace(/#.*$/, "");\n    if (src && !src.startsWith("http")) {\n      src = src.startsWith("/")\n        ? `${this.baseUrl}${src}`\n        : `${this.baseUrl}/${src}`;\n    }\n    return src;',
+      replacement: '    return this.absUrl(src.trim().replace(/#.*$/, ""));',
+    },
+  ]);
 }
 
 for (const [remotePath, localPath] of TARGETS) {
