@@ -59,7 +59,8 @@ class ContentSettings extends Form {
       Section(
         {
           id: "content",
-          footer: "Il filtro viene applicato a Home e ricerca senza modificare i contenuti del sito.",
+          footer:
+            "Il filtro viene applicato a Home e ricerca senza modificare i contenuti del sito.",
         },
         [
           ToggleRow("fansub_hide_adult", {
@@ -91,7 +92,8 @@ class MaintenanceSettings extends Form {
       Section(
         {
           id: "maintenance",
-          footer: "Le risposte API vengono memorizzate per pochi minuti per evitare richieste duplicate.",
+          footer:
+            "Le risposte API vengono memorizzate per pochi minuti per evitare richieste duplicate.",
         },
         [
           LabelRow("status", { title: "Stato API", value: this.status }),
