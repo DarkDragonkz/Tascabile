@@ -23,7 +23,8 @@ async function getJson(url) {
 }
 
 async function writeRemoteFile(item, destination) {
-  const url = item.download_url ?? `https://raw.githubusercontent.com/${UPSTREAM}/${REVISION}/${item.path}`;
+  const url =
+    item.download_url ?? `https://raw.githubusercontent.com/${UPSTREAM}/${REVISION}/${item.path}`;
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`Download ${response.status}: ${url}`);
   await mkdir(dirname(destination), { recursive: true });
