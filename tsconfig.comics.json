@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.cache/.tsbuildinfo-comics",
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "src/Batcave/**/*.ts",
+    "src/ReadComicOnline/**/*.ts",
+    "src/ReadComicsOnline/**/*.ts",
+    "src/utils/mmrcms/**/*.ts"
+  ],
+  "exclude": ["node_modules", "bundles", "dist"]
+}
