@@ -105,7 +105,7 @@ async function applyCompatibilityPatches() {
       replacement:
         "  override async interceptRequest(request: Request): Promise<Request> {\n" +
         '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
-        "    const baseUrl = this.getBaseUrl().replace(/^http:\\/\\//u, \"https://\");",
+        '    const baseUrl = this.getBaseUrl().replace(/^http:\\/\\//u, "https://");',
     },
     {
       label: "ReadComicOnline base URL HTTPS normalization",
@@ -136,8 +136,8 @@ async function applyCompatibilityPatches() {
       replacement:
         '    if (s.startsWith("http://")) {\n' +
         '      const origin = s.replace(/^http:\\/\\//u, "");\n' +
-        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
-        '    }\n' +
+        "      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n" +
+        "    }\n" +
         '    if (s.startsWith("https://")) return s;\n' +
         '    if (s.startsWith("//")) return `https:${s}`;\n' +
         '    return s.startsWith("/") ? `${this.baseUrl}${s}` : `${this.baseUrl}/${s}`;',
@@ -185,8 +185,8 @@ async function applyCompatibilityPatches() {
       replacement:
         '    if (s.startsWith("http://")) {\n' +
         '      const origin = s.replace(/^http:\\/\\//u, "");\n' +
-        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
-        '    }\n' +
+        "      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n" +
+        "    }\n" +
         '    if (s.startsWith("https://")) return s;\n' +
         '    if (s.startsWith("//")) return `https:${s}`;\n' +
         '    return s.startsWith("/") ? `${BASE_URL}${s}` : `${BASE_URL}/${s}`;',
@@ -238,8 +238,8 @@ async function applyCompatibilityPatches() {
       replacement:
         '    if (src.startsWith("http://")) {\n' +
         '      const origin = src.replace(/^http:\\/\\//u, "");\n' +
-        '      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n' +
-        '    }\n' +
+        "      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n" +
+        "    }\n" +
         '    if (src.startsWith("https://")) return src;\n' +
         '    if (src.startsWith("//")) return `https:${src}`;\n' +
         '    return src.startsWith("/") ? `${this.baseUrl}${src}` : `${this.baseUrl}/${src}`;',
