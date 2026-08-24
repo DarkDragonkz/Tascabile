@@ -98,6 +98,14 @@ async function applyCompatibilityPatches() {
     },
   ]);
 
+  await patchFile("src/Batcave/pbconfig.ts", [
+    {
+      label: "Batcave Tascabile version bump",
+      target: '  version: "1.4.9.1",',
+      replacement: '  version: "1.4.9.2",',
+    },
+  ]);
+
   await patchFile("src/utils/mmrcms/template.ts", [
     {
       label: "MMRCMS request HTTPS upgrade",
@@ -138,6 +146,14 @@ async function applyCompatibilityPatches() {
       target:
         '    src = src.trim().replace(/#.*$/, "");\n    if (src && !src.startsWith("http")) {\n      src = src.startsWith("/")\n        ? `${this.baseUrl}${src}`\n        : `${this.baseUrl}/${src}`;\n    }\n    return src;',
       replacement: '    return this.absUrl(src.trim().replace(/#.*$/, ""));',
+    },
+  ]);
+
+  await patchFile("src/ReadComicsOnline/pbconfig.ts", [
+    {
+      label: "Read Comics Online Tascabile version bump",
+      target: '  version: "1.4.14.1",',
+      replacement: '  version: "1.4.14.2",',
     },
   ]);
 }
