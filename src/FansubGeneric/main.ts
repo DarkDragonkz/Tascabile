@@ -1,7 +1,6 @@
 import {
   BasicRateLimiter,
   ContentRating,
-  DiscoverSectionType,
   Form,
   type AdvancedSearchForm,
   type Chapter,
@@ -22,16 +21,17 @@ import {
   type SourceManga,
 } from "@paperback/types";
 
-import { FansubSettingsForm } from "./forms";
+import type { ComicListItem, ComicsListResponse } from "./models";
 import { APIRequests, MainInterceptor } from "./network";
 import { FansubGeneralParsers } from "./parsers";
-import { FansubSearchForm, type FansubSearchMeta } from "./search";
 
 export interface FansubGenericParams {
   name: string;
   domain: string;
   contentRating: ContentRating;
 }
+
+export type CatalogSort = "recent" | "title_asc" | "title_desc" | "author";
 
 abstract class FansubGeneral
   implements
@@ -71,14 +71,22 @@ abstract class FansubGeneral
     this.mainInterceptor.registerInterceptor();
   }
 
-  async getSettingsForm(): Promise<Form> {
-    return new FansubSettingsForm(this);
-  }
+  abstract getSettingsForm(): Promise<Form>;
 
-  async getAdvancedSearchForm(query: SearchQuery<Metadata>): Promise<AdvancedSearchForm> {
-    const metadata = query.metadata as { searchMeta?: FansubSearchMeta } | undefined;
-    return new FansubSearchForm(metadata?.searchMeta);
-  }
+  abstract getAdvancedSearchForm(query: SearchQuery<Metadata>): Promise<AdvancedSearchForm>;
+
+  abstract getDiscoverSections(): Promise<DiscoverSection[]>;
+
+  abstract getDiscoverSectionItems(
+    section: DiscoverSection,
+    metadata: Metadata | undefined,
+  ): Promise<PagedResults<DiscoverSectionItem>>;
+
+  abstract getSearchResults(
+    query: SearchQuery<Metadata>,
+    metadata: Metadata | undefined,
+    sortingOption: SortingOption | undefined,
+  ): Promise<PagedResults<SearchResultItem>>;
 
   getMangaDetails(mangaId: string): Promise<SourceManga> {
     return this.parser.parseMangaDetails(mangaId, this);
@@ -92,52 +100,117 @@ abstract class FansubGeneral
     return this.parser.parseChapters(sourceManga, this);
   }
 
-  getDiscoverSectionItems(
-    section: DiscoverSection,
-    _metadata: Metadata | undefined,
-  ): Promise<PagedResults<DiscoverSectionItem>> {
-    return this.parser.parseSectionHome(this, section);
-  }
-
-  async getDiscoverSections(): Promise<DiscoverSection[]> {
-    const sections: DiscoverSection[] = [];
-    if ((Application.getState("fansub_featured_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "featured",
-        title: "In evidenza",
-        subtitle: "Serie aggiornate di recente",
-        type: DiscoverSectionType.featured,
-      });
-    }
-    if ((Application.getState("fansub_recent_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "recent",
-        title: "Aggiornati di recente",
-        subtitle: "Ultimi capitoli pubblicati",
-        type: DiscoverSectionType.chapterUpdates,
-      });
-    }
-    if ((Application.getState("fansub_catalog_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "catalog",
-        title: "Catalogo",
-        subtitle: "Tutte le serie disponibili",
-        type: DiscoverSectionType.simpleCarousel,
-      });
-    }
-    return sections;
-  }
-
-  async getSearchResults(
-    query: SearchQuery<Metadata>,
-    _metadata: Metadata | undefined,
-    _sortingOption: SortingOption | undefined,
-  ): Promise<PagedResults<SearchResultItem>> {
-    return this.parser.parseSearchResults(query, this);
+  protected getHideAdult(): boolean {
+    return false;
   }
 
   shouldHideAdult(adult: number): boolean {
-    return ((Application.getState("fansub_hide_adult") as boolean) ?? false) && adult === 1;
+    return this.getHideAdult() && adult === 1;
+  }
+
+  protected async loadCatalog(): Promise<ComicListItem[]> {
+    const raw = await this.requestManager.apiMangaDetails("", true);
+    const parsed = JSON.parse(raw) as ComicsListResponse;
+    return parsed.comics.filter((comic) => !this.shouldHideAdult(comic.adult));
+  }
+
+  protected async loadSearchComics(query: SearchQuery<Metadata>): Promise<ComicListItem[]> {
+    const raw = await this.requestManager.apiSearchResult(query);
+    const parsed = JSON.parse(raw) as ComicsListResponse;
+    return parsed.comics.filter((comic) => !this.shouldHideAdult(comic.adult));
+  }
+
+  protected comicTimestamp(comic: ComicListItem): number {
+    const value = comic.last_chapter?.published_on;
+    const parsed = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  protected updatedWithin(comic: ComicListItem, days: number): boolean {
+    const timestamp = this.comicTimestamp(comic);
+    if (timestamp <= 0) return false;
+    return Date.now() - timestamp <= days * 86_400_000;
+  }
+
+  protected sortCatalog(comics: ComicListItem[], sort: CatalogSort): ComicListItem[] {
+    const result = [...comics];
+    if (sort === "recent") {
+      return result.sort((a, b) => this.comicTimestamp(b) - this.comicTimestamp(a));
+    }
+    if (sort === "title_asc") {
+      return result.sort((a, b) => a.title.localeCompare(b.title, "it"));
+    }
+    if (sort === "title_desc") {
+      return result.sort((a, b) => b.title.localeCompare(a.title, "it"));
+    }
+    return result.sort((a, b) => (a.author ?? "").localeCompare(b.author ?? "", "it"));
+  }
+
+  protected toSearchResult(comic: ComicListItem): SearchResultItem {
+    return {
+      mangaId: comic.slug,
+      title: comic.title,
+      imageUrl: this.normalizeUrl(comic.thumbnail),
+      subtitle: comic.author ?? "",
+      contentRating: this.contentRatingFor(comic.adult),
+    };
+  }
+
+  protected toSimpleItem(comic: ComicListItem): DiscoverSectionItem {
+    return {
+      type: "simpleCarouselItem",
+      mangaId: comic.slug,
+      imageUrl: this.normalizeUrl(comic.thumbnail),
+      title: comic.title,
+      subtitle: comic.author ?? "",
+      contentRating: this.contentRatingFor(comic.adult),
+    };
+  }
+
+  protected toFeaturedItem(comic: ComicListItem, fallbackSupertitle: string): DiscoverSectionItem {
+    return {
+      type: "featuredCarouselItem",
+      mangaId: comic.slug,
+      imageUrl: this.normalizeUrl(comic.thumbnail),
+      title: comic.title,
+      supertitle:
+        comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
+      contentRating: this.contentRatingFor(comic.adult),
+    };
+  }
+
+  protected toChapterUpdateItem(comic: ComicListItem): DiscoverSectionItem | undefined {
+    const chapter = comic.last_chapter;
+    if (!chapter?.url) return undefined;
+    return {
+      type: "chapterUpdatesCarouselItem",
+      mangaId: comic.slug,
+      chapterId: chapter.url,
+      imageUrl: this.normalizeUrl(comic.thumbnail),
+      title: comic.title,
+      subtitle: chapter.title ?? chapter.full_title,
+      publishDate: new Date(chapter.published_on),
+      contentRating: this.contentRatingFor(comic.adult),
+    };
+  }
+
+  protected contentRatingFor(adult: number): ContentRating {
+    return adult === 1 ? ContentRating.ADULT : this.defaultContentRating;
+  }
+
+  async checkApi(): Promise<boolean> {
+    try {
+      this.requestManager.clearCache();
+      const raw = await this.requestManager.apiMangaDetails("", true);
+      const parsed = JSON.parse(raw) as ComicsListResponse;
+      return Array.isArray(parsed.comics);
+    } catch {
+      return false;
+    }
+  }
+
+  clearNetworkCache(): void {
+    this.requestManager.clearCache();
   }
 
   normalizeUrl(rawUrl: string | undefined): string {
