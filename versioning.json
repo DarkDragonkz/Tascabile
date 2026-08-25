@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-08-25T12:01:36.044Z",
+  "buildTime": "2026-08-25T12:34:09.968Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -12,7 +12,7 @@
     {
       "name": "BatCave",
       "description": "BatCave - custom source (batcave.biz). Converted from keiyoushi.",
-      "version": "1.4.9.3",
+      "version": "1.4.9.4",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -241,34 +241,9 @@
       "id": "PhoenixScans"
     },
     {
-      "name": "ReadComicOnline",
-      "description": "ReadComicOnline - custom source (readcomiconline.li). Converted from keiyoushi.",
-      "version": "1.4.43.14",
-      "icon": "icon.png",
-      "language": "en",
-      "contentRating": "SAFE",
-      "capabilities": [
-        4,
-        64,
-        1,
-        16,
-        32
-      ],
-      "badges": [],
-      "developers": [
-        {
-          "name": "nicartjay"
-        },
-        {
-          "name": "keiyoushi"
-        }
-      ],
-      "id": "ReadComicOnline"
-    },
-    {
       "name": "Read Comics Online",
       "description": "Read Comics Online - MMRCMS source (readcomicsonline.ru). Converted from keiyoushi.",
-      "version": "1.4.14.3",
+      "version": "1.4.14.4",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
