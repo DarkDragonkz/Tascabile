@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-08-25T12:57:35.311Z",
+  "buildTime": "2026-08-25T13:21:16.976Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -11,8 +11,8 @@
   "sources": [
     {
       "name": "BatCave",
-      "description": "Comics in inglese da BatCave, con Home dedicata, ricerca avanzata, sessione Cloudflare persistente e protezione ATS delle immagini esterne.",
-      "version": "1.4.9.5",
+      "description": "English comics from BatCave with a dedicated Home, advanced search, persistent Cloudflare session and ATS-safe Latest Updates covers.",
+      "version": "1.4.9.6",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -254,8 +254,8 @@
     },
     {
       "name": "Read Comics Online",
-      "description": "Comics in inglese da Read Comics Online, con Home e impostazioni dedicate, ricerca ordinabile e sessione Cloudflare persistente.",
-      "version": "1.4.14.5",
+      "description": "English comics from Read Comics Online with a dedicated Home, source settings, sortable browsing and a persistent Cloudflare session.",
+      "version": "1.4.14.6",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
