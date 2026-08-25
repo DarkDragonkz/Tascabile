@@ -6,7 +6,6 @@
   },
   "include": [
     "src/Batcave/**/*.ts",
-    "src/ReadComicOnline/**/*.ts",
     "src/ReadComicsOnline/**/*.ts",
     "src/utils/mmrcms/**/*.ts"
   ],

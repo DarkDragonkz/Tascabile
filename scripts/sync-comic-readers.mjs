@@ -5,10 +5,10 @@ const UPSTREAM = "Nicartjay/PaperbackExt";
 const REVISION = "cf43397bb1b90521629291599cee312fcf30f0f5";
 const TARGETS = [
   ["src/Batcave", "src/Batcave"],
-  ["src/ReadComicOnline", "src/ReadComicOnline"],
   ["src/ReadComicsOnline", "src/ReadComicsOnline"],
   ["src/utils/mmrcms", "src/utils/mmrcms"],
 ];
+const DISABLED_LOCAL_SOURCES = ["src/ReadComicOnline"];
 
 const headers = {
   Accept: "application/vnd.github+json",
@@ -90,74 +90,33 @@ async function patchFile(path, replacements) {
 }
 
 async function applyCompatibilityPatches() {
-  await patchFile("src/ReadComicOnline/main.ts", [
-    {
-      label: "ReadComicOnline eval hook",
-      target: "      const result = eval(wrappedScript) as string;",
-      replacement:
-        "      // eslint-disable-next-line no-eval -- Required by the upstream reader decrypt routine.\n" +
-        "      const result = eval(wrappedScript) as string;",
-    },
-    {
-      label: "ReadComicOnline request HTTPS upgrade",
-      target:
-        "  override async interceptRequest(request: Request): Promise<Request> {\n    const baseUrl = this.getBaseUrl();",
-      replacement:
-        "  override async interceptRequest(request: Request): Promise<Request> {\n" +
-        '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
-        '    const baseUrl = this.getBaseUrl().replace(/^http:\\/\\//u, "https://");',
-    },
-    {
-      label: "ReadComicOnline base URL HTTPS normalization",
-      target: "  get baseUrl(): string {\n    return getMirrorBaseUrl();\n  }",
-      replacement:
-        "  get baseUrl(): string {\n" +
-        '    return getMirrorBaseUrl().replace(/^http:\\/\\//u, "https://");\n' +
-        "  }",
-    },
-    {
-      label: "ReadComicOnline tag ID sanitization",
-      target: '          id: g.toLowerCase().replace(/\\s+/g, "-"),',
-      replacement: '          id: this.toSafeId(g.toLowerCase().replace(/\\s+/g, "-")),',
-    },
-    {
-      label: "ReadComicOnline decrypted image normalization",
-      target: "    const pages = await this.decryptPages(combinedScripts, useServer2);",
-      replacement:
-        "    const decryptedPages = await this.decryptPages(combinedScripts, useServer2);\n" +
-        "    const pages = decryptedPages\n" +
-        "      .map((page) => this.absoluteUrl(page))\n" +
-        "      .filter((page) => page.length > 0);",
-    },
-    {
-      label: "ReadComicOnline absolute URL ATS normalization",
-      target:
-        '    if (s.startsWith("http")) return s;\n    return s.startsWith("/") ? `${this.baseUrl}${s}` : `${this.baseUrl}/${s}`;',
-      replacement:
-        '    if (s.startsWith("http://")) {\n' +
-        '      const origin = s.replace(/^http:\\/\\//u, "");\n' +
-        "      return `https://wsrv.nl/?url=${encodeURIComponent(origin)}&q=100`;\n" +
-        "    }\n" +
-        '    if (s.startsWith("https://")) return s;\n' +
-        '    if (s.startsWith("//")) return `https:${s}`;\n' +
-        '    return s.startsWith("/") ? `${this.baseUrl}${s}` : `${this.baseUrl}/${s}`;',
-    },
-    {
-      label: "ReadComicOnline Unicode-safe IDs",
-      target: SAFE_ID_TARGET,
-      replacement: SAFE_ID_REPLACEMENT,
-    },
-  ]);
-
-  await patchFile("src/ReadComicOnline/pbconfig.ts", [
-    {
-      label: "ReadComicOnline Tascabile version bump",
-      target: '  version: "1.4.43.13",',
-      replacement: '  version: "1.4.43.14",',
-    },
-  ]);
-
   await patchFile("src/Batcave/main.ts", [
+    {
+      label: "Batcave Cloudflare prompt debounce",
+      target:
+        "class BatCaveInterceptor extends PaperbackInterceptor {\n  override async interceptRequest(request: Request): Promise<Request> {",
+      replacement:
+        "class BatCaveInterceptor extends PaperbackInterceptor {\n" +
+        "  private lastBypassPromptAt = 0;\n\n" +
+        "  markBypassCompleted(): void {\n" +
+        "    this.lastBypassPromptAt = 0;\n" +
+        "  }\n\n" +
+        "  private async createBypassError(request: Request): Promise<CloudflareError> {\n" +
+        "    const now = Date.now();\n" +
+        "    if (now - this.lastBypassPromptAt < 30_000) {\n" +
+        '      throw new Error("Verifica Cloudflare già in corso. Completa il banner aperto e riprova.");\n' +
+        "    }\n" +
+        "    this.lastBypassPromptAt = now;\n" +
+        "    return new CloudflareError({\n" +
+        "      url: request.url,\n" +
+        '      method: request.method ?? "GET",\n' +
+        "      headers: {\n" +
+        '        "user-agent": await Application.getDefaultUserAgent(),\n' +
+        "      },\n" +
+        "    });\n" +
+        "  }\n\n" +
+        "  override async interceptRequest(request: Request): Promise<Request> {",
+    },
     {
       label: "Batcave request HTTPS upgrade",
       target:
@@ -166,6 +125,60 @@ async function applyCompatibilityPatches() {
         "  override async interceptRequest(request: Request): Promise<Request> {\n" +
         '    request.url = request.url.replace(/^http:\\/\\//u, "https://");\n' +
         "    request.headers = {",
+    },
+    {
+      label: "Batcave Cloudflare header challenge",
+      target:
+        '      throw new CloudflareError({\n        url: request.url,\n        method: request.method ?? "GET",\n        headers: {\n          "user-agent": await Application.getDefaultUserAgent(),\n        },\n      });',
+      replacement: "      throw await this.createBypassError(request);",
+    },
+    {
+      label: "Batcave DLE challenge",
+      target:
+        '      throw new CloudflareError({\n        url: request.url,\n        method: request.method ?? "GET",\n        headers: {\n          "user-agent": await Application.getDefaultUserAgent(),\n        },\n      });',
+      replacement: "      throw await this.createBypassError(request);",
+    },
+    {
+      label: "Batcave session warmup state",
+      target:
+        'export class BatCaveExtension implements BatCaveImplementation {\n  requestManager = new BatCaveInterceptor("main");',
+      replacement:
+        "export class BatCaveExtension implements BatCaveImplementation {\n" +
+        "  private cloudflareSessionReady = false;\n" +
+        "  private cloudflareSessionCheck?: Promise<void>;\n" +
+        '  requestManager = new BatCaveInterceptor("main");',
+    },
+    {
+      label: "Batcave upfront Cloudflare check",
+      target:
+        "  // ----------------------------------------------------------------\n  // Discover sections\n  // ----------------------------------------------------------------\n\n  async getDiscoverSections(): Promise<DiscoverSection[]> {\n    return [",
+      replacement:
+        "  private async ensureCloudflareSession(): Promise<void> {\n" +
+        "    if (this.cloudflareSessionReady) return;\n" +
+        "    if (!this.cloudflareSessionCheck) {\n" +
+        "      this.cloudflareSessionCheck = (async () => {\n" +
+        "        const [response] = await Application.scheduleRequest({\n" +
+        "          url: BASE_URL,\n" +
+        '          method: "GET",\n' +
+        "        });\n" +
+        "        if (response.status >= 500) {\n" +
+        "          throw new Error(`BatCave HTTP ${response.status}`);\n" +
+        "        }\n" +
+        "        this.cloudflareSessionReady = true;\n" +
+        "      })();\n" +
+        "    }\n" +
+        "    try {\n" +
+        "      await this.cloudflareSessionCheck;\n" +
+        "    } finally {\n" +
+        "      if (!this.cloudflareSessionReady) this.cloudflareSessionCheck = undefined;\n" +
+        "    }\n" +
+        "  }\n\n" +
+        "  // ----------------------------------------------------------------\n" +
+        "  // Discover sections\n" +
+        "  // ----------------------------------------------------------------\n\n" +
+        "  async getDiscoverSections(): Promise<DiscoverSection[]> {\n" +
+        "    await this.ensureCloudflareSession();\n" +
+        "    return [",
     },
     {
       label: "Batcave tag ID sanitization",
@@ -196,17 +209,70 @@ async function applyCompatibilityPatches() {
       target: SAFE_ID_TARGET,
       replacement: SAFE_ID_REPLACEMENT,
     },
+    {
+      label: "Batcave durable Cloudflare cookies",
+      target:
+        "  async cloudflareBypassCompleted(\n    _request: Request,\n    cookies: Cookie[],\n    _localStorage: Record<string, string>,\n  ): Promise<void> {\n    for (const cookie of this.cookieStorageInterceptor.cookies) {\n      this.cookieStorageInterceptor.deleteCookie(cookie);\n    }\n    for (const cookie of cookies) {\n      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;\n      this.cookieStorageInterceptor.setCookie(cookie);\n    }\n  }",
+      replacement:
+        "  async cloudflareBypassCompleted(\n" +
+        "    _request: Request,\n" +
+        "    cookies: Cookie[],\n" +
+        "    _localStorage: Record<string, string>,\n" +
+        "  ): Promise<void> {\n" +
+        "    const fallbackExpiry = new Date(Date.now() + 12 * 60 * 60 * 1000);\n" +
+        "    for (const cookie of cookies) {\n" +
+        "      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;\n" +
+        "      this.cookieStorageInterceptor.setCookie(\n" +
+        "        cookie.expires ? cookie : { ...cookie, expires: fallbackExpiry },\n" +
+        "      );\n" +
+        "    }\n" +
+        "    this.requestManager.markBypassCompleted();\n" +
+        "    this.cloudflareSessionReady = true;\n" +
+        "    this.cloudflareSessionCheck = undefined;\n" +
+        "  }",
+    },
   ]);
 
   await patchFile("src/Batcave/pbconfig.ts", [
     {
       label: "Batcave Tascabile version bump",
       target: '  version: "1.4.9.1",',
-      replacement: '  version: "1.4.9.3",',
+      replacement: '  version: "1.4.9.4",',
     },
   ]);
 
   await patchFile("src/utils/mmrcms/template.ts", [
+    {
+      label: "MMRCMS Cloudflare prompt debounce",
+      target:
+        "class MMRCMSInterceptor extends PaperbackInterceptor {\n  constructor(\n    id: string,\n    private readonly getBaseUrl: () => string,\n  ) {\n    super(id);\n  }",
+      replacement:
+        "class MMRCMSInterceptor extends PaperbackInterceptor {\n" +
+        "  private lastBypassPromptAt = 0;\n\n" +
+        "  constructor(\n" +
+        "    id: string,\n" +
+        "    private readonly getBaseUrl: () => string,\n" +
+        "  ) {\n" +
+        "    super(id);\n" +
+        "  }\n\n" +
+        "  markBypassCompleted(): void {\n" +
+        "    this.lastBypassPromptAt = 0;\n" +
+        "  }\n\n" +
+        "  private async createBypassError(request: Request): Promise<CloudflareError> {\n" +
+        "    const now = Date.now();\n" +
+        "    if (now - this.lastBypassPromptAt < 30_000) {\n" +
+        '      throw new Error("Cloudflare verification is already in progress. Complete the existing banner and retry.");\n' +
+        "    }\n" +
+        "    this.lastBypassPromptAt = now;\n" +
+        "    return new CloudflareError({\n" +
+        "      url: request.url,\n" +
+        '      method: request.method ?? "GET",\n' +
+        "      headers: {\n" +
+        '        "user-agent": await Application.getDefaultUserAgent(),\n' +
+        "      },\n" +
+        "    });\n" +
+        "  }",
+    },
     {
       label: "MMRCMS request HTTPS upgrade",
       target:
@@ -217,6 +283,12 @@ async function applyCompatibilityPatches() {
         "    const baseUrl = this.getBaseUrl();",
     },
     {
+      label: "MMRCMS single Cloudflare challenge",
+      target:
+        '      throw new CloudflareError({\n        url: request.url,\n        method: request.method ?? "GET",\n        headers: {\n          "user-agent": await Application.getDefaultUserAgent(),\n        },\n      });',
+      replacement: "      throw await this.createBypassError(request);",
+    },
+    {
       label: "MMRCMS base URL HTTPS normalization",
       target:
         "  get baseUrl(): string {\n    return getBaseUrlOverride(this.sourceName) ?? this.defaultBaseUrl;\n  }",
@@ -225,6 +297,48 @@ async function applyCompatibilityPatches() {
         "    const configured = getBaseUrlOverride(this.sourceName) ?? this.defaultBaseUrl;\n" +
         '    return configured.replace(/^http:\\/\\//u, "https://");\n' +
         "  }",
+    },
+    {
+      label: "MMRCMS session warmup state",
+      target:
+        "export class MMRCMSExtension implements MMRCMSImplementation {\n  readonly sourceName: string;",
+      replacement:
+        "export class MMRCMSExtension implements MMRCMSImplementation {\n" +
+        "  private cloudflareSessionReady = false;\n" +
+        "  private cloudflareSessionCheck?: Promise<void>;\n" +
+        "  readonly sourceName: string;",
+    },
+    {
+      label: "MMRCMS upfront Cloudflare check",
+      target:
+        "  // ----------------------------------------------------------------\n  // Discover sections\n  // ----------------------------------------------------------------\n\n  async getDiscoverSections(): Promise<DiscoverSection[]> {\n    return [",
+      replacement:
+        "  private async ensureCloudflareSession(): Promise<void> {\n" +
+        "    if (this.cloudflareSessionReady) return;\n" +
+        "    if (!this.cloudflareSessionCheck) {\n" +
+        "      this.cloudflareSessionCheck = (async () => {\n" +
+        "        const [response] = await Application.scheduleRequest({\n" +
+        "          url: this.baseUrl,\n" +
+        '          method: "GET",\n' +
+        "        });\n" +
+        "        if (response.status >= 500) {\n" +
+        "          throw new Error(`${this.sourceName} HTTP ${response.status}`);\n" +
+        "        }\n" +
+        "        this.cloudflareSessionReady = true;\n" +
+        "      })();\n" +
+        "    }\n" +
+        "    try {\n" +
+        "      await this.cloudflareSessionCheck;\n" +
+        "    } finally {\n" +
+        "      if (!this.cloudflareSessionReady) this.cloudflareSessionCheck = undefined;\n" +
+        "    }\n" +
+        "  }\n\n" +
+        "  // ----------------------------------------------------------------\n" +
+        "  // Discover sections\n" +
+        "  // ----------------------------------------------------------------\n\n" +
+        "  async getDiscoverSections(): Promise<DiscoverSection[]> {\n" +
+        "    await this.ensureCloudflareSession();\n" +
+        "    return [",
     },
     {
       label: "MMRCMS tag ID sanitization",
@@ -255,15 +369,41 @@ async function applyCompatibilityPatches() {
       target: SAFE_ID_TARGET,
       replacement: SAFE_ID_REPLACEMENT,
     },
+    {
+      label: "MMRCMS durable Cloudflare cookies",
+      target:
+        "  async cloudflareBypassCompleted(\n    _request: Request,\n    cookies: Cookie[],\n    _localStorage: Record<string, string>,\n  ): Promise<void> {\n    for (const cookie of this.cookieStorageInterceptor.cookies) {\n      this.cookieStorageInterceptor.deleteCookie(cookie);\n    }\n    for (const cookie of cookies) {\n      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;\n      this.cookieStorageInterceptor.setCookie(cookie);\n    }\n  }",
+      replacement:
+        "  async cloudflareBypassCompleted(\n" +
+        "    _request: Request,\n" +
+        "    cookies: Cookie[],\n" +
+        "    _localStorage: Record<string, string>,\n" +
+        "  ): Promise<void> {\n" +
+        "    const fallbackExpiry = new Date(Date.now() + 12 * 60 * 60 * 1000);\n" +
+        "    for (const cookie of cookies) {\n" +
+        "      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;\n" +
+        "      this.cookieStorageInterceptor.setCookie(\n" +
+        "        cookie.expires ? cookie : { ...cookie, expires: fallbackExpiry },\n" +
+        "      );\n" +
+        "    }\n" +
+        "    this.requestManager.markBypassCompleted();\n" +
+        "    this.cloudflareSessionReady = true;\n" +
+        "    this.cloudflareSessionCheck = undefined;\n" +
+        "  }",
+    },
   ]);
 
   await patchFile("src/ReadComicsOnline/pbconfig.ts", [
     {
       label: "Read Comics Online Tascabile version bump",
       target: '  version: "1.4.14.1",',
-      replacement: '  version: "1.4.14.3",',
+      replacement: '  version: "1.4.14.4",',
     },
   ]);
+}
+
+for (const localPath of DISABLED_LOCAL_SOURCES) {
+  await rm(localPath, { recursive: true, force: true });
 }
 
 for (const [remotePath, localPath] of TARGETS) {
@@ -272,4 +412,4 @@ for (const [remotePath, localPath] of TARGETS) {
 }
 
 await applyCompatibilityPatches();
-console.log(`Synced comic readers from ${UPSTREAM}@${REVISION}`);
+console.log(`Synced comic readers from ${UPSTREAM}@${REVISION}; ReadComicOnline is disabled.`);

@@ -21,8 +21,9 @@ Licensed under the MIT License. The original license permits use, modification, 
 The build synchronizes these Paperback 0.9 sources from `Nicartjay/PaperbackExt` at revision `cf43397bb1b90521629291599cee312fcf30f0f5`:
 
 - `src/Batcave`
-- `src/ReadComicOnline`
 - `src/ReadComicsOnline`
 - `src/utils/mmrcms`
+
+`src/ReadComicOnline` is intentionally disabled and is no longer synchronized or bundled while its website remains offline.
 
 PaperbackExt is distributed under the MIT License and contains source conversions based on the Keiyoushi extension ecosystem. Tascabile pins the upstream revision so published bundles are reproducible.

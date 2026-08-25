@@ -2,7 +2,7 @@
 
 Repository di estensioni **Paperback 0.9 principalmente dedicata a fonti italiane**, mantenuta da **DarkDragonkz**.
 
-L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali, dove non sono disponibili almeno tre reader italiani affidabili e leggibili da Paperback, Tascabile include tre fonti Comics in inglese selezionate e mantenute separatamente.
+L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali Tascabile include reader Comics in inglese selezionati e mantenuti separatamente quando non esistono equivalenti italiani sufficientemente affidabili.
 
 ## Manga e scanlation in italiano
 
@@ -16,15 +16,20 @@ L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali,
 
 NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile.
 
-Le fonti fansub condividono una UI Paperback 0.9 con **In evidenza**, **Aggiornati di recente**, **Catalogo**, ordinamento ricerca e impostazioni per Home, contenuti e manutenzione.
+Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al catalogo e alle caratteristiche della singola fonte. Condividono soltanto infrastruttura tecnica di basso livello come rete, cache, parsing e normalizzazione URL. MangaWorld mantiene la propria UI nativa separata.
 
 ## Comics in inglese
 
 - Batcave
-- ReadComicOnline
 - Read Comics Online
 
-I tre reader Comics vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `cf43397bb1b90521629291599cee312fcf30f0f5` del 22 agosto 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+`ReadComicOnline` è disabilitata perché il relativo sito è offline. Non viene più sincronizzata, compilata o inclusa nei bundle pubblicati.
+
+I reader Comics attivi vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `cf43397bb1b90521629291599cee312fcf30f0f5` del 22 agosto 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+
+### Cloudflare
+
+Batcave e Read Comics Online eseguono una verifica preventiva del dominio prima di caricare la Home. Se il sito richiede una challenge, Paperback la segnala subito invece di far partire più richieste concorrenti. I prompt Cloudflare vengono inoltre deduplicati e i cookie ottenuti dal bypass vengono riutilizzati e conservati localmente per ridurre le verifiche ripetute.
 
 ## Prestazioni immagini
 
