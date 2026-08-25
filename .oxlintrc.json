@@ -8,5 +8,13 @@
         "argsIgnorePattern": "^_"
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["scripts/finalize-comic-readers.mjs"],
+      "rules": {
+        "eslint/no-useless-escape": "off"
+      }
+    }
+  ]
 }
