@@ -79,7 +79,8 @@ class HastaSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "hasta_activity",
-          footer: "Hasta Team ha un catalogo storico molto ampio: il filtro attività separa i progetti aggiornati negli ultimi tre anni dall'archivio.",
+          footer:
+            "Hasta Team ha un catalogo storico molto ampio: il filtro attività separa i progetti aggiornati negli ultimi tre anni dall'archivio.",
         },
         [
           SelectRow("activity", {
@@ -155,7 +156,9 @@ class HastaSettingsForm extends Form {
   async testConnection(): Promise<void> {
     this.status = "Verifica in corso…";
     this.reloadForm();
-    this.status = (await this.source.checkApi()) ? "Reader raggiungibile" : "Reader non raggiungibile";
+    this.status = (await this.source.checkApi())
+      ? "Reader raggiungibile"
+      : "Reader non raggiungibile";
     this.reloadForm();
   }
 
@@ -170,7 +173,8 @@ class HastaSettingsForm extends Form {
       Section(
         {
           id: "hasta_home",
-          footer: "La Home distingue le uscite effettivamente recenti dal grande catalogo storico di Hasta Team.",
+          footer:
+            "La Home distingue le uscite effettivamente recenti dal grande catalogo storico di Hasta Team.",
         },
         [
           LabelRow("profile", { title: "Profilo", value: "Catalogo storico + progetti attivi" }),
@@ -196,7 +200,10 @@ class HastaSettingsForm extends Form {
         }),
       ]),
       Section(
-        { id: "hasta_maintenance", footer: "Usa la verifica solo se il reader non restituisce risultati." },
+        {
+          id: "hasta_maintenance",
+          footer: "Usa la verifica solo se il reader non restituisce risultati.",
+        },
         [
           LabelRow("status", { title: "Stato Hasta Reader", value: this.status }),
           ButtonRow("test", {
@@ -299,8 +306,10 @@ class HastaTeamExtension extends FansubGeneral {
     const audience = meta?.audience?.[0] ?? "all";
     const sort = (meta?.sort?.[0] ?? "recent") as CatalogSort;
     let comics = await this.loadSearchComics(query);
-    if (activity === "current") comics = comics.filter((comic) => this.updatedWithin(comic, CURRENT_DAYS));
-    if (activity === "archive") comics = comics.filter((comic) => !this.updatedWithin(comic, CURRENT_DAYS));
+    if (activity === "current")
+      comics = comics.filter((comic) => this.updatedWithin(comic, CURRENT_DAYS));
+    if (activity === "archive")
+      comics = comics.filter((comic) => !this.updatedWithin(comic, CURRENT_DAYS));
     if (audience === "safe") comics = comics.filter((comic) => comic.adult !== 1);
     if (audience === "adult") comics = comics.filter((comic) => comic.adult === 1);
     return { items: this.sortCatalog(comics, sort).map((comic) => this.toSearchResult(comic)) };

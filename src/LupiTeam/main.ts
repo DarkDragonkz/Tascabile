@@ -71,7 +71,8 @@ class LupiSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "lupi_focus",
-          footer: "La sezione Progetti di punta raccoglie le serie per cui Lupi Team è maggiormente riconosciuto, tra cui One Piece, Berserk e Hunter × Hunter.",
+          footer:
+            "La sezione Progetti di punta raccoglie le serie per cui Lupi Team è maggiormente riconosciuto, tra cui One Piece, Berserk e Hunter × Hunter.",
         },
         [
           SelectRow("focus", {
@@ -133,7 +134,9 @@ class LupiSettingsForm extends Form {
   async testConnection(): Promise<void> {
     this.status = "Verifica in corso…";
     this.reloadForm();
-    this.status = (await this.source.checkApi()) ? "Lupi Team raggiungibile" : "Lupi Team non raggiungibile";
+    this.status = (await this.source.checkApi())
+      ? "Lupi Team raggiungibile"
+      : "Lupi Team non raggiungibile";
     this.reloadForm();
   }
 
@@ -148,7 +151,8 @@ class LupiSettingsForm extends Form {
       Section(
         {
           id: "lupi_home",
-          footer: "La Home mette in primo piano le serie simbolo del team senza nascondere il resto dell'archivio.",
+          footer:
+            "La Home mette in primo piano le serie simbolo del team senza nascondere il resto dell'archivio.",
         },
         [
           LabelRow("profile", { title: "Focus", value: "Serie di punta + archivio del team" }),
@@ -173,7 +177,10 @@ class LupiSettingsForm extends Form {
         }),
       ]),
       Section(
-        { id: "lupi_maintenance", footer: "La cache mantiene più reattiva la navigazione del catalogo." },
+        {
+          id: "lupi_maintenance",
+          footer: "La cache mantiene più reattiva la navigazione del catalogo.",
+        },
         [
           LabelRow("status", { title: "Stato Lupi Team", value: this.status }),
           ButtonRow("test", {

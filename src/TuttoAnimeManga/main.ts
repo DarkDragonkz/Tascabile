@@ -83,7 +83,8 @@ class TamSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "tam_scope",
-          footer: "TAM contiene un archivio molto esteso: i filtri aiutano a separare le release recenti dai grandi classici storici del catalogo.",
+          footer:
+            "TAM contiene un archivio molto esteso: i filtri aiutano a separare le release recenti dai grandi classici storici del catalogo.",
         },
         [
           SelectRow("focus", {
@@ -161,7 +162,8 @@ class TamSettingsForm extends Form {
       Section(
         {
           id: "tam_home",
-          footer: "La Home è organizzata come una biblioteca: novità, classici e archivio completo restano chiaramente separati.",
+          footer:
+            "La Home è organizzata come una biblioteca: novità, classici e archivio completo restano chiaramente separati.",
         },
         [
           LabelRow("profile", { title: "Profilo", value: "Grande archivio manga italiano" }),
@@ -186,7 +188,10 @@ class TamSettingsForm extends Form {
         }),
       ]),
       Section(
-        { id: "tam_maintenance", footer: "TAM ha un catalogo molto grande: la cache evita di ricaricarlo inutilmente." },
+        {
+          id: "tam_maintenance",
+          footer: "TAM ha un catalogo molto grande: la cache evita di ricaricarlo inutilmente.",
+        },
         [
           LabelRow("status", { title: "Stato TAM", value: this.status }),
           ButtonRow("test", {
@@ -287,9 +292,11 @@ class TuttoAnimeMangaExtension extends FansubGeneral {
     const focus = meta?.focus?.[0] ?? "all";
     const sort = (meta?.sort?.[0] ?? "recent") as CatalogSort;
     let comics = await this.loadSearchComics(query);
-    if (focus === "recent") comics = comics.filter((comic) => this.updatedWithin(comic, RECENT_DAYS));
+    if (focus === "recent")
+      comics = comics.filter((comic) => this.updatedWithin(comic, RECENT_DAYS));
     if (focus === "classics") comics = comics.filter(isClassic);
-    if (focus === "archive") comics = comics.filter((comic) => !this.updatedWithin(comic, RECENT_DAYS));
+    if (focus === "archive")
+      comics = comics.filter((comic) => !this.updatedWithin(comic, RECENT_DAYS));
     return { items: this.sortCatalog(comics, sort).map((comic) => this.toSearchResult(comic)) };
   }
 }

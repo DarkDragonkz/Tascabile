@@ -69,7 +69,8 @@ class GtoSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "gto_search_scope",
-          footer: "Il filtro Universo GTO raccoglie le serie legate a Onizuka e ai progetti storici del team.",
+          footer:
+            "Il filtro Universo GTO raccoglie le serie legate a Onizuka e ai progetti storici del team.",
         },
         [
           SelectRow("focus", {
@@ -131,7 +132,9 @@ class GtoSettingsForm extends Form {
   async testConnection(): Promise<void> {
     this.status = "Verifica in corso…";
     this.reloadForm();
-    this.status = (await this.source.checkApi()) ? "Reader raggiungibile" : "Reader non raggiungibile";
+    this.status = (await this.source.checkApi())
+      ? "Reader raggiungibile"
+      : "Reader non raggiungibile";
     this.reloadForm();
   }
 
@@ -146,7 +149,8 @@ class GtoSettingsForm extends Form {
       Section(
         {
           id: "gto_home",
-          footer: "La Home dà priorità alle release del team e mantiene separati i titoli dell'universo GTO dagli altri progetti.",
+          footer:
+            "La Home dà priorità alle release del team e mantiene separati i titoli dell'universo GTO dagli altri progetti.",
         },
         [
           LabelRow("identity", { title: "Profilo", value: "GTO + progetti del team" }),
@@ -260,9 +264,10 @@ class GTOTheGreatSiteExtension extends FansubGeneral {
       };
     }
     return {
-      items: this.sortCatalog(catalog.filter((comic) => !isGtoUniverse(comic)), "title_asc").map(
-        (comic) => this.toSimpleItem(comic),
-      ),
+      items: this.sortCatalog(
+        catalog.filter((comic) => !isGtoUniverse(comic)),
+        "title_asc",
+      ).map((comic) => this.toSimpleItem(comic)),
     };
   }
 

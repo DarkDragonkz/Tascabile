@@ -173,8 +173,7 @@ abstract class FansubGeneral
       mangaId: comic.slug,
       imageUrl: this.normalizeUrl(comic.thumbnail),
       title: comic.title,
-      supertitle:
-        comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
+      supertitle: comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
       contentRating: this.contentRatingFor(comic.adult),
     };
   }

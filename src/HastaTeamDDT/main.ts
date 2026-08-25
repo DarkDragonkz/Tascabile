@@ -64,7 +64,8 @@ class DdtSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "ddt_period",
-          footer: "DDT è soprattutto un archivio di volumi: puoi restringere la ricerca ai caricamenti più recenti oppure esplorare tutto il fondo storico.",
+          footer:
+            "DDT è soprattutto un archivio di volumi: puoi restringere la ricerca ai caricamenti più recenti oppure esplorare tutto il fondo storico.",
         },
         [
           SelectRow("period", {
@@ -120,7 +121,9 @@ class DdtSettingsForm extends Form {
   async testConnection(): Promise<void> {
     this.status = "Verifica in corso…";
     this.reloadForm();
-    this.status = (await this.source.checkApi()) ? "DDT Reader raggiungibile" : "DDT Reader non raggiungibile";
+    this.status = (await this.source.checkApi())
+      ? "DDT Reader raggiungibile"
+      : "DDT Reader non raggiungibile";
     this.reloadForm();
   }
 
@@ -156,7 +159,10 @@ class DdtSettingsForm extends Form {
         }),
       ]),
       Section(
-        { id: "ddt_maintenance", footer: "La qualità massima originale resta quella offerta dal sito DDT." },
+        {
+          id: "ddt_maintenance",
+          footer: "La qualità massima originale resta quella offerta dal sito DDT.",
+        },
         [
           LabelRow("status", { title: "Stato DDT Reader", value: this.status }),
           ButtonRow("test", {
@@ -241,8 +247,10 @@ class HastaTeamDDTExtension extends FansubGeneral {
     const period = meta?.period?.[0] ?? "all";
     const sort = (meta?.sort?.[0] ?? "title_asc") as CatalogSort;
     let comics = await this.loadSearchComics(query);
-    if (period === "recent") comics = comics.filter((comic) => this.updatedWithin(comic, RECENT_DAYS));
-    if (period === "historical") comics = comics.filter((comic) => !this.updatedWithin(comic, RECENT_DAYS));
+    if (period === "recent")
+      comics = comics.filter((comic) => this.updatedWithin(comic, RECENT_DAYS));
+    if (period === "historical")
+      comics = comics.filter((comic) => !this.updatedWithin(comic, RECENT_DAYS));
     return { items: this.sortCatalog(comics, sort).map((comic) => this.toSearchResult(comic)) };
   }
 }

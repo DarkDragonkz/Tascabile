@@ -80,7 +80,8 @@ class PhoenixSearchForm extends AdvancedSearchForm {
       Section(
         {
           id: "phoenix_filters",
-          footer: "Phoenix ha un catalogo attivo e molto ampio: puoi isolare le serie aggiornate di recente e gestire separatamente i contenuti adulti.",
+          footer:
+            "Phoenix ha un catalogo attivo e molto ampio: puoi isolare le serie aggiornate di recente e gestire separatamente i contenuti adulti.",
         },
         [
           SelectRow("freshness", {
@@ -162,7 +163,9 @@ class PhoenixSettingsForm extends Form {
   async testConnection(): Promise<void> {
     this.status = "Verifica in corso…";
     this.reloadForm();
-    this.status = (await this.source.checkApi()) ? "Phoenix raggiungibile" : "Phoenix non raggiungibile";
+    this.status = (await this.source.checkApi())
+      ? "Phoenix raggiungibile"
+      : "Phoenix non raggiungibile";
     this.reloadForm();
   }
 
@@ -177,7 +180,8 @@ class PhoenixSettingsForm extends Form {
       Section(
         {
           id: "phoenix_home",
-          footer: "Le sezioni sono pensate per distinguere le nuove release dall'ampio catalogo storico di Phoenix Scans.",
+          footer:
+            "Le sezioni sono pensate per distinguere le nuove release dall'ampio catalogo storico di Phoenix Scans.",
         },
         [
           LabelRow("profile", { title: "Profilo", value: "Reader attivo + catalogo esteso" }),
@@ -200,18 +204,18 @@ class PhoenixSettingsForm extends Form {
           }),
         ],
       ),
+      Section({ id: "phoenix_content", footer: "Il filtro viene applicato a Home e ricerca." }, [
+        ToggleRow("hide_adult", {
+          title: "Nascondi contenuti per adulti",
+          value: readBool(HIDE_ADULT_KEY, false),
+          onValueChange: Application.Selector(this as PhoenixSettingsForm, "updateAdult"),
+        }),
+      ]),
       Section(
-        { id: "phoenix_content", footer: "Il filtro viene applicato a Home e ricerca." },
-        [
-          ToggleRow("hide_adult", {
-            title: "Nascondi contenuti per adulti",
-            value: readBool(HIDE_ADULT_KEY, false),
-            onValueChange: Application.Selector(this as PhoenixSettingsForm, "updateAdult"),
-          }),
-        ],
-      ),
-      Section(
-        { id: "phoenix_maintenance", footer: "Svuota la cache se il sito è stato appena aggiornato e i dati sembrano vecchi." },
+        {
+          id: "phoenix_maintenance",
+          footer: "Svuota la cache se il sito è stato appena aggiornato e i dati sembrano vecchi.",
+        },
         [
           LabelRow("status", { title: "Stato Phoenix", value: this.status }),
           ButtonRow("test", {
@@ -330,8 +334,10 @@ class PhoenixScansExtension extends FansubGeneral {
     const audience = meta?.audience?.[0] ?? "all";
     const sort = (meta?.sort?.[0] ?? "recent") as CatalogSort;
     let comics = await this.loadSearchComics(query);
-    if (freshness === "fresh") comics = comics.filter((comic) => this.updatedWithin(comic, FRESH_DAYS));
-    if (freshness === "older") comics = comics.filter((comic) => !this.updatedWithin(comic, FRESH_DAYS));
+    if (freshness === "fresh")
+      comics = comics.filter((comic) => this.updatedWithin(comic, FRESH_DAYS));
+    if (freshness === "older")
+      comics = comics.filter((comic) => !this.updatedWithin(comic, FRESH_DAYS));
     if (audience === "safe") comics = comics.filter((comic) => comic.adult !== 1);
     if (audience === "adult") comics = comics.filter((comic) => comic.adult === 1);
     return { items: this.sortCatalog(comics, sort).map((comic) => this.toSearchResult(comic)) };
