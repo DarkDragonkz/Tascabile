@@ -11,7 +11,7 @@ const pbConfig = { ...basePbConfig };
 pbConfig.name = "MangaWorld";
 pbConfig.description =
   "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata e caricamento completo dei capitoli.";
-pbConfig.version = customVersion({ increasePrerelease: 3 });
+pbConfig.version = customVersion({ increasePrerelease: 4 });
 pbConfig.language = "it";
 pbConfig.contentRating = ContentRating.EVERYONE;
 

@@ -42,6 +42,7 @@ import {
   MANGA_CACHE_SECONDS,
   READER_CACHE_SECONDS,
   getFavoriteGenres,
+  orderExploreFilters,
   isMigratedAdultGenreHidden,
 } from "./preferences";
 import { MangaWorldAdvancedSearchForm } from "./search";
@@ -121,12 +122,14 @@ export abstract class MangaWorldGeneric
 
     try {
       const entries = jsonParser.getWindowEntry(html);
-      const cards = this.parser.parsePage(this, entries).filter(
-        (item) =>
-          !this.hiddenManga(item.tags, item.type) &&
-          !tags.excludedTags(item.tags, excluded.generi) &&
-          !types.excludedTypes(item.type, excluded.tipi),
-      );
+      const cards = this.parser
+        .parsePage(this, entries)
+        .filter(
+          (item) =>
+            !this.hiddenManga(item.tags, item.type) &&
+            !tags.excludedTags(item.tags, excluded.generi) &&
+            !types.excludedTypes(item.type, excluded.tipi),
+        );
       const items: SearchResultItem[] = cards.map((item) => ({
         mangaId: item.id,
         imageUrl: item.image,
@@ -193,40 +196,16 @@ export abstract class MangaWorldGeneric
       sections.push({
         id: "popular_section",
         title: "In tendenza",
-        subtitle: "Capitoli più letti in questo momento",
+        subtitle: "I capitoli più letti",
         type: DiscoverSectionType.featured,
       });
     }
     if ((Application.getState("update_section_enabled") as boolean) ?? true) {
       sections.push({
         id: "updated_section",
-        title: "Aggiornati di recente",
+        title: "Ultimi capitoli",
         subtitle: "Ultimi capitoli pubblicati",
         type: DiscoverSectionType.chapterUpdates,
-      });
-    }
-    if ((Application.getState("mese_section_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "mese_section",
-        title: "Manga del mese",
-        subtitle: "I più letti del mese su MangaWorld",
-        type: DiscoverSectionType.prominentCarousel,
-      });
-    }
-    if ((Application.getState("new_section_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "new_manga_section",
-        title: "Nuove aggiunte",
-        subtitle: "Le serie aggiunte più di recente",
-        type: DiscoverSectionType.simpleCarousel,
-      });
-    }
-    if ((Application.getState("most_read_section_enabled") as boolean) ?? true) {
-      sections.push({
-        id: "most_read_section",
-        title: "Più letti",
-        subtitle: "I titoli più popolari",
-        type: DiscoverSectionType.simpleCarousel,
       });
     }
     if (
@@ -237,6 +216,30 @@ export abstract class MangaWorldGeneric
         id: "new_fav_type_section",
         title: "Per te",
         subtitle: "Nuove aggiunte dei tuoi generi preferiti",
+        type: DiscoverSectionType.simpleCarousel,
+      });
+    }
+    if ((Application.getState("new_section_enabled") as boolean) ?? true) {
+      sections.push({
+        id: "new_manga_section",
+        title: "Nuove aggiunte",
+        subtitle: "Le serie aggiunte più di recente",
+        type: DiscoverSectionType.simpleCarousel,
+      });
+    }
+    if ((Application.getState("mese_section_enabled") as boolean) ?? true) {
+      sections.push({
+        id: "mese_section",
+        title: "Più letti del mese",
+        subtitle: "I più letti del mese su MangaWorld",
+        type: DiscoverSectionType.prominentCarousel,
+      });
+    }
+    if ((Application.getState("most_read_section_enabled") as boolean) ?? false) {
+      sections.push({
+        id: "most_read_section",
+        title: "Più letti",
+        subtitle: "I titoli più popolari",
         type: DiscoverSectionType.simpleCarousel,
       });
     }
@@ -373,15 +376,15 @@ export abstract class MangaWorldGeneric
 
     try {
       const entries = jsonParser.getWindowEntry(html);
-      const cards = this.parser.parsePage(this, entries).filter(
-        (item) => !this.hiddenManga(item.tags, item.type),
-      );
+      const cards = this.parser
+        .parsePage(this, entries)
+        .filter((item) => !this.hiddenManga(item.tags, item.type));
       const items: DiscoverSectionItem[] = cards.map((item) => ({
         type: "simpleCarouselItem",
         mangaId: item.id,
         imageUrl: item.image,
         title: item.title,
-        subtitle: item.authors || item.type,
+        subtitle: item.type,
         contentRating: this.rating(item.tags),
       }));
       const searchInfo = entries.find((entry) => entry.kind === "searchInfo");
@@ -395,8 +398,7 @@ export abstract class MangaWorldGeneric
   private async getTypeSection(): Promise<PagedResults<DiscoverSectionItem>> {
     await filter.populateFilter(this);
     return {
-      items: filter
-        .getMangaTypeFilter()
+      items: orderExploreFilters(filter.getMangaTypeFilter(), ["Manga", "Manhwa", "Manhua"])
         .filter((item) => !types.blacklistedType(item.id))
         .filter((item) => !isMigratedAdultGenreHidden(item.id))
         .map((item) => ({
@@ -414,12 +416,10 @@ export abstract class MangaWorldGeneric
   private async getGenreSection(): Promise<PagedResults<DiscoverSectionItem>> {
     await filter.populateFilter(this);
     return {
-      items: filter
-        .getGenreFilter()
+      items: orderExploreFilters(filter.getGenreFilter(), ["Azione", "Avventura", "Fantasy"])
         .filter((item) => !tags.blacklistedTags([item.id]))
         .filter(
-          (item) =>
-            !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value),
+          (item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value),
         )
         .map((item) => ({
           type: "genresCarouselItem" as const,

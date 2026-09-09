@@ -51,3 +51,16 @@ export function getFavoriteGenres(): string[] {
 export function getDefaultType(): string | undefined {
   return ((Application.getState("def_type") as string[] | undefined) ?? [])[0];
 }
+
+/** Order visible discovery tabs without mutating cached filters or changing their IDs. */
+export function orderExploreFilters<T extends { id: string; value: string }>(
+  items: T[],
+  preferred: string[],
+): T[] {
+  const priority = preferred.map(normalizeFilterValue);
+  const rank = (item: T): number => {
+    const index = priority.indexOf(normalizeFilterValue(item.value));
+    return index < 0 ? priority.length : index;
+  };
+  return [...items].sort((a, b) => rank(a) - rank(b) || a.value.localeCompare(b.value, "it"));
+}
