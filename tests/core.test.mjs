@@ -47,7 +47,7 @@ const deferred = () => {
   return { promise, resolve, reject };
 };
 
-test("concurrent requests share one load and reuse the cached response", async () => {
+await test("concurrent requests share one load and reuse the cached response", async () => {
   const cache = new RequestCache();
   const response = deferred();
   let requests = 0;
@@ -65,7 +65,7 @@ test("concurrent requests share one load and reuse the cached response", async (
   assert.equal(requests, 1);
 });
 
-test("clearing during a request keeps the new pending request registered", async () => {
+await test("clearing during a request keeps the new pending request registered", async () => {
   const cache = new RequestCache();
   const old = deferred(),
     fresh = deferred();
@@ -84,7 +84,7 @@ test("clearing during a request keeps the new pending request registered", async
   assert.equal(duplicate, false);
 });
 
-test("an old response finishing last cannot overwrite a refreshed cache", async () => {
+await test("an old response finishing last cannot overwrite a refreshed cache", async () => {
   const cache = new RequestCache();
   const old = deferred();
   const a = cache.get("url", 60, () => old.promise);
@@ -95,7 +95,7 @@ test("an old response finishing last cannot overwrite a refreshed cache", async 
   assert.equal(await cache.get("url", 60, async () => "unexpected"), "fresh");
 });
 
-test("a rejected load can be retried; zero TTL never stores a response", async () => {
+await test("a rejected load can be retried; zero TTL never stores a response", async () => {
   const cache = new RequestCache();
   await assert.rejects(
     cache.get("url", 60, () => {
@@ -107,7 +107,7 @@ test("a rejected load can be retried; zero TTL never stores a response", async (
   assert.equal(await cache.get("url", 0, async () => "second"), "second");
 });
 
-test("cached responses expire and the cache remains bounded", async (t) => {
+await test("cached responses expire and the cache remains bounded", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1000 });
   const cache = new RequestCache();
   await cache.get("url", 1, async () => "first");
@@ -118,7 +118,7 @@ test("cached responses expire and the cache remains bounded", async (t) => {
 });
 
 for (const kind of ["MangaWorld", "fansub"]) {
-  test(`${kind} network coalesces requests and invalidates safely`, async () => {
+  await test(`${kind} network coalesces requests and invalidates safely`, async () => {
     const requests =
       kind === "MangaWorld" ? new Requests() : new APIRequests("https://example.test/api");
     const fetch = () =>
@@ -147,7 +147,7 @@ for (const kind of ["MangaWorld", "fansub"]) {
   });
 }
 
-test("genre and year extraction is independent of payload entry order", () => {
+await test("genre and year extraction is independent of payload entry order", () => {
   const filters = new FilterPreferences();
   const entries = new JsonParser().getWindowEntry(fixture);
   const expected = filters.extractOptionJSON(entries);
@@ -157,7 +157,7 @@ test("genre and year extraction is independent of payload entry order", () => {
 });
 
 for (const broken of ["{broken", "null", '[{"id":5,"value":"wrong"}]']) {
-  test(`invalid persisted filter snapshot recovers: ${broken}`, async () => {
+  await test(`invalid persisted filter snapshot recovers: ${broken}`, async () => {
     const filters = new FilterPreferences();
     state.set("last-filter-fetch", String(Date.now() / 1000));
     for (const key of [".genres", ".type", ".status", ".sort", ".year"]) state.set(key, "[]");
@@ -180,7 +180,7 @@ for (const broken of ["{broken", "null", '[{"id":5,"value":"wrong"}]']) {
   });
 }
 
-test("chapter lookup supports volumes and standalone chapters in the same manga", () => {
+await test("chapter lookup supports volumes and standalone chapters in the same manga", () => {
   const parser = new JsonParser();
   const pages = {
     volumes: [
@@ -196,7 +196,7 @@ test("chapter lookup supports volumes and standalone chapters in the same manga"
   assert.equal(parser.findChapterData(pages, "missing"), null);
 });
 
-test("diagnostics reject long error pages and recover after failed filter refresh", async () => {
+await test("diagnostics reject long error pages and recover after failed filter refresh", async () => {
   let html = "<html>Access denied</html>".repeat(100);
   const source = {
     requestManager: {
