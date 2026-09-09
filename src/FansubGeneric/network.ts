@@ -7,12 +7,8 @@ import {
   type SearchQuery,
 } from "@paperback/types";
 
+import { RequestCache } from "../common/requestCache";
 import type { ReadChapterResponse } from "./models";
-
-interface CacheEntry {
-  expires: number;
-  value: string;
-}
 
 export class MainInterceptor extends PaperbackInterceptor {
   constructor(
@@ -47,45 +43,21 @@ export class MainInterceptor extends PaperbackInterceptor {
 }
 
 export class APIRequests {
-  private readonly cache = new Map<string, CacheEntry>();
-  private readonly inFlight = new Map<string, Promise<string>>();
+  private readonly cache = new RequestCache<string>();
 
   constructor(public readonly apiBaseUrl: string) {}
 
   clearCache(): void {
     this.cache.clear();
-    this.inFlight.clear();
   }
 
   private async fetchText(url: string, cacheSeconds: number): Promise<string> {
-    const now = Date.now();
-    const cached = this.cache.get(url);
-    if (cached && cached.expires > now) return cached.value;
-    if (cached) this.cache.delete(url);
-
-    const pending = this.inFlight.get(url);
-    if (pending) return pending;
-
-    const request = (async () => {
+    return this.cache.get(url, cacheSeconds, async () => {
       const [response, data] = await Application.scheduleRequest({ url, method: "GET" });
       if (response.status >= 400) throw new Error(`HTTP ${response.status}: ${url}`);
       const value = Application.arrayBufferToUTF8String(data);
-      if (cacheSeconds > 0) {
-        if (this.cache.size >= 64) {
-          const oldestKey = this.cache.keys().next().value as string | undefined;
-          if (oldestKey) this.cache.delete(oldestKey);
-        }
-        this.cache.set(url, { expires: Date.now() + cacheSeconds * 1000, value });
-      }
       return value;
-    })();
-
-    this.inFlight.set(url, request);
-    try {
-      return await request;
-    } finally {
-      this.inFlight.delete(url);
-    }
+    });
   }
 
   async apiSearchResult(query: SearchQuery<Metadata>): Promise<string> {

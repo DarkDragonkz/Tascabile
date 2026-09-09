@@ -11,13 +11,13 @@ import {
   type SortingOption,
 } from "@paperback/types";
 
+import { RequestCache } from "../common/requestCache";
 import type { MangaWorldGeneric } from "./main";
-import type { CacheItem, MangaWorldSearchMetadata } from "./models";
+import type { MangaWorldSearchMetadata } from "./models";
 import { ARCHIVE_CACHE_SECONDS, getFavoriteGenres } from "./preferences";
 
 export class Requests {
-  private cache = new Map<string, CacheItem>();
-  private inFlight = new Map<string, Promise<ArrayBuffer>>();
+  private readonly cache = new RequestCache<ArrayBuffer>();
 
   constructSearchRequestURL(
     page: number,
@@ -64,7 +64,6 @@ export class Requests {
 
   clearCache(): void {
     this.cache.clear();
-    this.inFlight.clear();
   }
 
   async parseFilters(source: MangaWorldGeneric): Promise<string> {
@@ -102,15 +101,7 @@ export class Requests {
   }
 
   async fetchPage(url: string, cacheSeconds = 0): Promise<ArrayBuffer> {
-    const now = Date.now();
-    const cached = this.cache.get(url);
-    if (cached && cached.expires > now) return cached.data;
-    if (cached) this.cache.delete(url);
-
-    const pending = this.inFlight.get(url);
-    if (pending) return pending;
-
-    const request = (async () => {
+    return this.cache.get(url, cacheSeconds, async () => {
       const [response, data] = await Application.scheduleRequest({
         url,
         method: "GET",
@@ -118,25 +109,8 @@ export class Requests {
       if (response.status >= 400) {
         throw new Error(`MangaWorld HTTP ${response.status}: ${url}`);
       }
-      if (cacheSeconds > 0) {
-        if (this.cache.size >= 64) {
-          const oldestKey = this.cache.keys().next().value as string | undefined;
-          if (oldestKey) this.cache.delete(oldestKey);
-        }
-        this.cache.set(url, {
-          expires: Date.now() + cacheSeconds * 1000,
-          data,
-        });
-      }
       return data;
-    })();
-
-    this.inFlight.set(url, request);
-    try {
-      return await request;
-    } finally {
-      this.inFlight.delete(url);
-    }
+    });
   }
 }
 
