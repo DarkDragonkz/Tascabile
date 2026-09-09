@@ -56,7 +56,9 @@ function parseCards(html: string, source: MangaWorldGeneric): HtmlCard[] {
     const id = href.match(/\/manga\/(\d+\/[^/?#]+)/u)?.[1];
     if (!id || seen.has(id)) return;
 
-    const container = link.closest("article, li, [class*='manga'], [class*='card'], [class*='item']");
+    const container = link.closest(
+      "article, li, [class*='manga'], [class*='card'], [class*='item']",
+    );
     const scope = container.length > 0 ? container.first() : link.parent();
     const linkImage = link.find("img").first();
     const imageElement = linkImage.length > 0 ? linkImage : scope.find("img").first();
@@ -114,13 +116,11 @@ function hasNextPage(html: string, currentPage: number): boolean {
   const nextPage = currentPage + 1;
   return (
     $("a[rel='next']").length > 0 ||
-    $("a")
-      .filter((_, element) => {
-        const href = $(element).attr("href") ?? "";
-        const text = $(element).text().trim().toLowerCase();
-        return href.includes(`page=${nextPage}`) || text === "successivo" || text === "next";
-      })
-      .length > 0
+    $("a").filter((_, element) => {
+      const href = $(element).attr("href") ?? "";
+      const text = $(element).text().trim().toLowerCase();
+      return href.includes(`page=${nextPage}`) || text === "successivo" || text === "next";
+    }).length > 0
   );
 }
 
@@ -137,15 +137,13 @@ export function parseSearchHtml(
       !tags.excludedTags(card.tags, excluded.generi) &&
       !types.excludedTypes(card.type, excluded.tipi),
   );
-  const items = cards.map(
-    (card): SearchResultItem => ({
-      mangaId: card.id,
-      imageUrl: card.image,
-      title: card.title,
-      subtitle: card.authors || card.type,
-      contentRating: contentRating(source, card),
-    }),
-  );
+  const items = cards.map((card): SearchResultItem => ({
+    mangaId: card.id,
+    imageUrl: card.image,
+    title: card.title,
+    subtitle: card.authors || card.type,
+    contentRating: contentRating(source, card),
+  }));
   return {
     items,
     metadata: hasNextPage(html, page) && items.length > 0 ? { page: page + 1 } : undefined,
@@ -164,7 +162,7 @@ export function parseSimpleDiscoverHtml(
     mangaId: card.id,
     imageUrl: card.image,
     title: card.title,
-    subtitle: card.authors || card.type,
+    subtitle: card.type,
     contentRating: contentRating(source, card),
   }));
   return {
@@ -246,7 +244,9 @@ export function parseMangaDetailsHtml(
     if (title) genreMap.set(normalizeFilterValue(title), title);
   });
   const genreTitles = [...genreMap.values()];
-  const secondaryTitlesMatch = $("body").text().match(/Titoli alternativi:\s*([^\n]+)/iu);
+  const secondaryTitlesMatch = $("body")
+    .text()
+    .match(/Titoli alternativi:\s*([^\n]+)/iu);
   const secondaryTitles = (secondaryTitlesMatch?.[1] ?? "")
     .split(",")
     .map((item) => item.trim())
@@ -355,8 +355,7 @@ export function parseChapterDetailsHtml(
   });
   $("script").each((_, element) => {
     const script = $(element).html() ?? "";
-    const matches =
-      script.match(/https?:\\?\/\\?\/cdn\.mangaworld\.(?:mx|in)[^"'\s<]+/gu) ?? [];
+    const matches = script.match(/https?:\\?\/\\?\/cdn\.mangaworld\.(?:mx|in)[^"'\s<]+/gu) ?? [];
     for (const match of matches) candidates.push(normalizeUrl(source, match));
   });
   const unique = [...new Set(candidates.filter(Boolean))];

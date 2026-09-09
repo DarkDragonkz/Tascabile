@@ -21,12 +21,16 @@ function optionList(items: { id: string; value: string }[]) {
 }
 
 class HomeSettings extends Form {
-  private readonly genres = optionList(
-    filter
-      .getGenreFilter()
-      .filter((item) => !tags.blacklistedTags([item.id]))
-      .filter((item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value)),
-  );
+  private get genres() {
+    return optionList(
+      filter
+        .getGenreFilter()
+        .filter((item) => !tags.blacklistedTags([item.id]))
+        .filter(
+          (item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value),
+        ),
+    );
+  }
 
   override getSections() {
     const favoritesEnabled = (Application.getState("fav_section_enabled") as boolean) ?? true;
@@ -34,7 +38,7 @@ class HomeSettings extends Form {
       Section(
         {
           id: "home_primary",
-          footer: "Le sezioni sono ordinate per dare priorità agli aggiornamenti e ai contenuti in tendenza.",
+          footer: "Scegli quali sezioni mostrare nella Home.",
         },
         [
           ToggleRow("popular_section_enabled", {
@@ -44,33 +48,17 @@ class HomeSettings extends Form {
             onValueChange: Application.Selector(this as HomeSettings, "handlePopularChange"),
           }),
           ToggleRow("update_section_enabled", {
-            title: "Aggiornati di recente",
+            title: "Ultimi capitoli",
             subtitle: "Ultimi capitoli pubblicati",
             value: (Application.getState("update_section_enabled") as boolean) ?? true,
             onValueChange: Application.Selector(this as HomeSettings, "handleUpdatesChange"),
-          }),
-          ToggleRow("mese_section_enabled", {
-            title: "Manga del mese",
-            subtitle: "Classifica mensile di MangaWorld",
-            value: (Application.getState("mese_section_enabled") as boolean) ?? true,
-            onValueChange: Application.Selector(this as HomeSettings, "handleMonthChange"),
-          }),
-          ToggleRow("new_section_enabled", {
-            title: "Nuove aggiunte",
-            value: (Application.getState("new_section_enabled") as boolean) ?? true,
-            onValueChange: Application.Selector(this as HomeSettings, "handleNewChange"),
-          }),
-          ToggleRow("most_read_section_enabled", {
-            title: "Più letti",
-            value: (Application.getState("most_read_section_enabled") as boolean) ?? true,
-            onValueChange: Application.Selector(this as HomeSettings, "handleMostReadChange"),
           }),
         ],
       ),
       Section(
         {
           id: "home_personal",
-          footer: "La sezione personalizzata appare solo quando è selezionato almeno un genere.",
+          footer: "Scegli almeno un genere per mostrare “Per te” nella Home.",
         },
         [
           ToggleRow("fav_section_enabled", {
@@ -91,6 +79,24 @@ class HomeSettings extends Form {
           }),
         ],
       ),
+      Section({ id: "home_catalog", footer: "La classifica generale è facoltativa." }, [
+        ToggleRow("new_section_enabled", {
+          title: "Nuove aggiunte",
+          value: (Application.getState("new_section_enabled") as boolean) ?? true,
+          onValueChange: Application.Selector(this as HomeSettings, "handleNewChange"),
+        }),
+        ToggleRow("mese_section_enabled", {
+          title: "Più letti del mese",
+          subtitle: "Classifica mensile di MangaWorld",
+          value: (Application.getState("mese_section_enabled") as boolean) ?? true,
+          onValueChange: Application.Selector(this as HomeSettings, "handleMonthChange"),
+        }),
+        ToggleRow("most_read_section_enabled", {
+          title: "Più letti",
+          value: (Application.getState("most_read_section_enabled") as boolean) ?? false,
+          onValueChange: Application.Selector(this as HomeSettings, "handleMostReadChange"),
+        }),
+      ]),
       Section("home_explore", [
         ToggleRow("type_section_enabled", {
           title: "Esplora per tipologia",
@@ -138,6 +144,7 @@ class HomeSettings extends Form {
 
   async handleFavoriteGenresChange(value: string[]): Promise<void> {
     Application.setState(value, "fav_tags_new");
+    this.reloadForm();
     Application.invalidateDiscoverSections();
   }
 
@@ -151,11 +158,6 @@ class HomeSettings extends Form {
 }
 
 class SearchSettings extends Form {
-  private readonly genres = optionList(
-    filter
-      .getGenreFilter()
-      .filter((item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value)),
-  );
   private readonly mangaTypes = optionList(filter.getMangaTypeFilter());
 
   override getSections() {
@@ -163,7 +165,7 @@ class SearchSettings extends Form {
       Section(
         {
           id: "search_defaults",
-          footer: "Queste preferenze vengono applicate alla ricerca avanzata nativa di Paperback 0.9.",
+          footer: "Scegli la tipologia da usare nelle nuove ricerche.",
         },
         [
           SelectRow("def_type", {
@@ -173,30 +175,6 @@ class SearchSettings extends Form {
             minItemCount: 0,
             maxItemCount: 1,
             onValueChange: Application.Selector(this as SearchSettings, "handleDefaultTypeChange"),
-          }),
-        ],
-      ),
-      Section(
-        {
-          id: "search_hidden",
-          footer: "Gli elementi nascosti vengono rimossi sia dalla ricerca sia dalle sezioni di esplorazione.",
-        },
-        [
-          SelectRow("hide_tags", {
-            title: "Generi nascosti",
-            value: (Application.getState("hide_tags") as string[] | undefined) ?? [],
-            options: this.genres,
-            minItemCount: 0,
-            maxItemCount: this.genres.length,
-            onValueChange: Application.Selector(this as SearchSettings, "handleHiddenGenresChange"),
-          }),
-          SelectRow("hide_type", {
-            title: "Tipologie nascoste",
-            value: (Application.getState("hide_type") as string[] | undefined) ?? [],
-            options: this.mangaTypes,
-            minItemCount: 0,
-            maxItemCount: this.mangaTypes.length,
-            onValueChange: Application.Selector(this as SearchSettings, "handleHiddenTypesChange"),
           }),
         ],
       ),
@@ -212,6 +190,21 @@ class SearchSettings extends Form {
   async handleDefaultTypeChange(value: string[]): Promise<void> {
     await this.updateValue(value, "def_type");
   }
+}
+
+class ContentSettings extends Form {
+  private get genres() {
+    return optionList(filter.getGenreFilter());
+  }
+  private get mangaTypes() {
+    return optionList(filter.getMangaTypeFilter());
+  }
+
+  private async updateValue(value: string[], key: string): Promise<void> {
+    Application.setState(value, key);
+    this.reloadForm();
+    Application.invalidateDiscoverSections();
+  }
 
   async handleHiddenGenresChange(value: string[]): Promise<void> {
     await this.updateValue(value, "hide_tags");
@@ -220,11 +213,36 @@ class SearchSettings extends Form {
   async handleHiddenTypesChange(value: string[]): Promise<void> {
     await this.updateValue(value, "hide_type");
   }
-}
 
-class ContentSettings extends Form {
   override getSections() {
     return [
+      Section(
+        {
+          id: "search_hidden",
+          footer: "Questi filtri si applicano alla Home e alla ricerca.",
+        },
+        [
+          SelectRow("hide_tags", {
+            title: "Generi nascosti",
+            value: (Application.getState("hide_tags") as string[] | undefined) ?? [],
+            options: this.genres,
+            minItemCount: 0,
+            maxItemCount: this.genres.length,
+            onValueChange: Application.Selector(
+              this as ContentSettings,
+              "handleHiddenGenresChange",
+            ),
+          }),
+          SelectRow("hide_type", {
+            title: "Tipologie nascoste",
+            value: (Application.getState("hide_type") as string[] | undefined) ?? [],
+            options: this.mangaTypes,
+            minItemCount: 0,
+            maxItemCount: this.mangaTypes.length,
+            onValueChange: Application.Selector(this as ContentSettings, "handleHiddenTypesChange"),
+          }),
+        ],
+      ),
       Section(
         {
           id: "adult_migration",
@@ -235,7 +253,10 @@ class ContentSettings extends Form {
           ToggleRow("hide_migrated_adult_content", {
             title: "Nascondi contenuti +18 trasferiti",
             value: (Application.getState("hide_migrated_adult_content") as boolean) ?? true,
-            onValueChange: Application.Selector(this as ContentSettings, "handleAdultContentChange"),
+            onValueChange: Application.Selector(
+              this as ContentSettings,
+              "handleAdultContentChange",
+            ),
           }),
         ],
       ),
@@ -250,7 +271,7 @@ class ContentSettings extends Form {
 }
 
 class MaintenanceSettings extends Form {
-  private status = "Cache pronta";
+  private status = "Nessuna verifica eseguita";
 
   constructor(private readonly source: MangaWorldGeneric) {
     super();
@@ -261,8 +282,7 @@ class MaintenanceSettings extends Form {
       Section(
         {
           id: "maintenance",
-          footer:
-            "I filtri vengono memorizzati per 7 giorni. Le pagine più richieste usano una cache breve per evitare richieste duplicate.",
+          footer: "Se i dati sembrano vecchi, aggiorna i filtri o svuota la cache.",
         },
         [
           LabelRow("status", {
@@ -326,31 +346,26 @@ export class Forms extends Form {
       Section(
         {
           id: "overview",
-          footer: "MangaWorld ottimizzato per Paperback 0.9.",
         },
         [
-          LabelRow("engine", {
-            title: "Motore ricerca",
-            value: "AdvancedSearchForm nativo 0.9",
-          }),
           NavigationRow("home_settings", {
-            title: "Home",
-            subtitle: "Sezioni, ordine logico e contenuti preferiti",
+            title: "Personalizza Home",
+            subtitle: "Sezioni e generi preferiti",
             form: new HomeSettings(),
           }),
           NavigationRow("search_settings", {
-            title: "Ricerca",
-            subtitle: "Filtri, tipologia predefinita e contenuti nascosti",
+            title: "Preferenze di ricerca",
+            subtitle: "Tipologia predefinita",
             form: new SearchSettings(),
           }),
           NavigationRow("content_settings", {
-            title: "Contenuti",
-            subtitle: "Gestione dei contenuti trasferiti su MangaWorldAdult",
+            title: "Contenuti e filtri",
+            subtitle: "Generi e tipologie nascosti",
             form: new ContentSettings(),
           }),
           NavigationRow("maintenance_settings", {
-            title: "Manutenzione",
-            subtitle: "Cache e aggiornamento filtri",
+            title: "Risoluzione problemi",
+            subtitle: "Connessione, cache e filtri",
             form: new MaintenanceSettings(this.source),
           }),
         ],
