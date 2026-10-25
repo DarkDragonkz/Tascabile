@@ -1,12 +1,12 @@
 {
-  "buildTime": "2026-10-25T19:07:03.264Z",
+  "buildTime": "2026-10-25T20:23:14.298Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
   },
   "repository": {
     "name": "tascabile",
-    "description": "Repository Paperback 0.9 principalmente italiana, con fonti manga/fansub italiane e una sezione Comics internazionale."
+    "description": "Estensioni Paperback 0.9 per manga e scanlation in italiano (MangaWorld, Niadd e sei fansub), con due reader Comics in inglese."
   },
   "sources": [
     {
@@ -46,9 +46,9 @@
       "id": "Batcave"
     },
     {
-      "name": "GTOTheGreatSite",
-      "description": "Manga e scanlation in italiano da GTOTheGreatSite.",
-      "version": "1.2.4",
+      "name": "GTO The Great Site",
+      "description": "Scanlation italiane di GTO The Great Site: l'Universo GTO di Onizuka e gli altri progetti del team, con ultime release e ricerca per area del catalogo.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -83,9 +83,9 @@
       "id": "GTOTheGreatSite"
     },
     {
-      "name": "HastaTeam",
-      "description": "Manga e scanlation in italiano da HastaTeam.",
-      "version": "1.2.4",
+      "name": "Hasta Team",
+      "description": "Scanlation italiane di Hasta Team: progetti aggiornati di recente e un ampio archivio storico, con filtri per attività e contenuti.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -120,9 +120,9 @@
       "id": "HastaTeam"
     },
     {
-      "name": "HastaTeamDDT",
-      "description": "Manga e scanlation in italiano da HastaTeam DDT.",
-      "version": "1.2.4",
+      "name": "Hasta Team DDT",
+      "description": "Archivio DDT di Hasta Team con volumi completi: caricamenti recenti, biblioteca alfabetica e ricerca per periodo.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -157,9 +157,9 @@
       "id": "HastaTeamDDT"
     },
     {
-      "name": "LupiTeam",
-      "description": "Manga e scanlation in italiano da LupiTeam.",
-      "version": "1.2.4",
+      "name": "Lupi Team",
+      "description": "Scanlation italiane di Lupi Team: le serie di punta come One Piece, Berserk e Hunter × Hunter, più l'archivio del team.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -195,8 +195,8 @@
     },
     {
       "name": "MangaWorld",
-      "description": "Manga, manhwa e manhua in italiano da MangaWorld, con ricerca avanzata e caricamento completo dei capitoli.",
-      "version": "1.0.0-alpha.37",
+      "description": "Ampio catalogo italiano di manga, manhwa e manhua: In tendenza, ultimi capitoli, generi preferiti, ricerca avanzata e reader con tutte le pagine del capitolo.",
+      "version": "1.0.0-alpha.38",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -206,7 +206,18 @@
         64,
         32
       ],
-      "badges": [],
+      "badges": [
+        {
+          "label": "Italiano 🇮🇹",
+          "textColor": "#ffffff",
+          "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Manga · Manhwa · Manhua",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
+        }
+      ],
       "developers": [
         {
           "name": "DarkDragonkz",
@@ -250,9 +261,9 @@
       "id": "Niadd"
     },
     {
-      "name": "PhoenixScans",
-      "description": "Manga e scanlation in italiano da Phoenix Scans.",
-      "version": "1.2.4",
+      "name": "Phoenix Scans",
+      "description": "Scanlation italiane di Phoenix Scans: ultime uscite, serie aggiornate di recente e catalogo completo.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -324,8 +335,8 @@
     },
     {
       "name": "TuttoAnimeManga",
-      "description": "Manga e scanlation in italiano da TuttoAnimeManga.",
-      "version": "1.2.4",
+      "description": "Manga in italiano da TuttoAnimeManga: un grande archivio con classici come One Piece, Naruto e Bleach e le ultime uscite.",
+      "version": "1.2.5",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
