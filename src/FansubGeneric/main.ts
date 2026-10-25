@@ -146,11 +146,17 @@ abstract class FansubGeneral
     return result.sort((a, b) => (a.author ?? "").localeCompare(b.author ?? "", "it"));
   }
 
+  // Full-size covers reach several MB; lists use the site's 150px thumbnail.
+  // Manga details keep the original cover.
+  protected listThumbnail(comic: ComicListItem): string {
+    return this.normalizeUrl(comic.thumbnail_small || comic.thumbnail);
+  }
+
   protected toSearchResult(comic: ComicListItem): SearchResultItem {
     return {
       mangaId: comic.slug,
       title: comic.title,
-      imageUrl: this.normalizeUrl(comic.thumbnail),
+      imageUrl: this.listThumbnail(comic),
       subtitle: comic.author ?? "",
       contentRating: this.contentRatingFor(comic.adult),
     };
@@ -160,7 +166,7 @@ abstract class FansubGeneral
     return {
       type: "simpleCarouselItem",
       mangaId: comic.slug,
-      imageUrl: this.normalizeUrl(comic.thumbnail),
+      imageUrl: this.listThumbnail(comic),
       title: comic.title,
       subtitle: comic.author ?? "",
       contentRating: this.contentRatingFor(comic.adult),
@@ -171,7 +177,7 @@ abstract class FansubGeneral
     return {
       type: "featuredCarouselItem",
       mangaId: comic.slug,
-      imageUrl: this.normalizeUrl(comic.thumbnail),
+      imageUrl: this.listThumbnail(comic),
       title: comic.title,
       supertitle: comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
       contentRating: this.contentRatingFor(comic.adult),
@@ -185,7 +191,7 @@ abstract class FansubGeneral
       type: "chapterUpdatesCarouselItem",
       mangaId: comic.slug,
       chapterId: chapter.url,
-      imageUrl: this.normalizeUrl(comic.thumbnail),
+      imageUrl: this.listThumbnail(comic),
       title: comic.title,
       subtitle: chapter.title ?? chapter.full_title,
       publishDate: new Date(chapter.published_on),

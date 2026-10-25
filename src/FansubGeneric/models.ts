@@ -5,6 +5,7 @@ export interface ComicsListResponse {
 export interface ComicListItem {
   title: string;
   thumbnail: string;
+  thumbnail_small?: string;
   adult: number;
   slug: string;
   author: string;
