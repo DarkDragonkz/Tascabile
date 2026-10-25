@@ -62,6 +62,7 @@ export interface Manga {
   linkId: number;
   typeT: string;
   statusT: string;
+  year?: number;
   tramaT: string;
   createdAt: string;
   updatedAt: string;

@@ -13,6 +13,7 @@ import {
   type TagSection,
 } from "@paperback/types";
 
+import { detailInfo } from "../common/discover";
 import type { MangaWorldGeneric } from "./main";
 import type { Manga, MangaChapterList, MangaMetadata, TrendingManga, WindowEntry } from "./models";
 import { filter, jsonParser, tags, types } from "./utils";
@@ -48,7 +49,7 @@ export class Parsers {
         ? ContentRating.ADULT
         : tags.getRating(parsed.genres?.map((genre) => genre.name) ?? []);
 
-    const tagSections: TagSection[] = [{ id: "genres", title: "genres", tags: tagsArray }];
+    const tagSections: TagSection[] = [{ id: "genres", title: "Generi", tags: tagsArray }];
     return {
       mangaId,
       mangaInfo: {
@@ -61,7 +62,12 @@ export class Parsers {
         author: parsed.author.join(", "),
         tagGroups: tagSections,
         secondaryTitles: parsed.extraTitles ?? [],
-        additionalInfo: { subs: parsed.fansub?.name ?? "Ufficiale" },
+        additionalInfo: detailInfo({
+          Fansub: parsed.fansub?.name ?? "Ufficiale",
+          Tipologia: parsed.typeT,
+          Anno: parsed.year ? String(parsed.year) : undefined,
+          Lingua: "Italiano 🇮🇹",
+        }),
         shareUrl: shareURL,
       },
     };
@@ -74,7 +80,11 @@ export class Parsers {
       langCode: "it",
       chapNum: Number(chapter.name.split(" ")[1] ?? 1),
       title: chapter.title ?? chapter.name ?? "",
-      version: sourceManga.mangaInfo.additionalInfo?.subs ?? "",
+      // `subs` is the pre-1.0.0-alpha.37 key, still present in saved library entries.
+      version:
+        sourceManga.mangaInfo.additionalInfo?.Fansub ??
+        sourceManga.mangaInfo.additionalInfo?.subs ??
+        "",
       publishDate: new Date(chapter.createdAt),
     };
   }

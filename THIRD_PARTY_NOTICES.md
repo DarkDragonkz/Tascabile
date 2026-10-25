@@ -18,7 +18,7 @@ Licensed under the MIT License. The original license permits use, modification, 
 
 ## Nicartjay / PaperbackExt
 
-The build synchronizes these Paperback 0.9 sources from `Nicartjay/PaperbackExt` at revision `cf43397bb1b90521629291599cee312fcf30f0f5`:
+The build synchronizes these Paperback 0.9 sources from `Nicartjay/PaperbackExt` at revision `a6ef7b8f4f96b37327ab27429fdea7f9e5d8a658`:
 
 - `src/Batcave`
 - `src/ReadComicsOnline`

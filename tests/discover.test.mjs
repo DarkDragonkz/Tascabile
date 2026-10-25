@@ -14,9 +14,8 @@ await build({
   external: ["@paperback/types"],
   output: { dir: directory, format: "esm", entryFileNames: "[name].mjs" },
 });
-const { infoItems, relativeDateIt, shortSummary } = await import(
-  pathToFileURL(`${directory}/discover.mjs`).href
-);
+const { detailInfo, formatCountIt, formatDateIt, infoItems, relativeDateIt, shortSummary } =
+  await import(pathToFileURL(`${directory}/discover.mjs`).href);
 
 await test("info items keep at most two non-empty badges", () => {
   assert.equal(infoItems({ symbol: "a", text: " " }, undefined), undefined);
@@ -43,4 +42,15 @@ await test("summaries are cut on a word boundary", () => {
   const long = shortSummary("parola ".repeat(60), 40);
   assert.equal(long, "parola parola parola parola parola…");
   assert.equal(shortSummary(undefined), undefined);
+});
+
+await test("detail rows drop empty values and format counts and dates", () => {
+  assert.deepEqual(detailInfo({ Fonte: "X", Target: undefined, Anno: " ", Capitoli: "12" }), {
+    Fonte: "X",
+    Capitoli: "12",
+  });
+  assert.equal(formatCountIt(237833), "237.833");
+  assert.equal(formatCountIt(885), "885");
+  assert.equal(formatDateIt(new Date(2026, 3, 26)), "26 apr 2026");
+  assert.equal(formatDateIt(new Date("invalid")), undefined);
 });

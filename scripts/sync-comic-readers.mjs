@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 const UPSTREAM = "Nicartjay/PaperbackExt";
-const REVISION = "cf43397bb1b90521629291599cee312fcf30f0f5";
+const REVISION = "a6ef7b8f4f96b37327ab27429fdea7f9e5d8a658";
 const TARGETS = [
   ["src/Batcave", "src/Batcave"],
   ["src/ReadComicsOnline", "src/ReadComicsOnline"],
@@ -247,8 +247,8 @@ async function applyCompatibilityPatches() {
     },
     {
       label: "Batcave Tascabile version bump",
-      target: '  version: "1.4.9.1",',
-      replacement: '  version: "1.4.9.4",',
+      target: '  version: "1.4.12.1",',
+      replacement: '  version: "1.4.12.4",',
     },
   ]);
 
@@ -412,8 +412,8 @@ async function applyCompatibilityPatches() {
     },
     {
       label: "Read Comics Online Tascabile version bump",
-      target: '  version: "1.4.14.1",',
-      replacement: '  version: "1.4.14.4",',
+      target: '  version: "1.4.15.2",',
+      replacement: '  version: "1.4.15.4",',
     },
   ]);
 }

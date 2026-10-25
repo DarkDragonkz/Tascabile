@@ -50,7 +50,30 @@ export function relativeDateIt(date: Date | undefined, now = Date.now()): string
   if (days === 0) return "Oggi";
   if (days === 1) return "Ieri";
   if (days < 7) return `${days} giorni fa`;
+  return formatDateIt(date);
+}
+
+/** "12 ott 2026"; undefined for missing or invalid dates. */
+export function formatDateIt(date: Date | undefined): string | undefined {
+  if (!date || Number.isNaN(date.getTime())) return undefined;
   return `${date.getDate()} ${MONTHS_IT[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+/** 237833 → "237.833" (Italian thousands separator, no Intl dependency). */
+export function formatCountIt(value: number): string {
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/gu, ".");
+}
+
+/** Detail rows for `additionalInfo`, dropping empty values so no blank rows appear. */
+export function detailInfo(rows: Record<string, string | undefined>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(rows)) {
+    const text = value?.trim();
+    if (text) result[key] = text;
+  }
+  return result;
 }
 
 /** One or two lines of synopsis for the featured banner, cut on a word boundary. */

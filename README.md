@@ -26,7 +26,7 @@ Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al 
 
 `ReadComicOnline` è disabilitata perché il relativo sito è offline. Non viene più sincronizzata, compilata o inclusa nei bundle pubblicati.
 
-I reader Comics attivi vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `cf43397bb1b90521629291599cee312fcf30f0f5` del 22 agosto 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+I reader Comics attivi vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `a6ef7b8f4f96b37327ab27429fdea7f9e5d8a658` del 15 ottobre 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
 
 ### Cloudflare
 

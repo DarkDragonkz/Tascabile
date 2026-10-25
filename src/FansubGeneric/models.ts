@@ -39,7 +39,9 @@ export interface ComicDetail {
   adult: number;
   created_at: string;
   updated_at: string;
-  rating: number;
+  rating: number | null;
+  target?: string | null;
+  views?: number | null;
   url: string;
   slug: string;
   chapters: ComicDetailChapter[];

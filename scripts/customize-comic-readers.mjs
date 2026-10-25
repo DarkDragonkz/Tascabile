@@ -566,8 +566,8 @@ await patchExact(
 await patchExact(
   "src/Batcave/pbconfig.ts",
   "BatCave Tascabile UI version",
-  '  version: "1.4.9.4",',
-  '  version: "1.4.9.5",',
+  '  version: "1.4.12.4",',
+  '  version: "1.4.12.5",',
 );
 await patchExact(
   "src/Batcave/pbconfig.ts",
@@ -587,8 +587,8 @@ await writeFile("src/ReadComicsOnline/settings.ts", READ_COMICS_SETTINGS);
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
   "Read Comics Online Tascabile UI version",
-  '  version: "1.4.14.4",',
-  '  version: "1.4.14.5",',
+  '  version: "1.4.15.4",',
+  '  version: "1.4.15.5",',
 );
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",

@@ -30,6 +30,7 @@ export interface NiaddDetails {
   artist: string;
   genres: NiaddGenre[];
   status: string;
+  released?: string;
   mature: boolean;
 }
 
@@ -166,6 +167,7 @@ export function parseMangaDetails(html: string): NiaddDetails {
     artist: field("artista"),
     genres,
     status: normalizeStatus($(".book-status").first().text()),
+    released: field("rilasciato").match(/\d{4}/u)?.[0],
     mature: $(".chp-warn-box").length > 0,
   };
 }
@@ -275,12 +277,13 @@ export function extractChapterNumber(title: string, mangaTitle: string, href: st
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+/** Italian labels, consistent with MangaWorld and the fansub sources. */
 export function normalizeStatus(value: string): string {
   const cleaned = cleanText(value).replace(/^\(|\)$/gu, "");
-  if (!cleaned) return "Unknown";
-  if (/complet|termin|finito|conclus/iu.test(cleaned)) return "Completed";
-  if (/in corso|ongoing|serializz/iu.test(cleaned)) return "Ongoing";
-  if (/pausa|sospes|hiatus/iu.test(cleaned)) return "Hiatus";
+  if (!cleaned) return "";
+  if (/complet|termin|finito|conclus/iu.test(cleaned)) return "Completato";
+  if (/in corso|ongoing|serializz/iu.test(cleaned)) return "In corso";
+  if (/pausa|sospes|hiatus/iu.test(cleaned)) return "In pausa";
   return cleaned;
 }
 

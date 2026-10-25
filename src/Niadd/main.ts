@@ -25,7 +25,13 @@ import {
   type SourceManga,
 } from "@paperback/types";
 
-import { INFO_SYMBOLS, infoItems, relativeDateIt, shortSummary } from "../common/discover";
+import {
+  INFO_SYMBOLS,
+  detailInfo,
+  infoItems,
+  relativeDateIt,
+  shortSummary,
+} from "../common/discover";
 import {
   NIADD_BASE_URL,
   isChallengePage,
@@ -243,7 +249,11 @@ class NiaddExtension
             ? [{ id: "genres", title: "Generi", tags: details.genres }]
             : [],
         shareUrl: mangaUrl(mangaId),
-        additionalInfo: { Fonte: "Niadd", Lingua: "Italiano 🇮🇹" },
+        additionalInfo: detailInfo({
+          Fonte: "Niadd",
+          Lingua: "Italiano 🇮🇹",
+          Anno: details.released,
+        }),
       },
     };
   }

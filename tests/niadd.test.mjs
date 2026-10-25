@@ -48,7 +48,8 @@ await test("manga details expose title, cover, synopsis, people, genres and stat
     details.genres.map((genre) => genre.title),
     ["Azione", "Shounen", "Avventura"],
   );
-  assert.equal(details.status, "Ongoing");
+  assert.equal(details.status, "In corso");
+  assert.equal(details.released, "1997");
   assert.ok(details.secondaryTitles.length > 0);
   assert.equal(details.mature, false);
 });

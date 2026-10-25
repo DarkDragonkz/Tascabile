@@ -8,6 +8,7 @@ import {
   type TagSection,
 } from "@paperback/types";
 
+import { detailInfo, formatCountIt, formatDateIt } from "../common/discover";
 import FansubGeneral from "./main";
 import type { ComicDetailResponse } from "./models";
 
@@ -31,10 +32,18 @@ export class FansubGeneralParsers {
       status: comic.status ?? "",
       artist: comic.artist ?? "",
       author: comic.author ?? "",
-      rating: comic.rating / 10,
+      // The API rates 0-10 and returns null for unrated series.
+      rating: typeof comic.rating === "number" ? comic.rating / 10 : undefined,
       tagGroups: tagSections,
       shareUrl: comic.url || undefined,
-      additionalInfo: { Fonte: source.name, Lingua: "Italiano 🇮🇹" },
+      additionalInfo: detailInfo({
+        Fonte: source.name,
+        Lingua: "Italiano 🇮🇹",
+        Target: comic.target ?? undefined,
+        Capitoli: comic.chapters.length > 0 ? String(comic.chapters.length) : undefined,
+        Visualizzazioni: typeof comic.views === "number" ? formatCountIt(comic.views) : undefined,
+        "Ultimo aggiornamento": formatDateIt(new Date(comic.updated_at)),
+      }),
     };
     return { mangaId, mangaInfo: info };
   }
