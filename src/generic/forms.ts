@@ -247,11 +247,11 @@ class ContentSettings extends Form {
         {
           id: "adult_migration",
           footer:
-            "MangaWorld ha trasferito Doujinshi e contenuti +18 su MangaWorldAdult. L'opzione è attiva di default per evitare filtri e risultati non più affidabili sul sito classico.",
+            "MangaWorld ha trasferito Doujinshi e contenuti 18+ su MangaWorldAdult. L'opzione è attiva di default per evitare filtri e risultati non più affidabili sul sito classico.",
         },
         [
           ToggleRow("hide_migrated_adult_content", {
-            title: "Nascondi contenuti +18 trasferiti",
+            title: "Nascondi contenuti 18+ trasferiti",
             value: (Application.getState("hide_migrated_adult_content") as boolean) ?? true,
             onValueChange: Application.Selector(
               this as ContentSettings,
@@ -307,7 +307,7 @@ class MaintenanceSettings extends Form {
   }
 
   async testSite(): Promise<void> {
-    this.status = "Verifica in corso...";
+    this.status = "Verifica in corso…";
     this.reloadForm();
     try {
       this.source.requestManager.clearCache();
@@ -333,7 +333,7 @@ class MaintenanceSettings extends Form {
   }
 
   async refreshFilters(): Promise<void> {
-    this.status = "Aggiornamento filtri...";
+    this.status = "Aggiornamento filtri…";
     this.reloadForm();
     this.source.requestManager.clearCache();
     try {

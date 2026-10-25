@@ -26,6 +26,7 @@ export type CacheItem = {
 export type RawEntry = [key: string, index: number, data: unknown, meta?: { f?: number }];
 
 export interface Genre {
+  _id?: string;
   name: string;
   slug: string;
 }

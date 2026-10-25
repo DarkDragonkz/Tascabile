@@ -262,7 +262,7 @@ export function parseMangaDetailsHtml(
       synopsis,
       author: collectLinkText($, ["author=", "/author/"]),
       artist: collectLinkText($, ["artist=", "/artist/"]),
-      status: collectLinkText($, ["status=", "/status/"]) || "Unknown",
+      status: collectLinkText($, ["status=", "/status/"]),
       contentRating:
         source.defaultContentRating === ContentRating.ADULT
           ? ContentRating.ADULT

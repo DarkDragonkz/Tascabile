@@ -46,7 +46,9 @@ export class MangaWorldAdvancedSearchForm extends AdvancedSearchForm {
       filter
         .getGenreFilter()
         .filter((item) => !tags.blacklistedTags([item.id]))
-        .filter((item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value)),
+        .filter(
+          (item) => !isMigratedAdultGenreHidden(item.id) && !isMigratedAdultGenreHidden(item.value),
+        ),
     );
     const typeOptions = toTags(
       filter.getMangaTypeFilter().filter((item) => !types.blacklistedType(item.id)),

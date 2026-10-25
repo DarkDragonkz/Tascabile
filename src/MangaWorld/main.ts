@@ -12,7 +12,7 @@ import {
 
 import { INFO_SYMBOLS, infoItems, shortSummary } from "../common/discover";
 import { MangaWorldGeneric, jsonParser } from "../generic/main";
-import type { MangaMetadata } from "../generic/models";
+import type { Manga, MangaMetadata } from "../generic/models";
 import { HOME_CACHE_SECONDS } from "../generic/preferences";
 import pbconfig from "./pbconfig";
 
@@ -61,6 +61,9 @@ class MangaWorldExtension extends MangaWorldGeneric {
     try {
       const entries = jsonParser.getWindowEntry(html);
       const items: DiscoverSectionItem[] = [];
+      const global = entries.find((entry) => entry.kind === "global");
+      // Same hidden-content rules as every other Home section.
+      const visible = (manga: Manga) => this.homeContentRating(manga, entries);
 
       if (section.id === "popular_section") {
         const trending = entries.find((entry) => entry.kind === "trending");
@@ -69,7 +72,8 @@ class MangaWorldExtension extends MangaWorldGeneric {
           const imageUrl = this.normalizeUrl(manga.imageT || manga.image);
           const mangaId = `${manga.linkId ?? ""}/${manga.slug ?? ""}`.replace(/^\/+|\/+$/gu, "");
           const title = manga.title?.trim() ?? "";
-          if (!imageUrl || !mangaId.includes("/") || !title) continue;
+          const contentRating = visible(manga);
+          if (!imageUrl || !mangaId.includes("/") || !title || !contentRating) continue;
           items.push({
             type: "featuredCarouselItem",
             mangaId,
@@ -81,23 +85,23 @@ class MangaWorldExtension extends MangaWorldGeneric {
               { symbol: INFO_SYMBOLS.type, text: manga.typeT },
               { symbol: INFO_SYMBOLS.status, text: manga.statusT },
             ),
-            contentRating: pbconfig.contentRating,
+            contentRating,
           });
         }
       } else {
-        const global = entries.find((entry) => entry.kind === "global");
         for (const manga of global?.data.globalData.topMangas ?? []) {
           const imageUrl = this.normalizeUrl(manga.imageT || manga.image);
           const mangaId = `${manga.linkId ?? ""}/${manga.slug ?? ""}`.replace(/^\/+|\/+$/gu, "");
           const title = manga.title?.trim() ?? "";
-          if (!imageUrl || !mangaId.includes("/") || !title) continue;
+          const contentRating = visible(manga);
+          if (!imageUrl || !mangaId.includes("/") || !title || !contentRating) continue;
           items.push({
             type: "prominentCarouselItem",
             mangaId,
             imageUrl,
             title,
             subtitle: manga.typeT ?? "",
-            contentRating: pbconfig.contentRating,
+            contentRating,
           });
         }
       }

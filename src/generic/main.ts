@@ -34,7 +34,7 @@ import {
   parseSearchHtml,
   parseSimpleDiscoverHtml,
 } from "./htmlFallbacks";
-import type { MangaMetadata, MangaWorldSearchMetadata } from "./models";
+import type { Genre, Manga, MangaMetadata, MangaWorldSearchMetadata, WindowEntry } from "./models";
 import { MainInterceptor, Requests } from "./network";
 import { Parsers } from "./parsers";
 import {
@@ -288,7 +288,7 @@ export abstract class MangaWorldGeneric
     }
   }
 
-  private hiddenManga(genreSlugs: string[], type: string): boolean {
+  protected hiddenManga(genreSlugs: string[], type: string): boolean {
     return (
       tags.blacklistedTags(genreSlugs) ||
       genreSlugs.some((genre) => isMigratedAdultGenreHidden(genre)) ||
@@ -296,10 +296,35 @@ export abstract class MangaWorldGeneric
     );
   }
 
-  private rating(genreNames: string[]): ContentRating {
+  protected rating(genreNames: string[]): ContentRating {
     return this.defaultContentRating === ContentRating.ADULT
       ? ContentRating.ADULT
       : tags.getRating(genreNames);
+  }
+
+  /**
+   * Home payload mangas (trending, latest chapters) list genre IDs only; the global entry
+   * maps them to slug and name. Returns undefined when the user's settings hide the manga.
+   */
+  homeContentRating(manga: Manga, entries: WindowEntry[]): ContentRating | undefined {
+    const global = entries.find((entry) => entry.kind === "global");
+    const genreById = new Map(
+      (global?.data.globalData.genres ?? []).flatMap((genre) =>
+        genre._id ? [[genre._id, genre] as const] : [],
+      ),
+    );
+    const genres = ((manga.genres ?? []) as (Genre | string)[]).flatMap((genre) => {
+      const resolved = typeof genre === "string" ? genreById.get(genre) : genre;
+      return resolved ? [resolved] : [];
+    });
+    if (
+      this.hiddenManga(
+        genres.map((genre) => genre.slug),
+        manga.typeT ?? "",
+      )
+    )
+      return undefined;
+    return this.rating(genres.map((genre) => genre.name));
   }
 
   private async getHeroSection(

@@ -58,7 +58,8 @@ export class FansubGeneralParsers {
       chapNum: chapter.chapter ?? 0,
       title: chapter.title ?? chapter.full_title ?? "",
       version: chapter.teams[0]?.name ?? source.name,
-      volume: chapter.volume ?? 0,
+      // No volume rather than "Vol. 0" when the reader does not group chapters.
+      volume: chapter.volume || undefined,
       publishDate: new Date(chapter.published_on),
     }));
   }

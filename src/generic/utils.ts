@@ -239,7 +239,7 @@ export class JsonParser {
     const match = html.match(regex);
 
     if (!match?.[1]) {
-      throw new Error("No JSON Found");
+      throw new Error("MangaWorld: dati JSON non trovati nella pagina.");
     }
     const jsonText = match[1].trim();
     const json = JSON.parse(jsonText) as JsonData;

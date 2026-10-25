@@ -20,7 +20,7 @@ import { filter, jsonParser, tags, types } from "./utils";
 
 export class Parsers {
   private normalizeCoverUrl(source: MangaWorldGeneric, imageT?: string, image?: string): string {
-    const rawUrl = imageT && imageT.trim().length > 0 ? imageT : image ?? "";
+    const rawUrl = imageT && imageT.trim().length > 0 ? imageT : (image ?? "");
     const trimmedUrl = rawUrl.trim();
     if (trimmedUrl.length === 0) return "";
     if (trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")) return trimmedUrl;
@@ -78,7 +78,7 @@ export class Parsers {
       chapterId: chapter.id,
       sourceManga,
       langCode: "it",
-      chapNum: Number(chapter.name.split(" ")[1] ?? 1),
+      chapNum: firstNumber(chapter.name) ?? 0,
       title: chapter.title ?? chapter.name ?? "",
       // `subs` is the pre-1.0.0-alpha.37 key, still present in saved library entries.
       version:
@@ -97,7 +97,7 @@ export class Parsers {
         const volumeChapters = (elements.volumes ?? []).flatMap((volume) =>
           volume.chapters.map((chapter) => ({
             ...this.baseChapterData(chapter, sourceManga),
-            volume: Number(volume.volume.name.split(" ")[1] ?? 1),
+            volume: firstNumber(volume.volume.name),
             additionalInfo: {
               icon: volume.volume.imageT ?? "",
               name: volume.volume.name ?? "",
@@ -215,7 +215,9 @@ export class Parsers {
         name: filterItem.value,
         metadata,
         contentRating:
-          source.defaultContentRating === ContentRating.ADULT ? ContentRating.ADULT : ContentRating.EVERYONE,
+          source.defaultContentRating === ContentRating.ADULT
+            ? ContentRating.ADULT
+            : ContentRating.EVERYONE,
       });
     }
 
@@ -348,13 +350,15 @@ export class Parsers {
   async parseChapterUpdateSection(
     metadata: MangaMetadata,
     source: MangaWorldGeneric,
-  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata }> {
+  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata | undefined }> {
     const page = metadata?.page ?? 1;
     let html = "";
     const updates: ChapterUpdatesCarouselItem[] = [];
 
     if (page == 1) {
-      html = Application.arrayBufferToUTF8String(await source.requestManager.fetchPage(source.base_url));
+      html = Application.arrayBufferToUTF8String(
+        await source.requestManager.fetchPage(source.base_url),
+      );
     } else {
       const data = (
         await Application.scheduleRequest({
@@ -370,15 +374,14 @@ export class Parsers {
       if (kind !== "manga") continue;
       const { manga, chapters } = data;
       const firstChapter = chapters?.[0];
-      if (firstChapter) {
+      // Hidden genres/types and adult ratings apply here like in every other section.
+      const contentRating = source.homeContentRating(manga, windowEntry);
+      if (firstChapter && contentRating) {
         updates.push({
           chapterId: firstChapter.id ?? "",
           type: "chapterUpdatesCarouselItem",
           publishDate: new Date(firstChapter.createdAt),
-          contentRating:
-            source.defaultContentRating === ContentRating.ADULT
-              ? ContentRating.ADULT
-              : source.defaultContentRating,
+          contentRating,
           imageUrl: this.normalizeCoverUrl(source, manga.imageT, manga.image),
           mangaId: `${manga.linkId}/${manga.slug}`,
           title: manga.title ?? "",
@@ -387,6 +390,14 @@ export class Parsers {
       }
     }
 
-    return { items: updates, metadata: { page: page + 1 } };
+    // A page without manga entries is past the end: stop instead of paging forever.
+    const hasManga = windowEntry.some((entry) => entry.kind === "manga");
+    return { items: updates, metadata: hasManga ? { page: page + 1 } : undefined };
   }
+}
+
+/** "Capitolo 28.5" → 28.5, "Volume 03" → 3; undefined for names without a number ("Oneshot"). */
+function firstNumber(name: string | undefined): number | undefined {
+  const parsed = Number.parseFloat(name?.match(/\d+(?:[.,]\d+)?/u)?.[0]?.replace(",", ".") ?? "");
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
