@@ -51,6 +51,12 @@ const SAFE_ID_TARGET = `  private toSafeId(slug: string): string {
     });
   }`;
 
+// ExtensionInfo is a type-only export; bundlers reject it as a value import.
+const PBCONFIG_IMPORT_TARGET =
+  'import { ContentRating, ExtensionInfo, SourceIntents } from "@paperback/types";';
+const PBCONFIG_IMPORT_REPLACEMENT =
+  'import { ContentRating, SourceIntents, type ExtensionInfo } from "@paperback/types";';
+
 async function getJson(url) {
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`GitHub ${response.status}: ${url}`);
@@ -235,6 +241,11 @@ async function applyCompatibilityPatches() {
 
   await patchFile("src/Batcave/pbconfig.ts", [
     {
+      label: "Batcave type-only ExtensionInfo import",
+      target: PBCONFIG_IMPORT_TARGET,
+      replacement: PBCONFIG_IMPORT_REPLACEMENT,
+    },
+    {
       label: "Batcave Tascabile version bump",
       target: '  version: "1.4.9.1",',
       replacement: '  version: "1.4.9.4",',
@@ -394,6 +405,11 @@ async function applyCompatibilityPatches() {
   ]);
 
   await patchFile("src/ReadComicsOnline/pbconfig.ts", [
+    {
+      label: "Read Comics Online type-only ExtensionInfo import",
+      target: PBCONFIG_IMPORT_TARGET,
+      replacement: PBCONFIG_IMPORT_REPLACEMENT,
+    },
     {
       label: "Read Comics Online Tascabile version bump",
       target: '  version: "1.4.14.1",',

@@ -9,3 +9,12 @@ yarn-error.log*
 .pnpm-debug.log*
 *.tsbuildinfo
 node_modules/.cache/
+
+# Comics generati da `npm run sync:comics` (non versionare: vedi scripts/)
+src/Batcave/
+src/ReadComicsOnline/
+src/ReadComicOnline/
+src/utils/mmrcms/
+
+# ZIP e repository di riferimento locali (solo studio, mai committare)
+_reference_repos/
