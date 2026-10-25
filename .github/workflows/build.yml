@@ -29,6 +29,8 @@ jobs:
           package-manager-cache: false
       - name: Install Dependencies
         run: npm install
+      - name: Core Regression Tests
+        run: npm run test:core
       - name: Sync Comic Reader Sources
         run: npm run sync:comics
         env:

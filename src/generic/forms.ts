@@ -14,7 +14,7 @@ import {
 
 import type { MangaWorldGeneric } from "./main";
 import { isMigratedAdultGenreHidden } from "./preferences";
-import { filter, tags } from "./utils";
+import { filter, jsonParser, tags } from "./utils";
 
 function optionList(items: { id: string; value: string }[]) {
   return items.map(({ id, value }) => ({ id, title: value }));
@@ -312,7 +312,20 @@ class MaintenanceSettings extends Form {
     try {
       this.source.requestManager.clearCache();
       const html = await this.source.requestManager.fetchText(this.source.base_url, 0);
-      this.status = html.length > 1000 ? "MangaWorld raggiungibile" : "Risposta inattesa dal sito";
+      let recognized = false;
+      try {
+        recognized = jsonParser
+          .getWindowEntry(html)
+          .some(
+            (entry) =>
+              entry.kind === "global" || entry.kind === "trending" || entry.kind === "search",
+          );
+      } catch {
+        // A successful HTTP response can still be a challenge or an error page.
+      }
+      this.status = recognized
+        ? "MangaWorld raggiungibile"
+        : "Risposta inattesa: riprova o verifica il sito";
     } catch {
       this.status = "MangaWorld non raggiungibile";
     }
@@ -323,10 +336,15 @@ class MaintenanceSettings extends Form {
     this.status = "Aggiornamento filtri...";
     this.reloadForm();
     this.source.requestManager.clearCache();
-    await filter.populateFilter(this.source, true);
-    this.status = "Filtri aggiornati";
-    this.reloadForm();
-    Application.invalidateDiscoverSections();
+    try {
+      await filter.populateFilter(this.source, true);
+      this.status = "Filtri aggiornati";
+      Application.invalidateDiscoverSections();
+    } catch {
+      this.status = "Aggiornamento non riuscito. Riprova.";
+    } finally {
+      this.reloadForm();
+    }
   }
 
   async clearNetworkCache(): Promise<void> {

@@ -53,12 +53,15 @@ MangaWorld usa il JSON `$MC` quando disponibile e fallback HTML per resistere ai
 
 ```bash
 npm install
+npm run test:core
 npm run sync:comics
 npm run tsc
 npm run lint:check
 npm run format:check
 npm run bundle
 ```
+
+`npm run test:core` verifica senza rete la cache concorrente, l'invalidazione, i filtri persistiti, i capitoli misti e la diagnostica usando risposte simulate e fixture locali.
 
 Il workflow `Build and Deploy` esegue gli stessi controlli e pubblica `bundles` su `gh-pages` soltanto dopo il completamento dei check.
 

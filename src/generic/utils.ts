@@ -56,6 +56,21 @@ export class Type {
   };
 }
 
+function isOptionList(value: unknown): value is OptionItem[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (item: unknown) =>
+        typeof item === "object" &&
+        item !== null &&
+        "id" in item &&
+        typeof item.id === "string" &&
+        "value" in item &&
+        typeof item.value === "string",
+    )
+  );
+}
+
 export class FilterPreferences {
   private yearFilter: OptionItem[] = [];
   private genreFilter: OptionItem[] = [];
@@ -95,12 +110,23 @@ export class FilterPreferences {
       const year = Application.getState(".year") as string | undefined;
 
       if (genres && type && status && sort && year) {
-        this.genreFilter = JSON.parse(genres) as OptionItem[];
-        this.mangaTypeFilter = JSON.parse(type) as OptionItem[];
-        this.statusFilter = JSON.parse(status) as OptionItem[];
-        this.orderFilter = JSON.parse(sort) as OptionItem[];
-        this.yearFilter = JSON.parse(year) as OptionItem[];
-        return;
+        try {
+          const values = [genres, type, status, sort, year].map(
+            (value) => JSON.parse(value) as unknown,
+          );
+          if (values.every(isOptionList)) {
+            [
+              this.genreFilter,
+              this.mangaTypeFilter,
+              this.statusFilter,
+              this.orderFilter,
+              this.yearFilter,
+            ] = values;
+            return;
+          }
+        } catch {
+          // Refetch corrupted persisted data instead of blocking settings and search.
+        }
       }
     }
 
@@ -137,23 +163,12 @@ export class FilterPreferences {
   }
 
   extractOptionJSON(windowEntry: WindowEntry[]): { genres: OptionItem[]; year: OptionItem[] } {
-    for (const entry of windowEntry) {
-      if (entry.kind === "global") {
-        return {
-          genres: this.mapGenresToOptionItem(entry.data.globalData.genres),
-          year: this.mapStringToOptionItem([]),
-        };
-      }
-
-      if (entry.kind === "search") {
-        return {
-          genres: [],
-          year: this.mapStringToOptionItem(entry.data.years),
-        };
-      }
-    }
-
-    return { genres: [], year: [] };
+    const global = windowEntry.find((entry) => entry.kind === "global");
+    const search = windowEntry.find((entry) => entry.kind === "search");
+    return {
+      genres: this.mapGenresToOptionItem(global?.data.globalData.genres),
+      year: this.mapStringToOptionItem(search?.data.years ?? []),
+    };
   }
 
   mapGenresToOptionItem(genres?: Genre[] | null): OptionItem[] {
@@ -239,26 +254,23 @@ export class JsonParser {
   }
 
   findChapterData(page: Pages, chapterId: string) {
-    if (page.volumes.length > 0) {
-      for (const volume of page.volumes) {
-        const chapter = volume.chapters.find((candidate) => candidate.id === chapterId);
-        if (chapter) {
-          return {
-            chapterURL: `${volume.volume.slugFolder}-${volume.volume.id}/${chapter.slugFolder}-${chapter.id}`,
-            mangaId: volume.volume.manga,
-            pages: chapter.pages,
-          };
-        }
-      }
-    } else {
-      const chapter = page.singleChapters.find((candidate) => candidate.id === chapterId);
+    for (const volume of page.volumes) {
+      const chapter = volume.chapters.find((candidate) => candidate.id === chapterId);
       if (chapter) {
         return {
-          chapterURL: `${chapter.slugFolder}-${chapter.id}`,
-          mangaId: chapter.manga,
+          chapterURL: `${volume.volume.slugFolder}-${volume.volume.id}/${chapter.slugFolder}-${chapter.id}`,
+          mangaId: volume.volume.manga,
           pages: chapter.pages,
         };
       }
+    }
+    const chapter = page.singleChapters.find((candidate) => candidate.id === chapterId);
+    if (chapter) {
+      return {
+        chapterURL: `${chapter.slugFolder}-${chapter.id}`,
+        mangaId: chapter.manga,
+        pages: chapter.pages,
+      };
     }
     return null;
   }

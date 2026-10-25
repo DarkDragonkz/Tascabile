@@ -8,7 +8,7 @@ import {
 export const basePbConfig = {
   name: "",
   description: "",
-  version: "1.2.0",
+  version: "1.2.1",
   icon: "icon.png",
   language: "it",
   capabilities: [
