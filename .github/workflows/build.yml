@@ -21,13 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Install Dependencies
         run: npm install
+      - name: Sync Comic Reader Sources
+        run: npm run sync:comics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: TypeScript Check
         run: npm run tsc
       - name: Lint Check
@@ -44,13 +49,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Install Dependencies
         run: npm install
+      - name: Sync Comic Reader Sources
+        run: npm run sync:comics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Bundle Extensions
         run: npm run bundle
       - name: Deploy to GitHub Pages

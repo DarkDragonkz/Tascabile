@@ -1,26 +1,47 @@
 # Tascabile
 
-Repository di estensioni Paperback 0.9 mantenuta da **DarkDragonkz**.
+Repository di estensioni **Paperback 0.9 principalmente dedicata a fonti italiane**, mantenuta da **DarkDragonkz**.
 
-Questa repository è impostata come base TypeScript per Paperback 0.9, usando `@paperback/toolchain`, `@paperback/types`, `cheerio`, `oxlint`, `oxfmt`, `husky` e GitHub Actions.
+L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali Tascabile include reader Comics in inglese selezionati e mantenuti separatamente quando non esistono equivalenti italiani sufficientemente affidabili.
 
-## Stato attuale
+## Manga e scanlation in italiano
 
-La source **MangaWorld** è stata aggiunta usando come riferimento tecnico i file reali dello ZIP `mangaworld-extensions-0.9-stable`.
+- MangaWorld
+- GTOTheGreatSite
+- HastaTeam
+- HastaTeamDDT
+- LupiTeam
+- PhoenixScans
+- TuttoAnimeManga
 
-Dati source:
+NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile.
 
-| Campo | Valore |
-|---|---|
-| Nome | MangaWorld |
-| URL base | `https://www.mangaworld.mx` |
-| Lingua | Italiano |
-| Rating | Adult |
-| Tipologia | Manga, manhwa, manhua, novel |
-| Login | No |
-| Tracker | No |
+Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al catalogo e alle caratteristiche della singola fonte. Condividono soltanto infrastruttura tecnica di basso livello come rete, cache, parsing e normalizzazione URL. MangaWorld mantiene la propria UI nativa separata.
 
-Nota: il codice di riferimento ricava i dati dal JSON `$MC` incorporato nelle pagine HTML MangaWorld. Non è stata verificata una API JSON pubblica separata. Il sito live non è risultato recuperabile dagli strumenti web disponibili durante questa modifica, quindi Cloudflare/protezioni anti-bot e referer immagini devono essere verificati da ambiente locale/Paperback.
+## Comics in inglese
+
+- Batcave
+- Read Comics Online
+
+`ReadComicOnline` è disabilitata perché il relativo sito è offline. Non viene più sincronizzata, compilata o inclusa nei bundle pubblicati.
+
+I reader Comics attivi vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `cf43397bb1b90521629291599cee312fcf30f0f5` del 22 agosto 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+
+### Cloudflare
+
+Batcave e Read Comics Online eseguono una verifica preventiva del dominio prima di caricare la Home. Se il sito richiede una challenge, Paperback la segnala subito invece di far partire più richieste concorrenti. I prompt Cloudflare vengono inoltre deduplicati e i cookie ottenuti dal bypass vengono riutilizzati e conservati localmente per ridurre le verifiche ripetute.
+
+## Prestazioni immagini
+
+Tascabile normalizza gli URL immagine su HTTPS, elimina URL duplicati/non validi, usa header `Referer`/`User-Agent` coerenti e mantiene cache brevi delle risposte API. MangaWorld usa direttamente gli URL finali del CDN e recupera l'intero elenco pagine del capitolo prima di aprire il reader.
+
+La velocità finale delle immagini dipende comunque anche dal server/CDN della singola fonte: l'estensione evita ritardi e redirect evitabili, ma non riduce qualità o risoluzione delle tavole.
+
+## MangaWorld
+
+URL base: `https://www.mangaworld.mx`
+
+MangaWorld usa il JSON `$MC` quando disponibile e fallback HTML per resistere ai cambiamenti del sito. Il reader recupera prima l'elenco completo delle pagine dal payload manga e usa la pagina `/read/<chapterId>` solo come fallback.
 
 ## Requisiti
 
@@ -28,121 +49,25 @@ Nota: il codice di riferimento ricava i dati dal JSON `$MC` incorporato nelle pa
 - npm
 - Paperback 0.9
 
-## Installazione
+## Verifica
 
 ```bash
 npm install
-```
-
-## Comandi disponibili
-
-```bash
+npm run sync:comics
 npm run tsc
-npm run lint
 npm run lint:check
-npm run format
 npm run format:check
 npm run bundle
-npm run test
-npm run serve
-npm run dev
-npm run logcat
 ```
 
-## Struttura
+Il workflow `Build and Deploy` esegue gli stessi controlli e pubblica `bundles` su `gh-pages` soltanto dopo il completamento dei check.
 
-```text
-.github/workflows/build.yml
-.vscode/extensions.json
-.vscode/settings.json
-.husky/pre-push
-src/MangaWorld/main.ts
-src/MangaWorld/pbconfig.ts
-src/generic/config.ts
-src/generic/forms.ts
-src/generic/main.ts
-src/generic/models.ts
-src/generic/network.ts
-src/generic/parsers.ts
-src/generic/utils.ts
-src/common/errors.ts
-src/common/http.ts
-src/common/html.ts
-src/common/dates.ts
-src/common/urls.ts
-src/common/images.ts
-README.md
-package.json
-tsconfig.json
-.oxlintrc.json
-.oxfmtrc.json
-.gitignore
-LICENSE
-```
-
-## Pattern source Paperback 0.9
-
-Dalle repository di riferimento analizzate, una source reale Paperback 0.9 usa questo schema:
-
-```text
-src/<NomeSource>/main.ts
-src/<NomeSource>/pbconfig.ts
-src/<NomeSource>/static/icon.png
-```
-
-File aggiuntivi come `network.ts`, `parsers.ts`, `models.ts`, `forms.ts`, `settings.ts`, `interceptors.ts` o cartelle `implementations/` vengono creati solo quando servono alla source.
-
-## Pubblicazione GitHub Pages
-
-Il workflow `Build and Deploy` esegue:
-
-1. installazione dipendenze;
-2. controllo TypeScript;
-3. controllo lint;
-4. controllo format;
-5. bundle con `paperback-cli bundle`;
-6. deploy della cartella `bundles` su branch `gh-pages`.
-
-Dopo il primo deploy, in GitHub abilita Pages da:
-
-```text
-Settings > Pages > Deploy from a branch > gh-pages > /(root)
-```
-
-URL previsto della repository Paperback:
+Repository Paperback:
 
 ```text
 https://darkdragonkz.github.io/Tascabile
 ```
 
-## Verifica locale
+## Crediti
 
-```bash
-npm install
-npm run tsc
-npm run lint:check
-npm run format:check
-npm run bundle
-npm run test
-npm run serve
-```
-
-## Dati necessari per nuove source
-
-Per ogni nuova source servono:
-
-1. nome source;
-2. URL base;
-3. lingua;
-4. indicazione adult/NSFW;
-5. tipo contenuto;
-6. URL home;
-7. URL ricerca;
-8. URL esempio opera;
-9. URL esempio capitolo;
-10. eventuale login;
-11. eventuale referer immagini;
-12. eventuali API JSON;
-13. eventuali protezioni Cloudflare o anti-bot;
-14. eventuali filtri;
-15. funzionalità richieste: sola lettura, tracker o extra.
+MangaWorld deriva dal lavoro GPL-3.0-or-later di Inkdex. Le fonti fansub italiane derivano da Sinon-Paperback-Extensions/Catta1997 (MIT). I reader Comics derivano da Nicartjay/PaperbackExt e dai relativi port Keiyoushi (MIT); vedere `THIRD_PARTY_NOTICES.md`.
