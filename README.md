@@ -13,8 +13,9 @@ L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali 
 - LupiTeam
 - PhoenixScans
 - TuttoAnimeManga
+- Niadd
 
-NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile.
+NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile. **Niadd** (`it.niadd.com`) usa lo stesso backend di NineManga e ne riprende la logica italiana: liste, ricerca, dettagli, elenco capitoli e reader a pagine `-10-N` con elenco immagini completo.
 
 Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al catalogo e alle caratteristiche della singola fonte. Condividono soltanto infrastruttura tecnica di basso livello come rete, cache, parsing e normalizzazione URL. MangaWorld mantiene la propria UI nativa separata.
 

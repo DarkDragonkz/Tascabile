@@ -38,10 +38,11 @@ L'esperienza d'uso viene valutata **principalmente su Paperback mobile**: home/e
 | **TuttoAnimeManga** | fansub IT | Inclusa; `src/TuttoAnimeManga/`; UI dedicata. |
 | **Batcave** | comics EN | Attiva, generata durante la build da upstream bloccato a una revisione specifica. |
 | **Read Comics Online** (`ReadComicsOnline`) | comics EN | Attiva, generata durante la build. **Non confonderla con `ReadComicOnline`.** |
+| **Niadd** | manga IT | Inclusa dal 25/10/2026; `src/Niadd/`; stesso backend di NineManga (`it.niadd.com`), logica italiana riadattata; versione `1.0.0`; test offline in `tests/niadd.test.mjs` con fixture `fixtures/niadd/`. Le liste del sito non sono paginabili (60 titoli); gli URL immagine sono firmati e a scadenza. |
 | **NineManga** | legacy IT/EN | **Disabilitata:** codice storico in `src/NineManga/`, ma configurazione `pbconfig.ts.disabled`; non pubblicarla finché il sito è indisponibile/instabile. |
 | **ReadComicOnline** (senza *s*) | comics EN | **Disabilitata:** sito segnalato offline; esclusa da sync, compilazione e bundle. |
 
-Risultato: **9 fonti attive previste**, di cui 7 italiane e 2 Comics inglesi. Il numero indica la configurazione del repository, **non** una verifica in tempo reale della disponibilità di tutti i siti.
+Risultato: **10 fonti attive previste**, di cui 8 italiane e 2 Comics inglesi. Il numero indica la configurazione del repository, **non** una verifica in tempo reale della disponibilità di tutti i siti.
 
 Le sei fonti fansub condividono la versione base `1.2.0` su `main`, definita in `src/FansubGeneric/basePbConfig.ts`. La versione root del progetto in `package.json` è `1.1.0-alpha.1`: **non confonderla con la versione di ogni singola estensione**.
 
