@@ -59,12 +59,14 @@ abstract class FansubGeneral
     this.defaultContentRating = params.contentRating ?? ContentRating.EVERYONE;
     this.parser = new FansubGeneralParsers();
     this.requestManager = new APIRequests(this.base_url);
-    this.mainRateLimiter = new BasicRateLimiter(`fansub-${params.name}`, {
+    // Display names contain spaces ("Phoenix Scans"); keep interceptor IDs space-free.
+    const interceptorId = `fansub-${params.name.replace(/\s+/gu, "")}`;
+    this.mainRateLimiter = new BasicRateLimiter(interceptorId, {
       numberOfRequests: 4,
       bufferInterval: 1,
       ignoreImages: true,
     });
-    this.mainInterceptor = new MainInterceptor(`fansub-${params.name}`, this.siteRoot);
+    this.mainInterceptor = new MainInterceptor(interceptorId, this.siteRoot);
   }
 
   async initialise(): Promise<void> {

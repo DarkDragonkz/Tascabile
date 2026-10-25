@@ -533,7 +533,7 @@ const BATCAVE_SECURE_IMAGE_FUNCTION = [
   "",
   "    let resolved: string;",
   '    if (value.startsWith("//")) {',
-  '      resolved = `https:${value}`;',
+  "      resolved = `https:${value}`;",
   '    } else if (value.startsWith("http://")) {',
   '      resolved = `https://${value.slice("http://".length)}`;',
   '    } else if (value.startsWith("https://")) {',
@@ -544,9 +544,9 @@ const BATCAVE_SECURE_IMAGE_FUNCTION = [
   "",
   "    // BatCave-local images stay direct. Every external image is fetched server-side",
   "    // through a fixed HTTPS endpoint so an origin redirect can never send iOS to HTTP.",
-  '    if (resolved === BASE_URL || resolved.startsWith(`${BASE_URL}/`)) return resolved;',
+  "    if (resolved === BASE_URL || resolved.startsWith(`${BASE_URL}/`)) return resolved;",
   '    const proxySource = resolved.replace(/^https?:\\/\\//u, "");',
-  '    return `https://images.weserv.nl/?url=${encodeURIComponent(proxySource)}&q=100`;',
+  "    return `https://images.weserv.nl/?url=${encodeURIComponent(proxySource)}&q=100`;",
   "  }",
 ].join("\n");
 
@@ -611,4 +611,6 @@ if (batcave.includes('id: "popular",\n        title: "Popular"')) {
   throw new Error("BatCave legacy discover UI is still present.");
 }
 
-console.log("Applied dedicated BatCave and Read Comics Online UI; BatCave external images are ATS-safe.");
+console.log(
+  "Applied dedicated BatCave and Read Comics Online UI; BatCave external images are ATS-safe.",
+);

@@ -4,8 +4,9 @@ import { basePbConfig } from "../FansubGeneric/basePbConfig";
 
 const pbConfig = { ...basePbConfig };
 
-pbConfig.name = "PhoenixScans";
-pbConfig.description = "Manga e scanlation in italiano da Phoenix Scans.";
+pbConfig.name = "Phoenix Scans";
+pbConfig.description =
+  "Scanlation italiane di Phoenix Scans: ultime uscite, serie aggiornate di recente e catalogo completo.";
 pbConfig.language = "it";
 pbConfig.icon = "icon.png";
 pbConfig.contentRating = ContentRating.EVERYONE;

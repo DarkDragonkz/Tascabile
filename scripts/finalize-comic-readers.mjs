@@ -584,7 +584,7 @@ const batcave = await readFile("src/Batcave/main.ts", "utf8");
 if (!batcave.includes("latestCoverUrl")) {
   throw new Error("BatCave Latest Updates cover protection was not installed.");
 }
-if (!batcave.includes('pages.push(this.absoluteUrl(trimmed));')) {
+if (!batcave.includes("pages.push(this.absoluteUrl(trimmed));")) {
   throw new Error("BatCave chapter pages are no longer using direct image routing.");
 }
 if (batcave.includes('title: "Ultime uscite"')) {

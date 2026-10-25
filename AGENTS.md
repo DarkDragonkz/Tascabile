@@ -61,7 +61,8 @@ Questa è una cronologia sintetica, non un invito a ripetere modifiche già appl
 
 8. **25 ottobre — Home e dipendenze.** `@paperback/types`/`toolchain` `alpha.92` sono l'ultima release (il tag npm `latest` punta a una vecchia `alpha.64`: ignorarlo); aggiornato solo `oxfmt` a 0.74. I caroselli in evidenza usano i campi `summary` e `infoItems` (badge SF Symbols, max 2) tramite `src/common/discover.ts`: fansub (data ultimo capitolo + autore), MangaWorld *In tendenza* (trama + tipologia/stato), Niadd *Più popolari* (trama + data/generi), BatCave *Top rated* (trama + editore/anno, via `finalize-comic-readers.mjs`). ReadComicsOnline non arricchito: la lista non espone quei dati e mancano fixture. Liste fansub con `thumbnail_small` (copertine leggere). Le icone SF Symbols vanno verificate su iPhone.
 9. **25 ottobre — upstream Comics e schede.** Pin `Nicartjay/PaperbackExt` aggiornato a `a6ef7b8` (15/10/2026): unico cambio di codice per noi gli header `sec-fetch-*` di BatCave (ricerca rifiutata dal sito senza di essi); versioni upstream BatCave `1.4.12.1`, RCO `1.4.15.2` → Tascabile `1.4.12.6` / `1.4.15.6`. Schede: fansub con valutazione solo se presente (prima `NaN` per ~22% delle serie con `rating: null`) e righe Target/Capitoli/Visualizzazioni/Ultimo aggiornamento; MangaWorld con gruppo "Generi", righe Fansub/Tipologia/Anno (la chiave storica `subs` resta letta come fallback per le voci di libreria salvate); Niadd con stato in italiano e Anno. Versioni: fansub `1.2.4`, MangaWorld `alpha.37`, Niadd `1.0.2`.
-10. **25 ottobre — Niadd inglese/spagnolo: esclusi.** `www`/`es.niadd.com` cifrano i link capitolo (`/go/rds/?data=…`, che cambia a ogni caricamento) verso domini pubblicitari a rotazione; `/go/jump/` porta sempre ad articoli pubblicitari; il reader interno mostra le immagini solo aggirando il controllo sul Referer, considerato un bypass anti-bot e quindi escluso. `br`, `fr`, `ru` funzionano con link interni come l'italiano e sono selezionabili. **`de` escluso**: tutte le immagini (anche capitoli 2024) passano da `wimg.movietop.cc` → `optest.niadd.com/rebuid_webp.php` → `wie.mangadogs.com`, dominio che non risolve più; il guasto è del sito, non del parser. Ricontrollare prima di riattivarlo.
+10. **25 ottobre — Niadd inglese/spagnolo: esclusi.** `www`/`es.niadd.com` cifrano i link capitolo (`/go/rds/?data=…`, che cambia a ogni caricamento) verso domini pubblicitari a rotazione; `/go/jump/` porta sempre ad articoli pubblicitari; il reader interno mostra le immagini solo aggirando il controllo sul Referer, considerato un bypass anti-bot e quindi escluso. Confermato con catture HAR del proprietario (25/10, conservate solo in locale in `_reference_repos/niadd-har/`): il lettore viene servito **solo** a navigazioni con `Referer` di un gateway pubblicitario (`explorefunctionality.com`, `mechanismexplained.com`…), nessun cookie coinvolto, nessuna verifica Cloudflare; aprendo lo stesso URL direttamente (anche via `techsmartideas.com/go/nien/<cid>-`) il browser riceve l'articolo civetta. Non esiste un equivalente legittimo del `cf_clearance` di NineManga: **non riaprire** senza un cambiamento del sito. `br`, `fr`, `ru` funzionano con link interni come l'italiano e sono selezionabili. **`de` escluso**: tutte le immagini (anche capitoli 2024) passano da `wimg.movietop.cc` → `optest.niadd.com/rebuid_webp.php` → `wie.mangadogs.com`, dominio che non risolve più; il guasto è del sito, non del parser. Ricontrollare prima di riattivarlo.
+11. **25 ottobre — revisione generale.** MangaWorld: *In tendenza*, *Più letti del mese* e *Ultimi capitoli* ora applicano generi/tipologie nascosti e la classificazione 18+ (prima ignorati: nel payload della Home i generi sono ID, risolti con `globalData.genres` in `MangaWorldGeneric.homeContentRating`; test `tests/mangaworld-home.test.mjs`); *Ultimi capitoli* non pagina più all'infinito; numeri capitolo/volume senza `NaN`. Fansub: niente "Vol. 0", nomi visualizzati leggibili (l'ID resta il nome della cartella, `config.id = file` nella toolchain) e descrizioni specifiche. Rimossi sei moduli morti di `src/common/`; formattazione estesa a tutto il repository (`.prettierignore`); testi uniformati ("18+", "…"); README riscritto; notice GPL per MangaWorld/`generic`; `.vscode` allineato a oxc e TypeScript 7. Versioni: fansub `1.2.5`, MangaWorld `alpha.38`.
 
 **Attenzione ai nomi dei repository storici:** in alcune conversazioni compare `DarkDragonkz/Paperback_Project`. Per questo lavoro, il repository canonico da ispezionare e aggiornare è **`DarkDragonkz/Tascabile`**. Non fondere automaticamente stati, branch o modifiche di repository diversi.
 
@@ -72,19 +73,23 @@ Tascabile/
 ├── .github/workflows/build.yml    # CI e deploy GitHub Pages
 ├── .vscode/                       # impostazioni dell'editor
 ├── fixtures/                      # HTML catturato per casi di prova offline
-│   ├── mangaworld/
-│   ├── ninemanga/
+│   ├── mangaworld/                # home-2026-10.html usata dai test della Home
+│   ├── niadd/                     # it (radice) + br/, fr/, ru/
+│   ├── ninemanga/                 # storico
 │   ├── batcave/
-│   └── readallcomics/
+│   └── readallcomics/             # solo riferimento: nessuna fonte ReadAllComics nel progetto
 ├── scripts/
 │   ├── sync-comic-readers.mjs      # recupera sorgenti Comics pinning upstream
 │   ├── customize-comic-readers.mjs # applica personalizzazioni
 │   ├── finalize-comic-readers.mjs  # finalizza le modifiche
-│   └── repair-generated-comics.mjs # ripara output generato
+│   ├── repair-generated-comics.mjs # ripara output generato
+│   └── clean-ninemanga-fixtures.mjs # storico: ripulisce le fixture NineManga
+├── tests/                         # test offline (node --test), eseguiti da `npm run test:core`
 ├── src/
-│   ├── common/                    # helper generali: date, errori, HTML, HTTP, immagini, URL
+│   ├── common/                    # requestCache (cache condivisa) e discover (badge/date/info delle schede)
 │   ├── generic/                   # motore MangaWorld: rete, parser, ricerca, form, preferenze, fallback
 │   ├── MangaWorld/                # entrypoint e configurazione MangaWorld
+│   ├── Niadd/                     # Niadd multilingua (it/br/fr/ru)
 │   ├── FansubGeneric/             # motore condiviso SOLO delle sei fonti fansub
 │   ├── GTOTheGreatSite/
 │   ├── HastaTeam/
@@ -143,7 +148,7 @@ npm run format:check
 npm run bundle
 ```
 
-Scorciatoie disponibili: `npm run test` esegue sync + TypeScript + lint + formato + bundle; `npm run dev` serve le estensioni in watch mode; `npm run logcat` aiuta la diagnostica. Il sync Comics necessita di rete/API GitHub. `npm run test:core` (test offline, PR #27) è disponibile su `main` dal 25/10/2026 ed è eseguito anche in CI e da `npm run test`.
+Scorciatoie disponibili: `npm run test` esegue test offline + sync + TypeScript + lint + formato + bundle; `format`/`format:check` coprono tutto il repository tranne quanto escluso da `.gitignore` e `.prettierignore` (fixture, NineManga, Markdown, lockfile); `npm run dev` serve le estensioni in watch mode; `npm run logcat` aiuta la diagnostica. Il sync Comics necessita di rete/API GitHub. `npm run test:core` (test offline, PR #27) è disponibile su `main` dal 25/10/2026 ed è eseguito anche in CI e da `npm run test`.
 
 Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/stable`, PR e lancio manuale. Il job **Check** installa, sincronizza, controlla TS/lint/formattazione e genera bundle. Il job **Deploy**, assente sulle PR, pubblica la directory `bundles/` nel branch `gh-pages`. Non considerare una PR, un commit pushato o una CI verde equivalenti a un aggiornamento installato su Paperback.
 
@@ -187,7 +192,7 @@ Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/sta
 ## 9. Roadmap suggerita (non equivale a lavoro approvato)
 
 1. ~~Verificare e decidere sulla PR #27~~ — unita il 25/10/2026; resta la verifica su dispositivo (punto 2).
-2. **Smoke test reale di tutte le 9 fonti attive**, prima MangaWorld (Home, tendenza, filtri, reader completo), poi sei fansub, poi due reader Comics con Cloudflare e immagini.
+2. **Smoke test reale di tutte le 10 fonti attive**, prima MangaWorld (Home, tendenza, filtri, reader completo), poi sei fansub, poi due reader Comics con Cloudflare e immagini.
 3. **Rafforzare il ciclo di regressione:** fixture aggiornate, test di parsing/cache e casi di rete, evidenza di test iPhone dove la CI non basta.
 4. **Igiene repository:** verificare esclusione `_reference_repos/` e output generati da Git, documentare i file locali, valutare gestione delle dipendenze per build riproducibili senza interrompere il workflow attuale.
 5. **Nuove sorgenti:** confrontare eventualmente i 43 esempi negli ZIP con l'esigenza reale; scegliere per qualità, lingua, disponibilità mobile, manutenzione e licenza. Non integrare tutte le fonti automaticamente.

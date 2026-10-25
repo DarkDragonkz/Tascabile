@@ -1,5 +1,19 @@
 # Third-party notices
 
+## Inkdex / MangaWorld extension
+
+The following source directories include code derived from the Inkdex MangaWorld
+extension (via `Catta1997/mangaworld-extensions`):
+
+- `src/MangaWorld`
+- `src/generic`
+
+Copyright © 2026 Inkdex. Modifications Copyright © 2026 DarkDragonkz.
+
+Licensed under the GNU General Public License v3.0 or later (`GPL-3.0-or-later`). Every
+file in these directories carries an `SPDX-License-Identifier: GPL-3.0-or-later` header;
+those files remain under the GPL, while the rest of the repository is MIT-licensed.
+
 ## Sinon-Paperback-Extensions / Catta1997
 
 The following source directories include code derived from Sinon-Paperback-Extensions:

@@ -1,0 +1,6 @@
+# Not formatted by oxfmt (see package.json format scripts).
+fixtures/
+src/NineManga/
+package-lock.json
+*.md
+LICENSE

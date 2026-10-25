@@ -1,77 +1,96 @@
 # Tascabile
 
-Repository di estensioni **Paperback 0.9 principalmente dedicata a fonti italiane**, mantenuta da **DarkDragonkz**.
+[![Build and Deploy](https://github.com/DarkDragonkz/Tascabile/actions/workflows/build.yml/badge.svg)](https://github.com/DarkDragonkz/Tascabile/actions/workflows/build.yml)
 
-L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali Tascabile include reader Comics in inglese selezionati e mantenuti separatamente quando non esistono equivalenti italiani sufficientemente affidabili.
+Repository di estensioni per **Paperback 0.9** (iPhone e iPad) dedicata soprattutto a **manga e scanlation in italiano**, mantenuta da **DarkDragonkz**. Per i fumetti occidentali include due reader Comics in inglese, scelti dove non esistono alternative italiane affidabili.
 
-## Manga e scanlation in italiano
+## Installazione
 
-- MangaWorld
-- GTOTheGreatSite
-- HastaTeam
-- HastaTeamDDT
-- LupiTeam
-- PhoenixScans
-- TuttoAnimeManga
-- Niadd
+1. In Paperback apri la gestione delle estensioni e scegli di aggiungere un repository.
+2. Inserisci l'indirizzo:
 
-NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile. **Niadd** usa lo stesso backend di NineManga e ne riprende la logica: liste, ricerca, dettagli, elenco capitoli e reader a pagine `-10-N` con elenco immagini completo. Il catalogo predefinito è l'italiano (`it.niadd.com`); dalle impostazioni si possono scegliere anche portoghese (BR), francese e russo. Inglese, spagnolo e tedesco non sono disponibili: i primi due instradano i capitoli verso siti pubblicitari esterni, il tedesco ha le immagini non più raggiungibili sul sito stesso.
+   ```text
+   https://darkdragonkz.github.io/Tascabile
+   ```
 
-Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al catalogo e alle caratteristiche della singola fonte. Condividono soltanto infrastruttura tecnica di basso livello come rete, cache, parsing e normalizzazione URL. MangaWorld mantiene la propria UI nativa separata.
+3. Installa le fonti che ti interessano. Gli aggiornamenti compaiono in Paperback come per qualsiasi altro repository.
 
-## Comics in inglese
+## Fonti
 
-- Batcave
-- Read Comics Online
+### Manga e scanlation in italiano
 
-`ReadComicOnline` è disabilitata perché il relativo sito è offline. Non viene più sincronizzata, compilata o inclusa nei bundle pubblicati.
+| Fonte | Contenuti | Punti di forza |
+| --- | --- | --- |
+| **MangaWorld** | manga, manhwa, manhua | In tendenza, ultimi capitoli, sezione "Per te" sui generi preferiti, ricerca avanzata con generi inclusi/esclusi, reader con tutte le pagine del capitolo |
+| **Niadd** | manga | Stesso catalogo e reader della storica NineManga. Italiano predefinito; dalle impostazioni anche portoghese (BR), francese e russo |
+| **GTO The Great Site** | scanlation | Universo GTO di Onizuka e altri progetti del team |
+| **Hasta Team** | scanlation | Progetti recenti e ampio archivio storico |
+| **Hasta Team DDT** | volumi completi | Archivio DDT con biblioteca alfabetica |
+| **Lupi Team** | scanlation | Serie di punta (One Piece, Berserk, Hunter × Hunter) e archivio |
+| **Phoenix Scans** | scanlation | Ultime uscite, serie aggiornate di recente, catalogo completo |
+| **TuttoAnimeManga** | manga | Grande archivio con classici e ultime uscite |
 
-I reader Comics attivi vengono sincronizzati durante la build da `Nicartjay/PaperbackExt`, fissato alla revisione `a6ef7b8f4f96b37327ab27429fdea7f9e5d8a658` del 15 ottobre 2026. In questo modo la build è riproducibile e non cambia automaticamente quando l'upstream viene aggiornato.
+Le sei fonti fansub hanno **Home, impostazioni e filtri dedicati**, pensati sul catalogo di ogni team; condividono soltanto l'infrastruttura tecnica (rete, cache, parsing). Nelle Home le copertine usano le miniature leggere del sito, mentre la scheda del manga mostra la copertina originale.
 
-### Cloudflare
+### Comics in inglese
 
-Batcave e Read Comics Online eseguono una verifica preventiva del dominio prima di caricare la Home. Se il sito richiede una challenge, Paperback la segnala subito invece di far partire più richieste concorrenti. I prompt Cloudflare vengono inoltre deduplicati e i cookie ottenuti dal bypass vengono riutilizzati e conservati localmente per ridurre le verifiche ripetute.
+| Fonte | Note |
+| --- | --- |
+| **BatCave** | Home dedicata, ricerca avanzata, sessione Cloudflare persistente |
+| **Read Comics Online** | Home e impostazioni dedicate, ricerca ordinabile |
 
-## Prestazioni immagini
+I reader Comics vengono sincronizzati durante la build da [`Nicartjay/PaperbackExt`](https://github.com/Nicartjay/PaperbackExt), fissato alla revisione `a6ef7b8f4f96b37327ab27429fdea7f9e5d8a658` (15 ottobre 2026): la build è riproducibile e non cambia da sola quando l'upstream si aggiorna.
 
-Tascabile normalizza gli URL immagine su HTTPS, elimina URL duplicati/non validi, usa header `Referer`/`User-Agent` coerenti e mantiene cache brevi delle risposte API. MangaWorld usa direttamente gli URL finali del CDN e recupera l'intero elenco pagine del capitolo prima di aprire il reader.
+## Limiti noti
 
-La velocità finale delle immagini dipende comunque anche dal server/CDN della singola fonte: l'estensione evita ritardi e redirect evitabili, ma non riduce qualità o risoluzione delle tavole.
+- **Cloudflare (BatCave, Read Comics Online, Niadd):** se il sito richiede una verifica, Paperback mostra il banner e la verifica va completata a mano. Le richieste vengono messe in pausa per non aprire più banner insieme, e i cookie ottenuti restano salvati per ridurre le verifiche ripetute. Non esistono bypass automatici.
+- **Niadd in inglese, spagnolo e tedesco non è disponibile:** le versioni inglese e spagnola instradano i capitoli verso siti pubblicitari esterni; quella tedesca ha le immagini non più raggiungibili sul sito stesso.
+- **NineManga** e **ReadComicOnline** sono disabilitate: i siti sono offline o instabili. Il codice di NineManga resta nel repository come riferimento storico.
+- La velocità delle immagini dipende anche dai server delle singole fonti: le estensioni evitano redirect e richieste inutili ma non riducono la qualità delle tavole.
 
-## MangaWorld
+## Sviluppo
 
-URL base: `https://www.mangaworld.mx`
-
-MangaWorld usa il JSON `$MC` quando disponibile e fallback HTML per resistere ai cambiamenti del sito. Il reader recupera prima l'elenco completo delle pagine dal payload manga e usa la pagina `/read/<chapterId>` solo come fallback.
-
-## Requisiti
-
-- Node.js 24
-- npm
-- Paperback 0.9
-
-## Verifica
+Requisiti: **Node.js 24** e npm.
 
 ```bash
-npm install
-npm run test:core
-npm run sync:comics
-npm run tsc
-npm run lint:check
-npm run format:check
-npm run bundle
+npm install          # dipendenze (installa anche l'hook di pre-push)
+npm run test         # pipeline completa: test offline, sync Comics, TypeScript, lint, formato, bundle
+npm run dev          # server locale con ricaricamento, da aggiungere in Paperback per le prove
 ```
 
-`npm run test:core` verifica senza rete la cache concorrente, l'invalidazione, i filtri persistiti, i capitoli misti e la diagnostica usando risposte simulate e fixture locali.
+Comandi singoli:
 
-Il workflow `Build and Deploy` esegue gli stessi controlli e pubblica `bundles` su `gh-pages` soltanto dopo il completamento dei check.
+| Comando | Cosa fa |
+| --- | --- |
+| `npm run test:core` | test offline su fixture reali (`tests/`, `fixtures/`) |
+| `npm run sync:comics` | scarica e adatta i reader Comics dall'upstream fissato |
+| `npm run tsc` | controllo dei tipi |
+| `npm run lint:check` / `npm run lint` | lint (il secondo corregge automaticamente) |
+| `npm run format:check` / `npm run format` | formattazione (il secondo riscrive i file) |
+| `npm run bundle` | genera i bundle in `bundles/` |
 
-Repository Paperback:
+Il workflow [`Build and Deploy`](.github/workflows/build.yml) esegue gli stessi controlli su ogni push e pull request e, solo per `main`, pubblica `bundles/` su GitHub Pages. Le modifiche ai reader Comics vanno fatte negli script in `scripts/`, non nei file generati. Contesto, decisioni e regole del progetto sono in [`AGENTS.md`](AGENTS.md).
+
+### Struttura
 
 ```text
-https://darkdragonkz.github.io/Tascabile
+src/
+├── MangaWorld/, generic/      # MangaWorld e il suo motore ($MC JSON con fallback HTML)
+├── Niadd/                     # Niadd multilingua
+├── FansubGeneric/             # infrastruttura comune alle sei fansub
+├── GTOTheGreatSite/ … TuttoAnimeManga/   # Home, impostazioni e filtri di ogni fansub
+├── common/                    # helper condivisi (cache, caroselli della Home)
+└── NineManga/                 # sorgente storica, disabilitata
+scripts/                       # sync e personalizzazione dei reader Comics
+tests/, fixtures/              # test offline e pagine reali catturate
 ```
 
-## Crediti
+## Crediti e licenze
 
-MangaWorld deriva dal lavoro GPL-3.0-or-later di Inkdex. Le fonti fansub italiane derivano da Sinon-Paperback-Extensions/Catta1997 (MIT). I reader Comics derivano da Nicartjay/PaperbackExt e dai relativi port Keiyoushi (MIT); vedere `THIRD_PARTY_NOTICES.md`.
+Il repository è distribuito con licenza MIT (vedi [`LICENSE`](LICENSE)), salvo dove indicato diversamente:
+
+- **MangaWorld** deriva dal lavoro GPL-3.0-or-later di Inkdex; i file interessati riportano l'intestazione SPDX.
+- Le **fonti fansub** derivano da Sinon-Paperback-Extensions / Catta1997 (MIT).
+- I **reader Comics** derivano da Nicartjay/PaperbackExt e dai relativi port Keiyoushi (MIT).
+
+Dettagli in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
