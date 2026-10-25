@@ -54,7 +54,7 @@ Questa è una cronologia sintetica, non un invito a ripetere modifiche già appl
 3. **Agosto — focus italiano e MangaWorld.** Stabilizzate le 7 sorgenti italiane. MangaWorld usa il payload del manga per recuperare **tutte le immagini del capitolo**, con `/read/<chapterId>` come fallback. Il difetto storico era il reader bloccato a `Loading 0%` e URL non validi in **In tendenza**; mantenere casi di prova per entrambi.
 4. **25 agosto — UI e Comics.** Le sei fonti fansub hanno ricevuto **UI/filtri specifici**, pur condividendo solo l'infrastruttura tecnica. Creati gli script di sincronizzazione e adattamento dei Comics; resi più robusti ID Unicode, immagini HTTPS/iOS ATS, header, redirect, sessioni e gestione iniziale delle challenge Cloudflare. `ReadComicOnline` è stata disabilitata; Batcave e `ReadComicsOnline` restano attive.
 5. **9 settembre — PR [#26](https://github.com/DarkDragonkz/Tascabile/pull/26) unita in `main`.** Migliorate Home e impostazioni di MangaWorld (`1.0.0-alpha.34`). Ordine principale: **In tendenza**, **Ultimi capitoli**, **Per te** se configurato, **Nuove aggiunte**, **Più letti del mese** se abilitato. Filtri Tipologia/Genere più ordinati, contenuti nascosti in impostazioni dedicate, preferenze pregresse mantenute. Build e pubblicazione riportate riuscite; verifica estetica/UX su iPhone resta distinta dai test di codice.
-6. **9–11 settembre — PR [#27](https://github.com/DarkDragonkz/Tascabile/pull/27), ANCORA APERTA.** Propone `RequestCache<T>` condivisa con deduplicazione, TTL, invalidazione sicura e limite 64 voci; correzioni filtri generi/anni, snapshot di stato invalidi, capitoli sciolti + volumi e diagnostica connessione. Introduce **13 test offline** (`tests/core.test.mjs`, comando `npm run test:core`) e incrementa MangaWorld ad `1.0.0-alpha.35` e fansub a `1.2.1`. **Queste modifiche NON sono su `main` finché la PR non viene unita.** La descrizione della PR riporta test e CI superati al commit `621ae2657a2588d5adf99f1c89fed2caa440868a`; non sostituiscono lo smoke test sul dispositivo.
+6. **9–11 settembre — PR [#27](https://github.com/DarkDragonkz/Tascabile/pull/27), unita in `main` il 25 ottobre** dopo merge con il `main` corrente e test completi (13/13 `test:core`, TS, lint, formato, bundle). Testo storico: Propone `RequestCache<T>` condivisa con deduplicazione, TTL, invalidazione sicura e limite 64 voci; correzioni filtri generi/anni, snapshot di stato invalidi, capitoli sciolti + volumi e diagnostica connessione. Introduce **13 test offline** (`tests/core.test.mjs`, comando `npm run test:core`) e incrementa MangaWorld ad `1.0.0-alpha.35` e fansub a `1.2.1`. **Queste modifiche NON sono su `main` finché la PR non viene unita.** La descrizione della PR riporta test e CI superati al commit `621ae2657a2588d5adf99f1c89fed2caa440868a`; non sostituiscono lo smoke test sul dispositivo.
 
 7. **25 ottobre — ripristino CI.** Un merge da un clone di maggio (`af58094`) aveva portato su `main` un `package-lock.json` obsoleto (rolldown 1.0.0, toolchain `alpha.87`, TS 6) e due workflow temporanei che si auto-committavano su `main` (`521dadc`). Con rolldown 1.0.0 il bundle falliva su `import { ExtensionInfo }` (export solo-tipo) nei `pbconfig.ts` Comics generati. Correzioni: lockfile rigenerato (toolchain/types `alpha.92`, TS 7.0.2, rolldown 1.2.15), patch nel sync che rende l'import `type ExtensionInfo`, workflow temporanei rimossi, `.gitignore` esteso a Comics generati e `_reference_repos/`. Versioni delle estensioni invariate: nessun cambiamento funzionale.
 
@@ -138,7 +138,7 @@ npm run format:check
 npm run bundle
 ```
 
-Scorciatoie disponibili: `npm run test` esegue sync + TypeScript + lint + formato + bundle; `npm run dev` serve le estensioni in watch mode; `npm run logcat` aiuta la diagnostica. Il sync Comics necessita di rete/API GitHub. **Su `main` non esiste ancora `npm run test:core`**: sarà disponibile solo dopo il merge della PR #27 o su quel branch.
+Scorciatoie disponibili: `npm run test` esegue sync + TypeScript + lint + formato + bundle; `npm run dev` serve le estensioni in watch mode; `npm run logcat` aiuta la diagnostica. Il sync Comics necessita di rete/API GitHub. `npm run test:core` (test offline, PR #27) è disponibile su `main` dal 25/10/2026 ed è eseguito anche in CI e da `npm run test`.
 
 Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/stable`, PR e lancio manuale. Il job **Check** installa, sincronizza, controlla TS/lint/formattazione e genera bundle. Il job **Deploy**, assente sulle PR, pubblica la directory `bundles/` nel branch `gh-pages`. Non considerare una PR, un commit pushato o una CI verde equivalenti a un aggiornamento installato su Paperback.
 
@@ -152,7 +152,7 @@ Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/sta
 | --- | --- |
 | **MangaWorld Home** | La PR #26 ha rivisto sezioni e filtri; fare smoke test su dispositivo per *In tendenza*, URL delle schede, ordine, preferenze e sottotitoli. |
 | **MangaWorld reader** | È stata adottata l'estrazione completa da `$MC` con `/read/<id>` come fallback. Verificare numero/ordine delle pagine, caricamento non bloccato a 0%, immagini e cambio capitolo. |
-| **Cache, filtri e capitoli misti** | Correzioni con test sono nella PR #27 **non ancora unita**; non dichiararle risolte su `main`. |
+| **Cache, filtri e capitoli misti** | Correzioni della PR #27 unite il 25/10/2026 con test offline; resta da confermare il comportamento su iPhone. |
 | **Cloudflare su iOS** | Batcave e ReadComicsOnline gestiscono verifica preventiva e sessioni/cookie riutilizzabili. La challenge resta soggetta al sito e all'utente: niente promesse di bypass automatico, CAPTCHA o Turnstile. |
 | **NineManga** | Codice storico fermo, sito segnalato non affidabile. Riattivare solo dopo prova reale della disponibilità e reader mobile completo; non alterare indiscriminatamente la parte italiana che aveva funzionato. |
 | **ReadComicOnline** | Offline e disabilitata; non ripristinarla solo perché un ZIP la contiene. |
@@ -181,7 +181,7 @@ Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/sta
 
 ## 9. Roadmap suggerita (non equivale a lavoro approvato)
 
-1. **Verificare e decidere sulla PR #27**: esaminare diff e test, confermare che non regredisca UI/reader mobile, quindi valutare il merge. Finché è aperta, non duplicare le stesse correzioni su `main`.
+1. ~~Verificare e decidere sulla PR #27~~ — unita il 25/10/2026; resta la verifica su dispositivo (punto 2).
 2. **Smoke test reale di tutte le 9 fonti attive**, prima MangaWorld (Home, tendenza, filtri, reader completo), poi sei fansub, poi due reader Comics con Cloudflare e immagini.
 3. **Rafforzare il ciclo di regressione:** fixture aggiornate, test di parsing/cache e casi di rete, evidenza di test iPhone dove la CI non basta.
 4. **Igiene repository:** verificare esclusione `_reference_repos/` e output generati da Git, documentare i file locali, valutare gestione delle dipendenze per build riproducibili senza interrompere il workflow attuale.
