@@ -27,6 +27,8 @@ await test("lists parse 60 unique cards with HTTPS covers and latest chapter IDs
   );
   assert.ok(cards.every((card) => card.imageUrl.startsWith("https://")));
   assert.ok(cards[0].updatedAt instanceof Date && !Number.isNaN(cards[0].updatedAt.getTime()));
+  assert.match(cards[0].intro, /20 nights/u);
+  assert.deepEqual(cards[0].genres.slice(0, 2), ["Demons", "Psychological"]);
 });
 
 await test("search results use the same card parser", async () => {

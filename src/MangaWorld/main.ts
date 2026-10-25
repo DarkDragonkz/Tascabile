@@ -10,6 +10,7 @@ import {
   type PagedResults,
 } from "@paperback/types";
 
+import { INFO_SYMBOLS, infoItems, shortSummary } from "../common/discover";
 import { MangaWorldGeneric, jsonParser } from "../generic/main";
 import type { MangaMetadata } from "../generic/models";
 import { HOME_CACHE_SECONDS } from "../generic/preferences";
@@ -75,6 +76,11 @@ class MangaWorldExtension extends MangaWorldGeneric {
             imageUrl,
             title,
             supertitle: chapter.name,
+            summary: shortSummary(manga.trama),
+            infoItems: infoItems(
+              { symbol: INFO_SYMBOLS.type, text: manga.typeT },
+              { symbol: INFO_SYMBOLS.status, text: manga.statusT },
+            ),
             contentRating: pbconfig.contentRating,
           });
         }

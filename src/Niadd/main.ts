@@ -25,6 +25,7 @@ import {
   type SourceManga,
 } from "@paperback/types";
 
+import { INFO_SYMBOLS, infoItems, relativeDateIt, shortSummary } from "../common/discover";
 import {
   NIADD_BASE_URL,
   isChallengePage,
@@ -172,6 +173,11 @@ class NiaddExtension
             imageUrl: card.imageUrl,
             title: card.title,
             supertitle: card.latestChapterTitle,
+            summary: shortSummary(card.intro),
+            infoItems: infoItems(
+              { symbol: INFO_SYMBOLS.date, text: relativeDateIt(card.updatedAt) },
+              { symbol: INFO_SYMBOLS.type, text: card.genres.slice(0, 2).join(" · ") },
+            ),
             contentRating: ContentRating.EVERYONE,
           },
         ];

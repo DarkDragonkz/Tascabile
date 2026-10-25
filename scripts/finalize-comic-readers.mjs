@@ -486,9 +486,9 @@ await patchRegex(
 
 await patchExact(
   "src/Batcave/pbconfig.ts",
-  "BatCave version 1.4.9.6",
+  "BatCave version 1.4.9.7",
   '  version: "1.4.9.5",',
-  '  version: "1.4.9.6",',
+  '  version: "1.4.9.7",',
 );
 await patchExact(
   "src/Batcave/pbconfig.ts",
@@ -508,6 +508,76 @@ await patchExact(
   "Read Comics Online English description",
   '  description: "Comics in inglese da Read Comics Online, con Home e impostazioni dedicate, ricerca ordinabile e sessione Cloudflare persistente.",',
   '  description: "English comics from Read Comics Online with a dedicated Home, source settings, sortable browsing and a persistent Cloudflare session.",',
+);
+
+// Featured "Top rated" banners: synopsis plus publisher/year badges from the list markup.
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave featured helpers import",
+  'import * as cheerio from "cheerio";',
+  'import { INFO_SYMBOLS, infoItems, shortSummary } from "../common/discover";\nimport * as cheerio from "cheerio";',
+);
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave list item details type",
+  "      mangaId: string;\n      title: string;\n      imageUrl: string;\n    }) => void,",
+  "      mangaId: string;\n      title: string;\n      imageUrl: string;\n      summary: string;\n      meta: string[];\n    }) => void,",
+);
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave list item details",
+  "      cb({ mangaId: this.parsePath(href), title, imageUrl });",
+  [
+    '      const summary = el.find(".readed__info").first().text().replace(/\\s+/g, " ").trim();',
+    "      const meta = el",
+    '        .find(".readed__meta-item")',
+    "        .toArray()",
+    "        .map((item) => $(item).text().trim())",
+    "        .filter(Boolean);",
+    "      cb({ mangaId: this.parsePath(href), title, imageUrl, summary, meta });",
+  ].join("\n"),
+);
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave featured top rated details",
+  [
+    "    this.eachListItem($, (parsed) => {",
+    "      items.push({",
+    "        type:",
+    '          section.id === "top_rated" ? "featuredCarouselItem" : "simpleCarouselItem",',
+    "        mangaId: parsed.mangaId,",
+    "        imageUrl: parsed.imageUrl,",
+    "        title: parsed.title,",
+    "        metadata: undefined,",
+    "      });",
+    "    });",
+  ].join("\n"),
+  [
+    "    this.eachListItem($, (parsed) => {",
+    '      if (section.id === "top_rated") {',
+    "        items.push({",
+    '          type: "featuredCarouselItem",',
+    "          mangaId: parsed.mangaId,",
+    "          imageUrl: parsed.imageUrl,",
+    "          title: parsed.title,",
+    "          summary: shortSummary(parsed.summary),",
+    "          infoItems: infoItems(",
+    "            { symbol: INFO_SYMBOLS.publisher, text: parsed.meta[0] },",
+    "            { symbol: INFO_SYMBOLS.year, text: parsed.meta[1] },",
+    "          ),",
+    "          metadata: undefined,",
+    "        });",
+    "        return;",
+    "      }",
+    "      items.push({",
+    '        type: "simpleCarouselItem",',
+    "        mangaId: parsed.mangaId,",
+    "        imageUrl: parsed.imageUrl,",
+    "        title: parsed.title,",
+    "        metadata: undefined,",
+    "      });",
+    "    });",
+  ].join("\n"),
 );
 
 const batcave = await readFile("src/Batcave/main.ts", "utf8");

@@ -9,7 +9,7 @@ export default {
   name: "Niadd",
   description:
     "Manga in italiano da Niadd (it.niadd.com), stesso catalogo e reader della storica NineManga.",
-  version: "1.0.0",
+  version: "1.0.1",
   icon: "icon.png",
   language: "it",
   contentRating: ContentRating.EVERYONE as ContentRating,

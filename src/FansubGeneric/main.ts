@@ -21,6 +21,7 @@ import {
   type SourceManga,
 } from "@paperback/types";
 
+import { INFO_SYMBOLS, infoItems, relativeDateIt } from "../common/discover";
 import type { ComicListItem, ComicsListResponse } from "./models";
 import { APIRequests, MainInterceptor } from "./network";
 import { FansubGeneralParsers } from "./parsers";
@@ -126,6 +127,11 @@ abstract class FansubGeneral
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  protected comicDate(comic: ComicListItem): Date | undefined {
+    const timestamp = this.comicTimestamp(comic);
+    return timestamp > 0 ? new Date(timestamp) : undefined;
+  }
+
   protected updatedWithin(comic: ComicListItem, days: number): boolean {
     const timestamp = this.comicTimestamp(comic);
     if (timestamp <= 0) return false;
@@ -180,6 +186,10 @@ abstract class FansubGeneral
       imageUrl: this.listThumbnail(comic),
       title: comic.title,
       supertitle: comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
+      infoItems: infoItems(
+        { symbol: INFO_SYMBOLS.date, text: relativeDateIt(this.comicDate(comic)) },
+        { symbol: INFO_SYMBOLS.author, text: comic.author ?? undefined },
+      ),
       contentRating: this.contentRatingFor(comic.adult),
     };
   }

@@ -12,6 +12,8 @@ export interface NiaddCard {
   latestChapterId?: string;
   latestChapterTitle?: string;
   updatedAt?: Date;
+  intro?: string;
+  genres: string[];
 }
 
 export interface NiaddGenre {
@@ -99,6 +101,12 @@ export function parseMangaList(html: string): NiaddCard[] {
       latestChapterId: chapterIdFromHref(chapterLink.attr("href")) || undefined,
       latestChapterTitle: cleanText(chapterLink.text()) || undefined,
       updatedAt: parseDate(unit.find(".manga-latest-time").first().text()),
+      intro: cleanText(unit.find(".manga-intro").first().text()) || undefined,
+      genres: unit
+        .find(".manga-cate-item-name")
+        .toArray()
+        .map((element) => cleanText($(element).text()))
+        .filter(Boolean),
     });
   });
 
