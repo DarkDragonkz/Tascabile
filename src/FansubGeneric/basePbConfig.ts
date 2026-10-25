@@ -5,10 +5,12 @@ import {
   type SourceDeveloper,
 } from "@paperback/types";
 
+import { BADGES } from "../common/badges";
+
 export const basePbConfig = {
   name: "",
   description: "",
-  version: "1.2.5",
+  version: "1.2.6",
   icon: "icon.png",
   language: "it",
   capabilities: [
@@ -17,18 +19,7 @@ export const basePbConfig = {
     SourceIntents.SEARCH_RESULT_PROVIDING,
     SourceIntents.SETTINGS_FORM_PROVIDING,
   ],
-  badges: [
-    {
-      label: "Italiano 🇮🇹",
-      textColor: "#ffffff",
-      backgroundColor: "#28eac2",
-    },
-    {
-      label: "Fansub",
-      textColor: "#ffffff",
-      backgroundColor: "#5965f2",
-    },
-  ],
+  badges: [BADGES.fansub, BADGES.italian],
   developers: [
     { name: "Catta1997", github: "https://github.com/Catta1997" },
     { name: "DarkDragonkz", github: "https://github.com/DarkDragonkz" },

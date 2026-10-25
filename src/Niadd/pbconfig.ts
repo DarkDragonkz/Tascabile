@@ -5,11 +5,13 @@ import {
   type SourceDeveloper,
 } from "@paperback/types";
 
+import { BADGES } from "../common/badges";
+
 export default {
   name: "Niadd",
   description:
     "Manga da Niadd, stesso catalogo e reader della storica NineManga: italiano (predefinito), portoghese, francese e russo, selezionabili nelle impostazioni.",
-  version: "1.1.0",
+  version: "1.1.1",
   icon: "icon.png",
   language: "it",
   contentRating: ContentRating.EVERYONE as ContentRating,
@@ -20,18 +22,7 @@ export default {
     SourceIntents.SETTINGS_FORM_PROVIDING,
     SourceIntents.CLOUDFLARE_BYPASS_PROVIDING,
   ],
-  badges: [
-    {
-      label: "Italiano 🇮🇹",
-      textColor: "#ffffff",
-      backgroundColor: "#28eac2",
-    },
-    {
-      label: "Multilingua",
-      textColor: "#ffffff",
-      backgroundColor: "#5965f2",
-    },
-  ],
+  badges: [BADGES.manga, BADGES.italian, BADGES.multilingual],
   developers: [
     { name: "DarkDragonkz", github: "https://github.com/DarkDragonkz" },
   ] as SourceDeveloper[],

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { copyFile, readFile, writeFile } from "node:fs/promises";
 
 async function patchExact(path, label, target, replacement) {
   const source = await readFile(path, "utf8");
@@ -486,9 +486,9 @@ await patchRegex(
 
 await patchExact(
   "src/Batcave/pbconfig.ts",
-  "BatCave version 1.4.12.6",
+  "BatCave version 1.4.12.7",
   '  version: "1.4.12.5",',
-  '  version: "1.4.12.6",',
+  '  version: "1.4.12.7",',
 );
 await patchExact(
   "src/Batcave/pbconfig.ts",
@@ -499,9 +499,9 @@ await patchExact(
 
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
-  "Read Comics Online version 1.4.15.6",
+  "Read Comics Online version 1.4.15.7",
   '  version: "1.4.15.5",',
-  '  version: "1.4.15.6",',
+  '  version: "1.4.15.7",',
 );
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
@@ -590,5 +590,8 @@ if (!batcave.includes("pages.push(this.absoluteUrl(trimmed));")) {
 if (batcave.includes('title: "Ultime uscite"')) {
   throw new Error("BatCave Italian UI labels are still present.");
 }
+
+// Upstream ships the generic MMRCMS "CMS" icon; use the site's own logo instead.
+await copyFile("scripts/icons/ReadComicsOnline.png", "src/ReadComicsOnline/static/icon.png");
 
 console.log("Finalized English Comics UI and split BatCave cover/chapter image routing.");

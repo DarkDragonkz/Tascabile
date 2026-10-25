@@ -16,6 +16,12 @@ async function patchRegex(path, label, pattern, replacement) {
   await writeFile(path, source.replace(pattern, replacement));
 }
 
+// Same labels and colours as BADGES.comics and BADGES.english in src/common/badges.ts.
+const COMICS_BADGES = `  badges: [
+    { label: "Comics", textColor: "#ffffff", backgroundColor: "#263238" },
+    { label: "EN 🇬🇧", textColor: "#ffffff", backgroundColor: "#012169" },
+  ],`;
+
 const BATCAVE_FORMS = `import {
   AdvancedSearchForm,
   InputRow,
@@ -575,12 +581,7 @@ await patchExact(
   '  description:\n    "BatCave - custom source (batcave.biz). Converted from keiyoushi.",',
   '  description:\n    "Comics in inglese da BatCave, con Home dedicata, ricerca avanzata, sessione Cloudflare persistente e protezione ATS delle immagini esterne.",',
 );
-await patchExact(
-  "src/Batcave/pbconfig.ts",
-  "BatCave badges",
-  "  badges: [],",
-  '  badges: [\n    { label: "COMICS", textColor: "#FFFFFF", backgroundColor: "#263238" },\n    { label: "EN", textColor: "#FFFFFF", backgroundColor: "#455A64" },\n  ],',
-);
+await patchExact("src/Batcave/pbconfig.ts", "BatCave badges", "  badges: [],", COMICS_BADGES);
 
 await writeFile("src/ReadComicsOnline/main.ts", READ_COMICS_MAIN);
 await writeFile("src/ReadComicsOnline/settings.ts", READ_COMICS_SETTINGS);
@@ -600,7 +601,7 @@ await patchRegex(
   "src/ReadComicsOnline/pbconfig.ts",
   "Read Comics Online badges",
   /  badges: \[[\s\S]*?\n  \],\n  developers:/u,
-  '  badges: [\n    { label: "COMICS", textColor: "#FFFFFF", backgroundColor: "#263238" },\n    { label: "EN", textColor: "#FFFFFF", backgroundColor: "#455A64" },\n  ],\n  developers:',
+  `${COMICS_BADGES}\n  developers:`,
 );
 
 const batcave = await readFile("src/Batcave/main.ts", "utf8");
