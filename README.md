@@ -15,7 +15,7 @@ L'obiettivo resta dare priorità alle fonti italiane. Per i fumetti occidentali 
 - TuttoAnimeManga
 - Niadd
 
-NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile. **Niadd** (`it.niadd.com`) usa lo stesso backend di NineManga e ne riprende la logica italiana: liste, ricerca, dettagli, elenco capitoli e reader a pagine `-10-N` con elenco immagini completo.
+NineManga rimane nel codice come sorgente italiana storica, ma la sua `pbconfig` è disabilitata finché il sito resta indisponibile/instabile. **Niadd** usa lo stesso backend di NineManga e ne riprende la logica: liste, ricerca, dettagli, elenco capitoli e reader a pagine `-10-N` con elenco immagini completo. Il catalogo predefinito è l'italiano (`it.niadd.com`); dalle impostazioni si possono scegliere anche portoghese (BR), francese e russo. Inglese, spagnolo e tedesco non sono disponibili: i primi due instradano i capitoli verso siti pubblicitari esterni, il tedesco ha le immagini non più raggiungibili sul sito stesso.
 
 Le sei fonti fansub hanno **UI dedicate e indipendenti**, progettate in base al catalogo e alle caratteristiche della singola fonte. Condividono soltanto infrastruttura tecnica di basso livello come rete, cache, parsing e normalizzazione URL. MangaWorld mantiene la propria UI nativa separata.
 
