@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-10-25T18:44:10.920Z",
+  "buildTime": "2026-10-25T19:07:03.264Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -217,8 +217,8 @@
     },
     {
       "name": "Niadd",
-      "description": "Manga in italiano da Niadd (it.niadd.com), stesso catalogo e reader della storica NineManga.",
-      "version": "1.0.2",
+      "description": "Manga da Niadd, stesso catalogo e reader della storica NineManga: italiano (predefinito), portoghese, francese e russo, selezionabili nelle impostazioni.",
+      "version": "1.1.0",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -226,6 +226,7 @@
         1,
         4,
         64,
+        32,
         16
       ],
       "badges": [
@@ -233,6 +234,11 @@
           "label": "Italiano 🇮🇹",
           "textColor": "#ffffff",
           "backgroundColor": "#28eac2"
+        },
+        {
+          "label": "Multilingua",
+          "textColor": "#ffffff",
+          "backgroundColor": "#5965f2"
         }
       ],
       "developers": [
