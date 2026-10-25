@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-10-25T17:42:26.978Z",
+  "buildTime": "2026-10-25T17:53:28.565Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -214,6 +214,34 @@
         }
       ],
       "id": "MangaWorld"
+    },
+    {
+      "name": "Niadd",
+      "description": "Manga in italiano da Niadd (it.niadd.com), stesso catalogo e reader della storica NineManga.",
+      "version": "1.0.0",
+      "icon": "icon.png",
+      "language": "it",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        64,
+        16
+      ],
+      "badges": [
+        {
+          "label": "Italiano 🇮🇹",
+          "textColor": "#ffffff",
+          "backgroundColor": "#28eac2"
+        }
+      ],
+      "developers": [
+        {
+          "name": "DarkDragonkz",
+          "github": "https://github.com/DarkDragonkz"
+        }
+      ],
+      "id": "Niadd"
     },
     {
       "name": "PhoenixScans",
