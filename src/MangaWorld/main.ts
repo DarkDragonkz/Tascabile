@@ -10,7 +10,7 @@ import {
   type PagedResults,
 } from "@paperback/types";
 
-import { INFO_SYMBOLS, infoItems, shortSummary } from "../common/discover";
+import { INFO_SYMBOLS, formatCountIt, infoItems, shortSummary } from "../common/discover";
 import { MangaWorldGeneric, jsonParser } from "../generic/main";
 import type { Manga, MangaMetadata } from "../generic/models";
 import { HOME_CACHE_SECONDS } from "../generic/preferences";
@@ -67,19 +67,27 @@ class MangaWorldExtension extends MangaWorldGeneric {
 
       if (section.id === "popular_section") {
         const trending = entries.find((entry) => entry.kind === "trending");
+        // The most viewed chapters often include runs of the same series (One Piece 28,
+        // 29, 30…): show each series once, with the chapters it is trending for.
+        const groups = new Map<string, { manga: Manga; chapters: string[] }>();
         for (const chapter of trending?.data.mostViewedChapters ?? []) {
-          const manga = chapter.manga;
+          const mangaId = mangaIdOf(chapter.manga);
+          if (!mangaId) continue;
+          const group = groups.get(mangaId) ?? { manga: chapter.manga, chapters: [] };
+          group.chapters.push(chapter.name);
+          groups.set(mangaId, group);
+        }
+        for (const [mangaId, { manga, chapters }] of groups) {
           const imageUrl = this.normalizeUrl(manga.imageT || manga.image);
-          const mangaId = `${manga.linkId ?? ""}/${manga.slug ?? ""}`.replace(/^\/+|\/+$/gu, "");
           const title = manga.title?.trim() ?? "";
           const contentRating = visible(manga);
-          if (!imageUrl || !mangaId.includes("/") || !title || !contentRating) continue;
+          if (!imageUrl || !title || !contentRating) continue;
           items.push({
             type: "featuredCarouselItem",
             mangaId,
             imageUrl,
             title,
-            supertitle: chapter.name,
+            supertitle: trendingChapters(chapters),
             summary: shortSummary(manga.trama),
             infoItems: infoItems(
               { symbol: INFO_SYMBOLS.type, text: manga.typeT },
@@ -91,16 +99,17 @@ class MangaWorldExtension extends MangaWorldGeneric {
       } else {
         for (const manga of global?.data.globalData.topMangas ?? []) {
           const imageUrl = this.normalizeUrl(manga.imageT || manga.image);
-          const mangaId = `${manga.linkId ?? ""}/${manga.slug ?? ""}`.replace(/^\/+|\/+$/gu, "");
+          const mangaId = mangaIdOf(manga);
           const title = manga.title?.trim() ?? "";
           const contentRating = visible(manga);
-          if (!imageUrl || !mangaId.includes("/") || !title || !contentRating) continue;
+          if (!imageUrl || !mangaId || !title || !contentRating) continue;
+          const reads = manga.monthViews ? `${formatCountIt(manga.monthViews)} letture` : "";
           items.push({
             type: "prominentCarouselItem",
             mangaId,
             imageUrl,
             title,
-            subtitle: manga.typeT ?? "",
+            subtitle: [manga.typeT, reads].filter(Boolean).join(" · "),
             contentRating,
           });
         }
@@ -143,6 +152,25 @@ class MangaWorldExtension extends MangaWorldGeneric {
     if (value.startsWith("/")) return `${DOMAIN}${value}`;
     return `${DOMAIN}/${value.replace(/^\/+/, "")}`;
   }
+}
+
+/** `<linkId>/<slug>`, the ID used by details and library entries; undefined if incomplete. */
+function mangaIdOf(manga: Manga): string | undefined {
+  const id = `${manga.linkId ?? ""}/${manga.slug ?? ""}`.replace(/^\/+|\/+$/gu, "");
+  return id.includes("/") ? id : undefined;
+}
+
+/** "Capitolo 31"; a run of chapters reads "Capitoli 28–32"; others "Capitolo 5 e altri 2". */
+export function trendingChapters(names: string[]): string {
+  const [first = ""] = names;
+  if (names.length < 2) return first;
+  const numbers = names.map((name) => Number(name.match(/\d+(?:\.\d+)?/u)?.[0]));
+  if (numbers.every(Number.isFinite)) {
+    const min = Math.min(...numbers);
+    const max = Math.max(...numbers);
+    if (max - min === names.length - 1) return `Capitoli ${min}–${max}`;
+  }
+  return `${first} e altri ${names.length - 1}`;
 }
 
 export const MangaWorld = new MangaWorldExtension();

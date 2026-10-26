@@ -67,6 +67,12 @@ export interface Manga {
   tramaT: string;
   createdAt: string;
   updatedAt: string;
+  /** "Vietato ai minori di 18 anni": MangaWorld's own adult flag. */
+  vm18?: boolean;
+  totViews?: number;
+  monthViews?: number;
+  /** Date the series was added, already formatted ("06 Novembre 2020"). */
+  createdAtT?: string;
 }
 
 export interface MangaChapterList {
@@ -106,8 +112,8 @@ export interface Volumes {
 }
 
 export interface Pages {
-  volumes: Volumes[];
-  singleChapters: MangaChapterList[];
+  volumes?: Volumes[];
+  singleChapters?: MangaChapterList[];
 }
 
 export interface ChapterList {

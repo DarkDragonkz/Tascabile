@@ -2,7 +2,7 @@
   "name": "tascabile",
   "version": "1.1.0-alpha.1",
   "private": true,
-  "description": "Estensioni Paperback 0.9 per manga e scanlation in italiano (MangaWorld, Niadd e sei fansub), con due reader Comics in inglese.",
+  "description": "Estensioni Paperback 0.9 per manga e scanlation in italiano (MangaWorld, Niadd e nove fansub italiane), con due reader Comics in inglese.",
   "type": "module",
   "scripts": {
     "sync:comics": "node scripts/sync-comic-readers.mjs && node scripts/customize-comic-readers.mjs && node scripts/finalize-comic-readers.mjs && node scripts/repair-generated-comics.mjs",
@@ -37,6 +37,6 @@
     "typescript": "^7.0.2",
     "upng-js": "^2.1.0"
   },
-  "repositoryDescription": "Manga e scanlation in italiano: MangaWorld, Niadd e sei fansub italiane, più due reader Comics in inglese.",
+  "repositoryDescription": "Manga e scanlation in italiano: MangaWorld, Niadd e nove fansub italiane, più due reader Comics in inglese.",
   "repositoryName": "Tascabile"
 }

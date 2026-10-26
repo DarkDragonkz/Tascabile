@@ -135,7 +135,7 @@ export abstract class MangaWorldGeneric
         imageUrl: item.image,
         title: item.title,
         subtitle: item.authors || item.type,
-        contentRating: this.rating(item.tags),
+        contentRating: item.adult ? ContentRating.ADULT : this.rating(item.tags),
       }));
       const searchInfo = entries.find((entry) => entry.kind === "searchInfo");
       const hasMore = searchInfo ? page < searchInfo.data.totalPages : items.length > 0;
@@ -270,7 +270,7 @@ export abstract class MangaWorldGeneric
     switch (section.id) {
       case "popular_section":
       case "mese_section":
-        return this.getHeroSection(section.id, metadata);
+        return this.getHeroSection(section.id);
       case "updated_section":
         return this.getUpdatedSection(metadata);
       case "most_read_section":
@@ -324,54 +324,17 @@ export abstract class MangaWorldGeneric
       )
     )
       return undefined;
-    return this.rating(genres.map((genre) => genre.name));
+    return manga.vm18 ? ContentRating.ADULT : this.rating(genres.map((genre) => genre.name));
   }
 
-  private async getHeroSection(
+  /**
+   * HTML fallback for "In tendenza" and "Più letti del mese". The JSON payload is read by
+   * MangaWorld's own override, which resolves genre IDs and merges repeated series.
+   */
+  protected async getHeroSection(
     id: "popular_section" | "mese_section",
-    metadata: MangaMetadata | undefined,
   ): Promise<PagedResults<DiscoverSectionItem>> {
     const html = await this.requestManager.fetchText(this.base_url, HOME_CACHE_SECONDS);
-    try {
-      const entries = jsonParser.getWindowEntry(html);
-      const items: DiscoverSectionItem[] = [];
-
-      if (id === "popular_section") {
-        const trending = entries.find((entry) => entry.kind === "trending");
-        for (const chapter of trending?.data.mostViewedChapters ?? []) {
-          const genreSlugs = chapter.manga.genres?.map((genre) => genre.slug) ?? [];
-          const genreNames = chapter.manga.genres?.map((genre) => genre.name) ?? [];
-          if (this.hiddenManga(genreSlugs, chapter.manga.typeT ?? "")) continue;
-          items.push({
-            type: "featuredCarouselItem",
-            mangaId: `${chapter.manga.linkId}/${chapter.manga.slug}`,
-            imageUrl: chapter.manga.imageT || chapter.manga.image,
-            title: chapter.manga.title ?? "",
-            supertitle: chapter.name,
-            contentRating: this.rating(genreNames),
-          });
-        }
-      } else {
-        const global = entries.find((entry) => entry.kind === "global");
-        for (const manga of global?.data.globalData.topMangas ?? []) {
-          const genreSlugs = manga.genres?.map((genre) => genre.slug) ?? [];
-          const genreNames = manga.genres?.map((genre) => genre.name) ?? [];
-          if (this.hiddenManga(genreSlugs, manga.typeT ?? "")) continue;
-          items.push({
-            type: "prominentCarouselItem",
-            mangaId: `${manga.linkId}/${manga.slug}`,
-            imageUrl: manga.imageT || manga.image,
-            title: manga.title ?? "",
-            subtitle: manga.typeT ?? "",
-            contentRating: this.rating(genreNames),
-          });
-        }
-      }
-
-      if (items.length > 0) return { items, metadata };
-    } catch {
-      // Use the visible HTML cards below.
-    }
     return parseHeroDiscoverHtml(html, this, id === "popular_section" ? "featured" : "prominent");
   }
 
@@ -410,7 +373,7 @@ export abstract class MangaWorldGeneric
         imageUrl: item.image,
         title: item.title,
         subtitle: item.type,
-        contentRating: this.rating(item.tags),
+        contentRating: item.adult ? ContentRating.ADULT : this.rating(item.tags),
       }));
       const searchInfo = entries.find((entry) => entry.kind === "searchInfo");
       const hasMore = searchInfo ? page < searchInfo.data.totalPages : items.length > 0;

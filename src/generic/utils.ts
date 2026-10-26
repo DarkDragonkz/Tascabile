@@ -254,7 +254,8 @@ export class JsonParser {
   }
 
   findChapterData(page: Pages, chapterId: string) {
-    for (const volume of page.volumes) {
+    // Series with only loose chapters omit `volumes`, and vice versa.
+    for (const volume of page.volumes ?? []) {
       const chapter = volume.chapters.find((candidate) => candidate.id === chapterId);
       if (chapter) {
         return {
@@ -264,7 +265,7 @@ export class JsonParser {
         };
       }
     }
-    const chapter = page.singleChapters.find((candidate) => candidate.id === chapterId);
+    const chapter = (page.singleChapters ?? []).find((candidate) => candidate.id === chapterId);
     if (chapter) {
       return {
         chapterURL: `${chapter.slugFolder}-${chapter.id}`,

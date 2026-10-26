@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Copyright © 2026 Inkdex */
+/* Modifications Copyright © 2026 DarkDragonkz */
 
 import {
   ContentRating,
@@ -7,16 +8,15 @@ import {
   type ChapterDetails,
   type ChapterUpdatesCarouselItem,
   type DiscoverSectionItem,
-  type PagedResults,
-  type SearchResultItem,
   type SourceManga,
   type TagSection,
 } from "@paperback/types";
 
-import { detailInfo } from "../common/discover";
+import { detailInfo, formatCountIt } from "../common/discover";
 import type { MangaWorldGeneric } from "./main";
-import type { Manga, MangaChapterList, MangaMetadata, TrendingManga, WindowEntry } from "./models";
-import { filter, jsonParser, tags, types } from "./utils";
+import type { MangaChapterList, MangaMetadata, WindowEntry } from "./models";
+import { HOME_CACHE_SECONDS } from "./preferences";
+import { jsonParser, tags } from "./utils";
 
 export class Parsers {
   private normalizeCoverUrl(source: MangaWorldGeneric, imageT?: string, image?: string): string {
@@ -45,7 +45,7 @@ export class Parsers {
     const parsed = entry.data.manga;
     const tagsArray = jsonParser.mapGenresToTags(parsed.genres);
     const rating =
-      source.defaultContentRating === ContentRating.ADULT
+      source.defaultContentRating === ContentRating.ADULT || parsed.vm18
         ? ContentRating.ADULT
         : tags.getRating(parsed.genres?.map((genre) => genre.name) ?? []);
 
@@ -66,6 +66,8 @@ export class Parsers {
           Fansub: parsed.fansub?.name ?? "Ufficiale",
           Tipologia: parsed.typeT,
           Anno: parsed.year ? String(parsed.year) : undefined,
+          Visualizzazioni: parsed.totViews ? formatCountIt(parsed.totViews) : undefined,
+          "Su MangaWorld dal": parsed.createdAtT,
           Lingua: "Italiano 🇮🇹",
         }),
         shareUrl: shareURL,
@@ -133,6 +135,7 @@ export class Parsers {
     };
   }
 
+  /** Archive and search cards; `adult` is MangaWorld's own 18+ flag. */
   parsePage(
     source: MangaWorldGeneric,
     json: WindowEntry[],
@@ -143,6 +146,7 @@ export class Parsers {
     tags: string[];
     authors: string;
     type: string;
+    adult: boolean;
   }[] {
     return json
       .filter((entry) => entry.kind === "search")
@@ -152,199 +156,11 @@ export class Parsers {
           title: manga.title ?? "",
           image: this.normalizeCoverUrl(source, manga.imageT, manga.image),
           tags: manga.genres?.map((genre) => genre.slug) ?? [],
-          authors: manga.author.join(", ") ?? "",
+          authors: manga.author?.join(", ") ?? "",
           type: manga.typeT ?? "",
+          adult: manga.vm18 === true,
         })),
       );
-  }
-
-  async parseSearchResults(
-    excluded: { generi: string[]; tipi: string[] },
-    source: MangaWorldGeneric,
-    metadata: MangaMetadata | undefined,
-    json: WindowEntry[],
-  ): Promise<PagedResults<SearchResultItem>> {
-    const page = metadata?.page ?? 1;
-    const items: SearchResultItem[] = [];
-
-    for (const item of this.parsePage(source, json)) {
-      if (
-        !tags.excludedTags(item.tags, excluded.generi) &&
-        !tags.blacklistedTags(item.tags) &&
-        !types.excludedTypes(item.type, excluded.tipi) &&
-        !types.blacklistedType(item.type)
-      ) {
-        items.push({
-          mangaId: item.id,
-          imageUrl: item.image,
-          title: item.title,
-          subtitle: item.authors,
-          contentRating:
-            source.defaultContentRating === ContentRating.ADULT
-              ? ContentRating.ADULT
-              : tags.getRating(item.tags),
-          metadata: { page: page + 1 },
-        });
-      }
-    }
-
-    const searchInfo = json.find((entry) => entry.kind === "searchInfo");
-    const hasMore = searchInfo ? page < searchInfo.data.totalPages : items.length > 0;
-
-    return {
-      items,
-      metadata: hasMore ? { page: page + 1 } : undefined,
-    };
-  }
-
-  async parseTypeSection(
-    source: MangaWorldGeneric,
-    metadata: MangaMetadata,
-  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata }> {
-    await filter.populateFilter(source);
-    const items: DiscoverSectionItem[] = [];
-
-    for (const filterItem of filter.getMangaTypeFilter()) {
-      if (types.blacklistedType(filterItem.id)) continue;
-      items.push({
-        type: "genresCarouselItem",
-        searchQuery: {
-          title: "",
-          metadata: [{ id: "types", value: { [filterItem.id]: "included" } }],
-        },
-        name: filterItem.value,
-        metadata,
-        contentRating:
-          source.defaultContentRating === ContentRating.ADULT
-            ? ContentRating.ADULT
-            : ContentRating.EVERYONE,
-      });
-    }
-
-    return { items, metadata };
-  }
-
-  async parseGenreSection(
-    source: MangaWorldGeneric,
-    metadata: MangaMetadata,
-  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata }> {
-    await filter.populateFilter(source);
-    const items: DiscoverSectionItem[] = [];
-
-    for (const filterItem of filter.getGenreFilter()) {
-      if (tags.blacklistedTags([filterItem.id])) continue;
-      items.push({
-        type: "genresCarouselItem",
-        searchQuery: {
-          title: "",
-          metadata: [{ id: "genres", value: { [filterItem.id]: "included" } }],
-        },
-        name: filterItem.value,
-        metadata,
-        contentRating:
-          source.defaultContentRating === ContentRating.ADULT
-            ? ContentRating.ADULT
-            : tags.getRating([filterItem.value]),
-      });
-    }
-
-    return { items, metadata };
-  }
-
-  parseTrendingChapters(
-    metadata: MangaMetadata,
-    source: MangaWorldGeneric,
-    chapters: TrendingManga[],
-  ): { items: DiscoverSectionItem[]; metadata: MangaMetadata } {
-    const items: DiscoverSectionItem[] = chapters.map((chapter) => ({
-      metadata,
-      type: "featuredCarouselItem",
-      contentRating:
-        source.defaultContentRating === ContentRating.ADULT
-          ? ContentRating.ADULT
-          : source.defaultContentRating,
-      supertitle: chapter.name,
-      mangaId: `${chapter.manga.linkId}/${chapter.manga.slug}`,
-      title: chapter.manga.title ?? "",
-      imageUrl: this.normalizeCoverUrl(source, chapter.manga.imageT, chapter.manga.image),
-    }));
-
-    return { items, metadata };
-  }
-
-  parseMonthTrending(
-    metadata: MangaMetadata,
-    source: MangaWorldGeneric,
-    mangas: Manga[],
-  ): { items: DiscoverSectionItem[]; metadata: MangaMetadata } {
-    const items: DiscoverSectionItem[] = mangas.map((manga) => ({
-      metadata,
-      type: "prominentCarouselItem",
-      contentRating:
-        source.defaultContentRating === ContentRating.ADULT
-          ? ContentRating.ADULT
-          : tags.getRating(manga.genres?.map((genre) => genre.slug) ?? []),
-      imageUrl: this.normalizeCoverUrl(source, manga.imageT, manga.image),
-      mangaId: `${manga.linkId}/${manga.slug}`,
-      title: manga.title ?? "",
-    }));
-
-    return { items, metadata };
-  }
-
-  async parseMostReadSection(
-    metadata: MangaMetadata,
-    source: MangaWorldGeneric,
-  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata }> {
-    let page = metadata?.page ?? 1;
-    const html = await source.requestManager.parsePopularSectionRequests(page, source);
-    page++;
-    const windowEntry = jsonParser.getWindowEntry(html);
-    const latest = await this.parseSection(page, source, windowEntry);
-    return { items: latest, metadata: { page } };
-  }
-
-  async parseLastAddedSection(
-    metadata: MangaMetadata,
-    source: MangaWorldGeneric,
-    favTags: boolean,
-  ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata }> {
-    let page = metadata?.page ?? 1;
-    const html = await source.requestManager.parseLastMangaAddedTagsSectionRequests(
-      page,
-      source,
-      favTags,
-    );
-    page++;
-    const windowEntry = jsonParser.getWindowEntry(html);
-    const latest = await this.parseSection(page, source, windowEntry);
-    return { items: latest, metadata: { page } };
-  }
-
-  async parseSection(
-    page: number,
-    source: MangaWorldGeneric,
-    json: WindowEntry[],
-  ): Promise<DiscoverSectionItem[]> {
-    const latest: DiscoverSectionItem[] = [];
-    const parsed = this.parsePage(source, json);
-    for (const item of parsed) {
-      if (!tags.blacklistedTags(item.tags) && !types.blacklistedType(item.type)) {
-        latest.push({
-          metadata: { page },
-          subtitle: item.authors,
-          type: "simpleCarouselItem",
-          contentRating:
-            source.defaultContentRating === ContentRating.ADULT
-              ? ContentRating.ADULT
-              : tags.getRating(item.tags),
-          imageUrl: item.image,
-          mangaId: item.id,
-          title: item.title,
-        });
-      }
-    }
-    return latest;
   }
 
   async parseChapterUpdateSection(
@@ -352,22 +168,12 @@ export class Parsers {
     source: MangaWorldGeneric,
   ): Promise<{ items: DiscoverSectionItem[]; metadata: MangaMetadata | undefined }> {
     const page = metadata?.page ?? 1;
-    let html = "";
+    // Page 1 is the Home itself, already cached for "In tendenza" and "Più letti del mese".
+    const html =
+      page === 1
+        ? await source.requestManager.fetchText(source.base_url, HOME_CACHE_SECONDS)
+        : await source.requestManager.fetchText(`${source.base_url}/?page=${page}`, 60);
     const updates: ChapterUpdatesCarouselItem[] = [];
-
-    if (page == 1) {
-      html = Application.arrayBufferToUTF8String(
-        await source.requestManager.fetchPage(source.base_url),
-      );
-    } else {
-      const data = (
-        await Application.scheduleRequest({
-          url: `${source.base_url}/?page=${page}`,
-          method: "GET",
-        })
-      )[1];
-      html = Application.arrayBufferToUTF8String(data);
-    }
 
     const windowEntry = jsonParser.getWindowEntry(html);
     for (const { kind, data } of windowEntry) {
