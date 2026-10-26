@@ -1,12 +1,12 @@
 {
-  "buildTime": "2026-10-26T23:01:02.340Z",
+  "buildTime": "2026-10-26T23:12:55.788Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
   },
   "repository": {
     "name": "tascabile",
-    "description": "Estensioni Paperback 0.9 per manga e scanlation in italiano (MangaWorld, Niadd e sei fansub), con due reader Comics in inglese."
+    "description": "Estensioni Paperback 0.9 per manga e scanlation in italiano (MangaWorld, Niadd e nove fansub italiane), con due reader Comics in inglese."
   },
   "sources": [
     {
@@ -261,7 +261,7 @@
     {
       "name": "MangaWorld",
       "description": "Ampio catalogo italiano di manga, manhwa e manhua: In tendenza, ultimi capitoli, generi preferiti, ricerca avanzata e reader con tutte le pagine del capitolo.",
-      "version": "1.0.0-alpha.39",
+      "version": "1.0.0-alpha.40",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
