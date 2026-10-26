@@ -11,7 +11,7 @@ export default {
   name: "Juin Jutsu Team",
   description:
     "Scanlation italiane del Juin Jutsu Team (One Piece, Black Clover, Ichi the Witch e altre): ultimi capitoli, serie in corso e catalogo completo.",
-  version: "1.0.0",
+  version: "1.0.1",
   icon: "icon.png",
   language: "it",
   contentRating: ContentRating.EVERYONE as ContentRating,

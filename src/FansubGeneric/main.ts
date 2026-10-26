@@ -22,6 +22,7 @@ import {
 } from "@paperback/types";
 
 import { INFO_SYMBOLS, infoItems, relativeDateIt } from "../common/discover";
+import { chapterLabel, matchesQuery } from "./chapters";
 import type { ComicListItem, ComicsListResponse } from "./models";
 import { APIRequests, MainInterceptor } from "./network";
 import { FansubGeneralParsers } from "./parsers";
@@ -118,6 +119,11 @@ abstract class FansubGeneral
   }
 
   protected async loadSearchComics(query: SearchQuery<Metadata>): Promise<ComicListItem[]> {
+    // The readers' search endpoint returns nothing below three letters: filter locally.
+    const title = query.title.trim();
+    if (title.length > 0 && title.length < 3) {
+      return (await this.loadCatalog()).filter((comic) => matchesQuery(comic, title));
+    }
     const raw = await this.requestManager.apiSearchResult(query);
     const parsed = JSON.parse(raw) as ComicsListResponse;
     return parsed.comics.filter((comic) => !this.shouldHideAdult(comic.adult));
@@ -165,7 +171,7 @@ abstract class FansubGeneral
       mangaId: comic.slug,
       title: comic.title,
       imageUrl: this.listThumbnail(comic),
-      subtitle: comic.author ?? "",
+      subtitle: comic.author || undefined,
       contentRating: this.contentRatingFor(comic.adult),
     };
   }
@@ -187,7 +193,7 @@ abstract class FansubGeneral
       mangaId: comic.slug,
       imageUrl: this.listThumbnail(comic),
       title: comic.title,
-      supertitle: comic.last_chapter?.title ?? comic.last_chapter?.full_title ?? fallbackSupertitle,
+      supertitle: comic.last_chapter ? chapterLabel(comic.last_chapter) : fallbackSupertitle,
       infoItems: infoItems(
         { symbol: INFO_SYMBOLS.date, text: relativeDateIt(this.comicDate(comic)) },
         { symbol: INFO_SYMBOLS.author, text: comic.author ?? undefined },
@@ -205,7 +211,7 @@ abstract class FansubGeneral
       chapterId: chapter.url,
       imageUrl: this.listThumbnail(comic),
       title: comic.title,
-      subtitle: chapter.title ?? chapter.full_title,
+      subtitle: chapterLabel(chapter),
       publishDate: new Date(chapter.published_on),
       contentRating: this.contentRatingFor(comic.adult),
     };

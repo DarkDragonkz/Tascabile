@@ -104,6 +104,8 @@ await test("chapters keep site order with IDs, numbers, volumes and every date f
   );
   assert.equal(shinobi.at(-1).chapterId, "volume-1/0-a");
   assert.equal(shinobi.at(-1).chapNum, 0);
+  // Titles keep the team's text without the number Paperback already shows.
+  assert.equal(shinobi[0].title, "Ossone (2)");
   // Older pages embed the same list, used when the AJAX endpoint fails.
   assert.equal(madara.parseChapters(await fixture("shinobiscans", "manga"), NOW).length, 24);
 
@@ -117,6 +119,7 @@ await test("chapters keep site order with IDs, numbers, volumes and every date f
     ],
   );
   assert.equal(shinigami.at(-1).chapNum, 1);
+  assert.ok(shinigami.every((chapter) => chapter.title === ""));
   // "3 ore ago" (relative) and "Ottobre 1, 2026" (month first).
   assert.equal(shinigami[0].publishDate.getTime(), NOW - 3 * 3_600_000);
   assert.deepEqual(
@@ -186,4 +189,15 @@ await test("URL helpers extract series slugs and chapter paths", () => {
   );
   assert.equal(madara.chapterIdFromUrl("https://shinobiscans.com/manga/overgeared/"), undefined);
   assert.equal(madara.mangaIdFromUrl("https://shinobiscans.com/blog/news/"), undefined);
+});
+
+await test("chapter titles drop the leading number", () => {
+  assert.equal(
+    madara.chapterDisplayTitle("76 - Il Risveglio del Guardiano"),
+    "Il Risveglio del Guardiano",
+  );
+  assert.equal(madara.chapterDisplayTitle("Capitolo 316"), "");
+  assert.equal(madara.chapterDisplayTitle("Capitolo 12.5: Extra"), "Extra");
+  assert.equal(madara.chapterDisplayTitle("Oneshot"), "Oneshot");
+  assert.equal(madara.chapterDisplayTitle("21"), "");
 });

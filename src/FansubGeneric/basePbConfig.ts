@@ -10,7 +10,7 @@ import { BADGES } from "../common/badges";
 export const basePbConfig = {
   name: "",
   description: "",
-  version: "1.2.6",
+  version: "1.2.7",
   icon: "icon.png",
   language: "it",
   capabilities: [

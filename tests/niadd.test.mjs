@@ -61,12 +61,42 @@ await test("Italian chapter list keeps site order with numeric IDs, numbers and 
   assert.equal(new Set(chapters.map((chapter) => chapter.chapterId)).size, 20);
   assert.deepEqual(chapters[0], {
     chapterId: "989282",
-    title: "Insomnia 21",
+    // "Insomnia 21" repeats the series and the number Paperback already shows.
+    title: "",
     chapNum: 21,
     volume: undefined,
     publishDate: new Date(2026, 9, 24),
   });
   assert.equal(chapters.at(-1).chapNum, 2);
+});
+
+await test("chapter titles keep only the team's own title", () => {
+  const t = niadd.chapterDisplayTitle;
+  assert.equal(t("Insomnia 21", "Insomnia"), "");
+  assert.equal(t("BJ Alex (PT/BR) Cap 86", "BJ Alex (PT/BR)"), "");
+  assert.equal(t("Solo Leveling 179.5", "Solo Leveling"), "");
+  assert.equal(t("Поднятие уровня в одиночку Том 2 Глава 200", "Поднятие уровня в одиночку"), "");
+  assert.equal(
+    t("Поднятие уровня в одиночку 1 - 0 Пролог", "Поднятие уровня в одиночку"),
+    "Пролог",
+  );
+  assert.equal(
+    t("One Piece Party3: Capitolo speciale-Momotaro Rufy", "One Piece Party"),
+    "Capitolo speciale-Momotaro Rufy",
+  );
+  assert.equal(t("Поднятие уровня в одиночку: Глава v2 - 131", "Поднятие уровня в одиночку"), "");
+  assert.equal(t("Поднятие уровня в одиночку v1 - 88", "Поднятие уровня в одиночку"), "");
+  assert.equal(t("Oneshot", "Altra serie"), "Oneshot");
+});
+
+await test("latest chapter labels read as a single chapter in the catalogue language", () => {
+  const l = niadd.latestChapterLabel;
+  assert.equal(l("Episodi 87.6", "it"), "Capitolo 87.6");
+  assert.equal(l("Episódios 339", "br"), "Capítulo 339");
+  assert.equal(l("Chapitres 14", "fr"), "Chapitre 14");
+  assert.equal(l("Том 14 Глава 67", "ru"), "Том 14 Глава 67");
+  assert.equal(l("Akane-banashi 221", "fr"), "Akane-banashi 221");
+  assert.equal(l(undefined, "it"), undefined);
 });
 
 await test("Italian reader returns only pic_box images, in order, across -10-N pages", async () => {
@@ -143,11 +173,13 @@ for (const [language, expected] of Object.entries(LANGUAGES)) {
     assert.ok(chapters.length > 50);
     assert.ok(chapters.some((chapter) => chapter.chapterId === meta.chapterId));
     assert.ok(chapters.every((chapter) => chapter.publishDate instanceof Date));
-    // Chapter 0 is legitimate (prologues); a number must never silently fall back to 0.
-    const unnumbered = chapters.filter(
-      (chapter) => chapter.chapNum === 0 && !/(?:^|\D)0(?:\D|$)/u.test(chapter.title),
-    );
-    assert.ok(unnumbered.length <= 1, unnumbered.map((chapter) => chapter.title).join(", "));
+    // Chapter 0 is legitimate (prologues: ru has "… 0", "Том 1 Глава 0" and "1 - 0 Пролог");
+    // numbers must not otherwise fall back to 0.
+    const zero = chapters.filter((chapter) => chapter.chapNum === 0);
+    assert.ok(zero.length <= 3, zero.map((chapter) => chapter.title).join(", "));
+    // Displayed titles drop the series name and the bare number.
+    assert.ok(chapters.every((chapter) => !chapter.title.startsWith(details.title)));
+    assert.ok(chapters.every((chapter) => !/^\d+(?:[.,]\d+)?$/u.test(chapter.title)));
   });
 
   await test(`${language}: reader stays on its own site and collects every page`, async () => {

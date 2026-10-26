@@ -206,7 +206,7 @@ export function parseChapters(html: string, now = Date.now()): MadaraChapter[] {
     const volumeHeading = item.closest("li.parent").children("a").first().text();
     chapters.set(chapterId, {
       chapterId,
-      title,
+      title: chapterDisplayTitle(title),
       chapNum: chapterNumber(title, chapterId),
       volume: volumeNumber(volumeHeading, chapterId),
       publishDate: parseDate(dateText($, item.find(".chapter-release-date").first()), now),
@@ -291,6 +291,16 @@ export function parseDate(text: string | undefined, now = Date.now()): Date | un
   const numeric = value.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})/u);
   if (numeric) return validDate(new Date(+numeric[3]!, +numeric[2]! - 1, +numeric[1]!));
   return undefined;
+}
+
+/**
+ * Paperback already shows the chapter number, so drop it from the title:
+ * "76 - Il Risveglio…" → "Il Risveglio…", "Capitolo 316" → "".
+ */
+export function chapterDisplayTitle(title: string): string {
+  return title
+    .replace(/^(?:cap(?:itolo)?|ch(?:apter)?)?\.?\s*\d+(?:[.,]\d+)?(?=$|[\s:.\-–])[\s:.\-–]*/iu, "")
+    .trim();
 }
 
 /** Bare numbers ("21") read as "Capitolo 21"; other titles stay as the team wrote them. */

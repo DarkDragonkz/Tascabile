@@ -9,11 +9,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: true
+  # Superseded pull request runs can stop; a deploy in progress must finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -26,9 +27,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: npm
+      # `npm ci` installs exactly the lockfile: a stale lockfile once broke the bundle.
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
       - name: Core Regression Tests
         run: npm run test:core
       - name: Sync Comic Reader Sources
@@ -43,28 +45,28 @@ jobs:
         run: npm run format:check
       - name: Bundle Extensions
         run: npm run bundle
+      - name: Upload Bundles
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundles
+          path: bundles
+          retention-days: 7
 
   deploy:
     name: Deploy to GitHub Pages
     needs: check
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout Branch
-        uses: actions/checkout@v6
-      - name: Setup Node.js Environment
-        uses: actions/setup-node@v6
+      # Publish the exact bundles the Check job built and verified.
+      - name: Download Bundles
+        uses: actions/download-artifact@v4
         with:
-          node-version: 24
-          package-manager-cache: false
-      - name: Install Dependencies
-        run: npm install
-      - name: Sync Comic Reader Sources
-        run: npm run sync:comics
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Bundle Extensions
-        run: npm run bundle
+          name: bundles
+          path: bundles
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

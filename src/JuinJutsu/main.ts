@@ -175,7 +175,7 @@ class JuinJutsuExtension
           chapterId: chapter.chapterId,
           imageUrl: comic.thumbnailUrl,
           title: comic.title,
-          subtitle: chapter.title,
+          subtitle: chapter.label,
           publishDate: chapter.publishDate,
           contentRating: rating(comic),
         })),
@@ -193,7 +193,7 @@ class JuinJutsuExtension
         mangaId: comic.mangaId,
         imageUrl: comic.coverUrl,
         title: comic.title,
-        supertitle: chapter.title,
+        supertitle: chapter.label,
         summary: shortSummary(comic.synopsis),
         infoItems: infoItems(
           { symbol: INFO_SYMBOLS.date, text: relativeDateIt(chapter.publishDate) },

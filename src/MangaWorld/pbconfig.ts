@@ -15,7 +15,7 @@ const pbConfig = {
 pbConfig.name = "MangaWorld";
 pbConfig.description =
   "Ampio catalogo italiano di manga, manhwa e manhua: In tendenza, ultimi capitoli, generi preferiti, ricerca avanzata e reader con tutte le pagine del capitolo.";
-pbConfig.version = customVersion({ increasePrerelease: 10 });
+pbConfig.version = customVersion({ increasePrerelease: 11 });
 pbConfig.language = "it";
 pbConfig.contentRating = ContentRating.EVERYONE;
 

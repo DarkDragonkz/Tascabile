@@ -9,6 +9,7 @@ export interface ComicListItem {
   adult: number;
   slug: string;
   author: string;
+  alt_titles?: string[] | null;
   last_chapter?: ComicDetailChapter | null;
 }
 
@@ -52,7 +53,10 @@ export interface ComicDetailChapter {
   full_title: string;
   title: string | null;
   volume: number | null;
-  chapter: number;
+  /** Null for extras such as "Oneshot" or "Artbook". */
+  chapter: number | null;
+  /** 24/6 is chapter 24.6; null or 0 when the chapter has no part number. */
+  subchapter?: number | null;
   language: string;
   teams: (Team | null)[];
   published_on: string;

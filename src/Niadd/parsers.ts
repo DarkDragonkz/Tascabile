@@ -243,13 +243,46 @@ export function parseChapters(html: string, mangaTitle: string): NiaddChapter[] 
       cleanText(link.attr("title"));
     chapters.push({
       chapterId,
-      title,
+      title: chapterDisplayTitle(title, mangaTitle),
       ...parseChapterNumbers(title, mangaTitle, link.attr("href") ?? ""),
       publishDate: parseDate(item.find(".chp-time, .detail-chp-time").first().text()),
     });
   });
 
   return chapters;
+}
+
+const CHAPTER_WORD: Partial<Record<NiaddLanguage, string>> = {
+  it: "Capitolo",
+  br: "Capítulo",
+  fr: "Chapitre",
+};
+
+/** Lists label the latest chapter with a plural ("Episodi 21"): "Capitolo 21" reads right. */
+export function latestChapterLabel(
+  label: string | undefined,
+  language: NiaddLanguage,
+): string | undefined {
+  const match = label?.match(/^(?:episodi|epis[óo]dios|chapitres)\s+(\d+(?:[.,]\d+)?)$/iu);
+  const word = CHAPTER_WORD[language];
+  return match && word ? `${word} ${match[1]}` : label;
+}
+
+/**
+ * The site titles chapters "<series> <number>[: title]" ("Insomnia 21",
+ * "BJ Alex (PT/BR) Cap 86", "… Том 2 Глава 200"). Paperback already shows the series
+ * and the number, so keep only a real chapter title, if any.
+ */
+export function chapterDisplayTitle(title: string, mangaTitle: string): string {
+  let rest = title;
+  const series = mangaTitle.trim();
+  if (series && rest.toLowerCase().startsWith(series.toLowerCase())) {
+    rest = rest.slice(series.length);
+  }
+  // Optional volume ("Том 2", "v1 -"), optional chapter word, then the number(s).
+  const marker =
+    /^[\s:.\-–]*(?:(?:vol(?:ume)?|tome?|том|v)\.?\s*\d+\s*[-–]?\s*)?(?:(?:cap(?:itolo|[íi]tulo)?|ch(?:apter|apitre)?|chap|глава|episodi?o?)\.?\s*)?(?:v\.?\s*\d+\s*[-–]\s*)?\d+(?:[.,]\d+)?(?:\s*-\s*\d+)?(?=$|[\s:.\-–])[\s:.\-–]*/iu;
+  return rest.replace(marker, "").trim();
 }
 
 /**

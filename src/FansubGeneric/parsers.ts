@@ -9,6 +9,7 @@ import {
 } from "@paperback/types";
 
 import { detailInfo, formatCountIt, formatDateIt } from "../common/discover";
+import { chapterNumber, chapterTitle } from "./chapters";
 import FansubGeneral from "./main";
 import type { ComicDetailResponse } from "./models";
 
@@ -55,8 +56,8 @@ export class FansubGeneralParsers {
       chapterId: chapter.url,
       sourceManga,
       langCode: chapter.language || "it",
-      chapNum: chapter.chapter ?? 0,
-      title: chapter.title ?? chapter.full_title ?? "",
+      chapNum: chapterNumber(chapter) ?? 0,
+      title: chapterTitle(chapter),
       version: chapter.teams[0]?.name ?? source.name,
       // No volume rather than "Vol. 0" when the reader does not group chapters.
       volume: chapter.volume || undefined,

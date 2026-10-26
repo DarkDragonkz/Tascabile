@@ -39,8 +39,13 @@ await test("latest chapters keep newest-first order with series, titles and date
   const [first] = updates;
   assert.equal(first.comic.mangaId, "ichi-the-witch");
   assert.deepEqual(
-    { id: first.chapter.chapterId, title: first.chapter.title, num: first.chapter.chapNum },
-    { id: "7171", title: "Capitolo 59: Futuri mutevoli", num: 59 },
+    {
+      id: first.chapter.chapterId,
+      title: first.chapter.title,
+      label: first.chapter.label,
+      num: first.chapter.chapNum,
+    },
+    { id: "7171", title: "Futuri mutevoli", label: "Capitolo 59: Futuri mutevoli", num: 59 },
   );
   assert.equal(first.chapter.publishDate.getFullYear(), 2026);
   const times = updates.map((update) => update.chapter.publishDate.getTime());
@@ -57,7 +62,8 @@ await test("series details sort chapters newest first and read FoOlSlide subchap
   assert.equal(new Set(chapters.map((chapter) => chapter.chapterId)).size, 128);
   // 77 is published as 77.1, 26/1 and 26/2 as 26.1 and 26.2.
   assert.equal(chapters[0].chapNum, 77.1);
-  assert.match(chapters[0].title, /^Capitolo 77\.1: /u);
+  assert.match(chapters[0].label, /^Capitolo 77\.1: /u);
+  assert.ok(chapters.every((chapter) => !chapter.title.startsWith("Capitolo")));
   assert.ok(chapters.some((chapter) => chapter.chapNum === 26.1));
   assert.ok(chapters.some((chapter) => chapter.chapNum === 26.2));
   for (let index = 1; index < chapters.length; index++) {

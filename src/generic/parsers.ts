@@ -81,7 +81,10 @@ export class Parsers {
       sourceManga,
       langCode: "it",
       chapNum: firstNumber(chapter.name) ?? 0,
-      title: chapter.title ?? chapter.name ?? "",
+      // Paperback shows the number already: "Capitolo 356" alone is not a title.
+      title:
+        chapter.title?.trim() ||
+        (/^capitolo\s*\d+(?:[.,]\d+)?$/iu.test(chapter.name ?? "") ? "" : (chapter.name ?? "")),
       // `subs` is the pre-1.0.0-alpha.37 key, still present in saved library entries.
       version:
         sourceManga.mangaInfo.additionalInfo?.Fansub ??

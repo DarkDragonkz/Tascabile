@@ -11,7 +11,7 @@ export default {
   name: "Niadd",
   description:
     "Manga da Niadd, stesso catalogo e reader della storica NineManga: italiano (predefinito), portoghese, francese e russo, selezionabili nelle impostazioni.",
-  version: "1.1.1",
+  version: "1.1.2",
   icon: "icon.png",
   language: "it",
   contentRating: ContentRating.EVERYONE as ContentRating,

@@ -49,7 +49,10 @@ export interface JuinComic {
 
 export interface JuinChapter {
   chapterId: string;
+  /** The team's chapter title, "" when there is none (Paperback shows the number). */
   title: string;
+  /** "Capitolo 59: Futuri mutevoli", for Home carousels. */
+  label: string;
   chapNum: number;
   volume?: number;
   publishDate?: Date;
@@ -146,7 +149,8 @@ function toChapter(chapter: ApiChapter): JuinChapter {
   const name = decodeEntities(chapter.name ?? "").trim();
   return {
     chapterId: String(chapter.id),
-    title: name ? `Capitolo ${chapNum}: ${name}` : `Capitolo ${chapNum}`,
+    title: name,
+    label: name ? `Capitolo ${chapNum}: ${name}` : `Capitolo ${chapNum}`,
     chapNum,
     volume,
     publishDate: parseDate(chapter.created),
