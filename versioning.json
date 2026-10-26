@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-10-26T23:12:55.788Z",
+  "buildTime": "2026-10-26T23:31:37.856Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.92",
     "types": "1.0.0-alpha.92"
@@ -12,7 +12,7 @@
     {
       "name": "AnimeShinigami",
       "description": "Scanlation italiane di AnimeShinigami, manhwa d'azione e arti marziali (Nano Machine e altri): ultimi capitoli, più letti, nuove serie e ricerca per genere.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -80,7 +80,7 @@
     {
       "name": "GTO The Great Site",
       "description": "Scanlation italiane di GTO The Great Site: l'Universo GTO di Onizuka e gli altri progetti del team, con ultime release e ricerca per area del catalogo.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -117,7 +117,7 @@
     {
       "name": "Hasta Team",
       "description": "Scanlation italiane di Hasta Team: progetti aggiornati di recente e un ampio archivio storico, con filtri per attività e contenuti.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -154,7 +154,7 @@
     {
       "name": "Hasta Team DDT",
       "description": "Archivio DDT di Hasta Team con volumi completi: caricamenti recenti, biblioteca alfabetica e ricerca per periodo.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -191,7 +191,7 @@
     {
       "name": "Juin Jutsu Team",
       "description": "Scanlation italiane del Juin Jutsu Team (One Piece, Black Clover, Ichi the Witch e altre): ultimi capitoli, serie in corso e catalogo completo.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -224,7 +224,7 @@
     {
       "name": "Lupi Team",
       "description": "Scanlation italiane di Lupi Team: le serie di punta come One Piece, Berserk e Hunter × Hunter, più l'archivio del team.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -261,7 +261,7 @@
     {
       "name": "MangaWorld",
       "description": "Ampio catalogo italiano di manga, manhwa e manhua: In tendenza, ultimi capitoli, generi preferiti, ricerca avanzata e reader con tutte le pagine del capitolo.",
-      "version": "1.0.0-alpha.40",
+      "version": "1.0.0-alpha.41",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -294,7 +294,7 @@
     {
       "name": "Niadd",
       "description": "Manga da Niadd, stesso catalogo e reader della storica NineManga: italiano (predefinito), portoghese, francese e russo, selezionabili nelle impostazioni.",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -333,7 +333,7 @@
     {
       "name": "Phoenix Scans",
       "description": "Scanlation italiane di Phoenix Scans: ultime uscite, serie aggiornate di recente e catalogo completo.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
@@ -406,7 +406,7 @@
     {
       "name": "Shinobi Scans",
       "description": "Scanlation italiane di Shinobi Scans, soprattutto manhwa e webtoon (Overgeared, The Return of the Disaster-Class Hero): ultimi capitoli, più letti, nuove serie e ricerca per genere.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "icon": "icon.png",
       "language": "it",
       "contentRating": "SAFE",
@@ -438,7 +438,7 @@
     {
       "name": "TuttoAnimeManga",
       "description": "Manga in italiano da TuttoAnimeManga: un grande archivio con classici come One Piece, Naruto e Bleach e le ultime uscite.",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "icon": "icon.png",
       "language": "it",
       "capabilities": [
