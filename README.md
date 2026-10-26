@@ -29,8 +29,11 @@ Repository di estensioni per **Paperback 0.9** (iPhone e iPad) dedicata soprattu
 | **Lupi Team** | scanlation | Serie di punta (One Piece, Berserk, Hunter × Hunter) e archivio |
 | **Phoenix Scans** | scanlation | Ultime uscite, serie aggiornate di recente, catalogo completo |
 | **TuttoAnimeManga** | manga | Grande archivio con classici e ultime uscite |
+| **Juin Jutsu Team** | scanlation | One Piece, Black Clover, Ichi the Witch e un catalogo di oltre cento serie |
+| **Shinobi Scans** | manhwa, webtoon | Overgeared, The Return of the Disaster-Class Hero; ricerca per genere e stato |
+| **AnimeShinigami** | manhwa | Nano Machine e altri manhwa d'azione; ricerca per genere e stato |
 
-Le sei fonti fansub hanno **Home, impostazioni e filtri dedicati**, pensati sul catalogo di ogni team; condividono soltanto l'infrastruttura tecnica (rete, cache, parsing). Nelle Home le copertine usano le miniature leggere del sito, mentre la scheda del manga mostra la copertina originale.
+Le sei fonti fansub storiche (da GTO a TuttoAnimeManga) hanno **Home, impostazioni e filtri dedicati**, pensati sul catalogo di ogni team; condividono soltanto l'infrastruttura tecnica (rete, cache, parsing). Juin Jutsu legge l'API del suo reader FoOlSlide; Shinobi Scans e AnimeShinigami condividono un motore per il tema WordPress Madara, con i generi di ricerca presi dal sito stesso. Nelle Home le copertine usano le miniature leggere del sito, mentre la scheda del manga mostra la copertina originale.
 
 ### Comics in inglese
 
@@ -79,6 +82,9 @@ src/
 ├── Niadd/                     # Niadd multilingua
 ├── FansubGeneric/             # infrastruttura comune alle sei fansub
 ├── GTOTheGreatSite/ … TuttoAnimeManga/   # Home, impostazioni e filtri di ogni fansub
+├── JuinJutsu/                 # Juin Jutsu Team (API FoOlSlide)
+├── MadaraGeneric/             # motore per i siti WordPress Madara
+├── ShinobiScans/, AnimeShinigami/   # configurazione dei due siti Madara
 ├── common/                    # helper condivisi (cache, caroselli della Home)
 └── NineManga/                 # sorgente storica, disabilitata
 scripts/                       # sync e personalizzazione dei reader Comics
