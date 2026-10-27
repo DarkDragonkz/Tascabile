@@ -46,7 +46,7 @@ I reader Comics vengono sincronizzati durante la build da [`Nicartjay/PaperbackE
 
 ## Limiti noti
 
-- **Cloudflare (BatCave, Read Comics Online, Niadd):** se il sito richiede una verifica, Paperback mostra il banner e la verifica va completata a mano. Le richieste vengono messe in pausa per non aprire più banner insieme, e i cookie ottenuti restano salvati per ridurre le verifiche ripetute. Non esistono bypass automatici.
+- **Cloudflare (BatCave, Read Comics Online, Niadd):** quando il sito richiede una verifica, Paperback mostra il banner per consentire all'utente di completarla. Le richieste vengono messe in pausa per evitare verifiche simultanee e i cookie ottenuti vengono riutilizzati per ridurre le verifiche ripetute.
 - **Niadd in inglese, spagnolo e tedesco non è disponibile:** le versioni inglese e spagnola instradano i capitoli verso siti pubblicitari esterni; quella tedesca ha le immagini non più raggiungibili sul sito stesso.
 - **NineManga** e **ReadComicOnline** sono disabilitate: i siti sono offline o instabili. Il codice di NineManga resta nel repository come riferimento storico.
 - La velocità delle immagini dipende anche dai server delle singole fonti: le estensioni evitano redirect e richieste inutili ma non riducono la qualità delle tavole.
