@@ -499,9 +499,9 @@ await patchExact(
 
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
-  "Read Comics Online version 1.4.15.7",
+  "Read Comics Online version 1.4.15.8",
   '  version: "1.4.15.5",',
-  '  version: "1.4.15.7",',
+  '  version: "1.4.15.8",',
 );
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
@@ -633,6 +633,184 @@ await patchExact(
   "BatCave unused ownText imports",
   'import { CheerioAPI, Cheerio } from "cheerio";\nimport type { AnyNode } from "domhandler";\n',
   'import { CheerioAPI } from "cheerio";\n',
+);
+
+// Read Comics Online against the live site (27 Oct 2026), in the MMRCMS template
+// (Read Comics Online is its only consumer):
+// - title search used the JSON autocomplete, which stops at 8 suggestions
+//   ("batman" → 8 of several pages); use the site's paginated /advanced-search;
+// - browsing stopped after 5 pages although the list keeps going;
+// - the synopsis paragraph is no longer `p.mt-5`, so it was always empty;
+// - "#Annual 2025" became chapter 2025 and "#Annual 5" collided with issue #5:
+//   the issue number comes from the chapter slug, annuals/specials get 0 and
+//   keep their name; "#24" alone has no title beyond the number;
+// - some list titles are double-encoded ("Tangle &amp;amp; Whisper").
+const MMRCMS = "src/utils/mmrcms/template.ts";
+await patchRegex(
+  MMRCMS,
+  "MMRCMS search and list parsing",
+  /  async getSearchResults\([\s\S]*?\n  \}\n\n  \/\/ -+\n  \/\/ Manga details/u,
+  `  async getSearchResults(
+    query: SearchQuery<Metadata>,
+    metadata: Metadata | undefined,
+    sortingOption?: SortingOption,
+  ): Promise<PagedResults<SearchResultItem>> {
+    const meta = metadata as MMRCMSSearchMetadata | undefined;
+    const page = meta?.page ?? 1;
+    const titleQuery = (query.title || "").trim();
+
+    const url = titleQuery
+      ? \`\${this.baseUrl}/advanced-search?name=\${encodeURIComponent(titleQuery)}&page=\${page}\`
+      : \`\${this.baseUrl}/comic-list?sort=\${sortingOption?.id || "views"}&page=\${page}\`;
+    const $ = await this.fetchCheerio({ url, method: "GET" });
+    // Only the previous page is remembered: enough to drop titles that moved
+    // across the page boundary while browsing, without growing the metadata.
+    const previous = new Set<string>(meta?.collectedIds ?? []);
+    const pageIds: string[] = [];
+    const results: SearchResultItem[] = [];
+    const add = (mangaId: string, title: string, image: string) => {
+      if (!title || !mangaId || previous.has(mangaId) || pageIds.includes(mangaId)) return;
+      pageIds.push(mangaId);
+      results.push({ mangaId, imageUrl: image, title, subtitle: undefined, metadata: undefined });
+    };
+    if (titleQuery) this.eachSearchItem($, add);
+    else this.eachListItem($, add);
+
+    const hasNextPage = $("nav a[rel=next]").length > 0;
+    return {
+      items: results,
+      metadata: hasNextPage ? { page: page + 1, collectedIds: pageIds } : undefined,
+    };
+  }
+
+  private eachListItem(
+    $: CheerioAPI,
+    cb: (mangaId: string, title: string, image: string) => void,
+  ): void {
+    $("div.comic-list-layout .grid > .group").each((_, element) => {
+      const el = $(element);
+      const link = el.find("a.block.text-sm.font-semibold").first();
+      const href = link.attr("href") || "";
+      const title = this.decodeTitle(link.text());
+      const mangaId = this.parsePath(href);
+      const rawSrc = el.find("img").first().attr("src");
+      const image = this.guessCover(this.stripDomain(href), rawSrc);
+      cb(mangaId, title, image);
+    });
+  }
+
+  // /advanced-search cards: <a class="group" href="/comic/…"><img><p>Title</p></a>
+  private eachSearchItem(
+    $: CheerioAPI,
+    cb: (mangaId: string, title: string, image: string) => void,
+  ): void {
+    $(".grid > a.group[href*='/comic/']").each((_, element) => {
+      const el = $(element);
+      const href = el.attr("href") || "";
+      const title = this.decodeTitle(el.find("p").first().text());
+      const rawSrc = el.find("img").first().attr("src");
+      cb(this.parsePath(href), title, this.guessCover(this.stripDomain(href), rawSrc));
+    });
+  }
+
+  private decodeTitle(text: string): string {
+    return text
+      .replace(/\\s+/gu, " ")
+      .trim()
+      .replace(/&#0?39;/gu, "'")
+      .replace(/&quot;/gu, '"')
+      .replace(/&amp;/gu, "&");
+  }
+
+  // ----------------------------------------------------------------
+  // Manga details`,
+);
+await patchExact(
+  MMRCMS,
+  "MMRCMS synopsis",
+  '    const description = $("p.mt-5.text-sm").first().text().trim();',
+  '    const description = $("p.text-sm.leading-relaxed").first().text().trim();',
+);
+await patchRegex(
+  MMRCMS,
+  "MMRCMS chapter numbering",
+  /    const mangaTitle = \$\("h1\.text-2xl"\)\.first\(\)\.text\(\)\.trim\(\);\n\n    const chapters[\s\S]*?\n    return chapters;\n  \}/u,
+  `    const chapters: Chapter[] = [];
+    const seen = new Set<string>();
+    $(".overflow-hidden.border-ink-600 > a").each((_, element) => {
+      const el = $(element);
+      const href = el.attr("href") || "";
+      if (!href) return;
+      const chapterId = this.parsePath(href);
+      if (seen.has(chapterId)) return;
+      seen.add(chapterId);
+
+      const label = (el.find(".text-brand-400").first().text() || el.text())
+        .replace(/\\s+/gu, " ")
+        .trim()
+        .replace(/^#\\s*/u, "");
+      const slug = this.safeDecode(this.stripDomain(href).split("/").pop() || "");
+      const { chapNum, title } = this.chapterNumber(slug, label);
+      const dateStr = el.find(".text-slate-500").first().text();
+
+      chapters.push({
+        chapterId,
+        sourceManga,
+        title,
+        volume: 0,
+        chapNum,
+        publishDate: this.parseDate(dateStr) ?? new Date(0),
+        langCode: this.langCode,
+      });
+    });
+
+    return chapters;
+  }
+
+  // Issues: "#24" → slug \`24\`; variants keep a numeric slug ("#1 Noir Edition"
+  // → \`1.1\`). Annuals and specials ("#Annual 5" → \`Annual5\`, "#1 - Director's
+  // Cut") have no issue number of their own: chapter 0, titled by their name.
+  private chapterNumber(slug: string, label: string): { chapNum: number; title: string } {
+    if (!/^\\d+(?:\\.\\d+)?$/u.test(slug)) return { chapNum: 0, title: label };
+    const issue = label.match(/^\\d+(?:\\.\\d+)?(?:\\s+(.*))?$/u);
+    return { chapNum: Number(slug), title: issue ? (issue[1] ?? "").trim() : label };
+  }`,
+);
+await patchRegex(
+  MMRCMS,
+  "MMRCMS chapter name helper",
+  /  private cleanChapterName\([\s\S]*?\n  \}\n\n/u,
+  "",
+);
+await patchRegex(
+  MMRCMS,
+  "MMRCMS date parsing",
+  /  private parseDate\(text: string\): Date \| undefined \{[\s\S]*?\n  \}/u,
+  `  // "09 Oct 2024", read explicitly: JavaScriptCore's free-form Date parsing is
+  // not something to rely on.
+  private parseDate(text: string): Date | undefined {
+    const t = text.trim();
+    const m = t.match(/^(\\d{1,2}) ([A-Za-z]{3})[a-z]* (\\d{4})$/u);
+    if (m) {
+      const month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        .indexOf((m[2] ?? "").toLowerCase());
+      if (month >= 0) return new Date(Number(m[3]), month, Number(m[1]));
+    }
+    const d = new Date(t);
+    return t && !isNaN(d.getTime()) ? d : undefined;
+  }`,
+);
+await patchExact(
+  MMRCMS,
+  "MMRCMS unused search paging limits",
+  "  static readonly MAX_SEARCH_PAGES = 5;\n  static readonly SEARCH_PAGE_SIZE = 24;\n\n",
+  "",
+);
+await patchRegex(
+  MMRCMS,
+  "MMRCMS unused autocomplete types",
+  /interface MMRCMSSuggestion \{[\s\S]*?\ninterface MMRCMSSearchResult \{[\s\S]*?\n\}\n\n/u,
+  "",
 );
 
 const batcave = await readFile("src/Batcave/main.ts", "utf8");
