@@ -14,7 +14,7 @@
 - **Autore/manutentore:** `DarkDragonkz`.
 - **Destinazione:** app di lettura **Paperback 0.9** su iPhone/iPad.
 - **Linguaggio:** TypeScript, API `@paperback/types`, toolchain `@paperback/toolchain`.
-- **Distribuzione:** GitHub Actions → bundle delle estensioni → branch `gh-pages`.
+- **Distribuzione:** GitHub Actions → bundle delle estensioni → GitHub Pages (deploy diretto con `actions/deploy-pages`, sorgente Pages "GitHub Actions").
 - **URL per aggiungere il repository in Paperback:** <https://darkdragonkz.github.io/Tascabile>.
 
 ### Visione del proprietario
@@ -163,7 +163,7 @@ npm run bundle
 
 Scorciatoie disponibili: `npm run test` esegue test offline + sync + TypeScript + lint + formato + bundle; `format`/`format:check` coprono tutto il repository tranne quanto escluso da `.gitignore` e `.prettierignore` (fixture, NineManga, Markdown, lockfile); `npm run dev` serve le estensioni in watch mode; `npm run logcat` aiuta la diagnostica. Il sync Comics necessita di rete/API GitHub. `npm run test:core` (test offline, PR #27) è disponibile su `main` dal 25/10/2026 ed è eseguito anche in CI e da `npm run test`.
 
-Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/stable`, PR e lancio manuale. Il job **Check** installa con `npm ci`, sincronizza, controlla TS/lint/formattazione e genera bundle, caricandolo come artifact. Il job **Deploy**, assente sulle PR e unico con permesso di scrittura, pubblica proprio quel bundle nel branch `gh-pages`. Non considerare una PR, un commit pushato o una CI verde equivalenti a un aggiornamento installato su Paperback.
+Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/stable`, PR e lancio manuale. Il job **Check** (runner fissato a `ubuntu-24.04`) installa con `npm ci`, sincronizza, controlla TS/lint/formattazione, genera il bundle e lo carica come artifact di Pages (`actions/upload-pages-artifact`). Il job **Deploy**, assente sulle PR e unico con permessi `pages`/`id-token`, pubblica proprio quel bundle con `actions/deploy-pages`. Dal 27/10/2026 non si spinge più sul branch `gh-pages`: così non parte il workflow automatico "pages build and deployment" di GitHub, che girava su Node 20 e `ubuntu-latest`. Richiede in Settings → Pages la sorgente **GitHub Actions**. Tutte le action usate girano su Node 24. Non considerare una PR, un commit pushato o una CI verde equivalenti a un aggiornamento installato su Paperback.
 
 **Lockfile:** `package-lock.json` deve restare allineato a `package.json`; dopo aver cambiato dipendenze rigenerarlo e committarlo. Un lockfile obsoleto ha già rotto il bundle (§3, punto 7). Su Windows con `core.autocrlf=true`, `format:check` segnala falsi positivi per i fine riga CRLF: la CI su Linux (LF) è il riferimento.
 

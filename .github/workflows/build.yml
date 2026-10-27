@@ -19,12 +19,13 @@ concurrency:
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
+    # Pinned: `ubuntu-latest` moves to Ubuntu 26 from 19 October 2026.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -46,30 +47,28 @@ jobs:
         run: npm run format:check
       - name: Bundle Extensions
         run: npm run bundle
-      - name: Upload Bundles
+      # The Pages artifact is the exact bundle verified above.
+      - name: Upload Pages Artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
-          name: bundles
           path: bundles
-          retention-days: 7
 
   deploy:
     name: Deploy to GitHub Pages
     needs: check
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # Deploying straight to Pages replaces the old push to `gh-pages`, so GitHub's own
+    # "pages build and deployment" workflow (Node 20, `ubuntu-latest`) no longer runs.
+    # Requires Settings → Pages → Source: "GitHub Actions".
     permissions:
-      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Publish the exact bundles the Check job built and verified.
-      - name: Download Bundles
-        uses: actions/download-artifact@v4
-        with:
-          name: bundles
-          path: bundles
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: bundles
+        id: deployment
+        uses: actions/deploy-pages@v5
