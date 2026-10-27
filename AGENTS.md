@@ -73,6 +73,8 @@ Questa è una cronologia sintetica, non un invito a ripetere modifiche già appl
 
 **Attenzione ai nomi dei repository storici:** in alcune conversazioni compare `DarkDragonkz/Paperback_Project`. Per questo lavoro, il repository canonico da ispezionare e aggiornare è **`DarkDragonkz/Tascabile`**. Non fondere automaticamente stati, branch o modifiche di repository diversi.
 
+16. **27 ottobre — BatCave sul sito live.** Accesso da un Chrome normale (non pilotato: il Chrome lanciato da Playwright viene rimandato in loop alla verifica Cloudflare) con verifica completata a mano dal proprietario, poi lettura via CDP della stessa sessione. Liste (*Latest*, `/comix/`, ricerca, `ComicList` con anni), POST di ordinamento (non persistente: nessun cookie di sort), `window.__DATA__` e API `reader/getChapterData` (stesse immagini del lettore) corrispondono al parser. Due difetti nella scheda, corretti in `finalize-comic-readers.mjs`: Writer/Artist sempre vuoti (il valore è un link e `ownText` scartava i figli; ora `listValue`) e generi inquinati dalle cartelle utente del blocco "In collections" (anch'esso `div.page__tags`; ora solo link `/ComicList/g=`). Le copertine di *Latest* restano le miniature 64×96: né `/uploads/posts/hd/<id>.webp` (404 per alcune serie) né la variante 100×150 esistono sempre. Test `tests/batcave.test.mjs` sul `main.ts` generato con fixture grezze `fixtures/batcave/*-2026-10.*` (hash di sessione azzerati); per questo `test:core` ora gira **dopo** `sync:comics` in CI e in `npm run test`. Le immagini `img.batcave.biz` richiedono la sessione Cloudflare (403 da client HTTP senza `cf_clearance`): resta da provare su iPhone. Versione BatCave `1.4.12.8`.
+
 ## 4. Architettura e file da conoscere
 
 ```text

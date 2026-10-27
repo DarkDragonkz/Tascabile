@@ -14,7 +14,7 @@
     "bundle": "paperback-cli bundle",
     "serve": "paperback-cli serve",
     "dev": "paperback-cli serve --watch",
-    "test": "npm run test:core && npm run sync:comics && npm run tsc && npm run lint:check && npm run format:check && npm run bundle",
+    "test": "npm run sync:comics && npm run test:core && npm run tsc && npm run lint:check && npm run format:check && npm run bundle",
     "logcat": "paperback-cli logcat",
     "prepare": "husky",
     "test:core": "node --test tests/*.test.mjs"

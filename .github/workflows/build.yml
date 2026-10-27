@@ -31,12 +31,13 @@ jobs:
       # `npm ci` installs exactly the lockfile: a stale lockfile once broke the bundle.
       - name: Install Dependencies
         run: npm ci
-      - name: Core Regression Tests
-        run: npm run test:core
       - name: Sync Comic Reader Sources
         run: npm run sync:comics
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # After the sync: tests/batcave.test.mjs exercises the generated BatCave source.
+      - name: Core Regression Tests
+        run: npm run test:core
       - name: TypeScript Check
         run: npm run tsc
       - name: Lint Check

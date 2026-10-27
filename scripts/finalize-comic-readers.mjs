@@ -486,9 +486,9 @@ await patchRegex(
 
 await patchExact(
   "src/Batcave/pbconfig.ts",
-  "BatCave version 1.4.12.7",
+  "BatCave version 1.4.12.8",
   '  version: "1.4.12.5",',
-  '  version: "1.4.12.7",',
+  '  version: "1.4.12.8",',
 );
 await patchExact(
   "src/Batcave/pbconfig.ts",
@@ -578,6 +578,61 @@ await patchExact(
     "      });",
     "    });",
   ].join("\n"),
+);
+
+// Series details (live page, 27 Oct 2026): Writer/Artist values are links, so
+// ownText() — which drops child elements — returned nothing; the "In
+// collections" block reuses `div.page__tags` for user folders ("All of DC 1535"),
+// which leaked into the genres. Read the row after its label and keep only the
+// genre links (`/ComicList/g=<id>/`).
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave details rows",
+  [
+    "    const author = this.ownText(",
+    '      $(".page__list > li:has(> div:contains(Writer))").first(),',
+    "    );",
+    "    const artist = this.ownText(",
+    '      $(".page__list > li:has(> div:contains(Artist))").first(),',
+    "    );",
+    "    const statusText = this.ownText(",
+    '      $(".page__list > li:has(> div:contains(Release type))").first(),',
+    "    );",
+    "",
+    '    const genres = $("div.page__tags a")',
+  ].join("\n"),
+  [
+    '    const author = this.listValue($, "Writer");',
+    '    const artist = this.listValue($, "Artist");',
+    '    const statusText = this.listValue($, "Release type");',
+    "",
+    "    const genres = $(\"div.page__tags a[href*='/ComicList/g=']\")",
+  ].join("\n"),
+);
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave details row helper",
+  "  private ownText(el: Cheerio<AnyNode>): string {\n    return el.clone().children().remove().end().text().trim();\n  }",
+  [
+    '  // `<li><div>Writer:</div> <a>Name</a>, <a>Name</a></li>` → "Name, Name".',
+    "  private listValue($: CheerioAPI, label: string): string {",
+    '    const row = $(".page__list > li")',
+    "      .filter(",
+    "        (_, li) =>",
+    '          $(li).children("div").first().text().trim().replace(/:$/u, "") === label,',
+    "      )",
+    "      .first()",
+    "      .clone();",
+    '    row.children("div").first().remove();',
+    '    return row.text().replace(/\\s+/gu, " ").trim();',
+    "  }",
+  ].join("\n"),
+);
+await patchExact(
+  "src/Batcave/main.ts",
+  "BatCave unused ownText imports",
+  'import { CheerioAPI, Cheerio } from "cheerio";\nimport type { AnyNode } from "domhandler";\n',
+  'import { CheerioAPI } from "cheerio";\n',
 );
 
 const batcave = await readFile("src/Batcave/main.ts", "utf8");
