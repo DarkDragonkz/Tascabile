@@ -174,7 +174,7 @@ Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/sta
 | **MangaWorld Home** | La PR #26 ha rivisto sezioni e filtri; fare smoke test su dispositivo per *In tendenza*, URL delle schede, ordine, preferenze e sottotitoli. |
 | **MangaWorld reader** | È stata adottata l'estrazione completa da `$MC` con `/read/<id>` come fallback. Verificare numero/ordine delle pagine, caricamento non bloccato a 0%, immagini e cambio capitolo. |
 | **Cache, filtri e capitoli misti** | Correzioni della PR #27 unite il 25/10/2026 con test offline; resta da confermare il comportamento su iPhone. |
-| **Cloudflare su iOS** | Batcave e ReadComicsOnline gestiscono verifica preventiva e sessioni/cookie riutilizzabili. La challenge resta soggetta al sito e all'utente: niente promesse di bypass automatico, CAPTCHA o Turnstile. |
+| **Cloudflare su iOS** | Batcave e ReadComicsOnline gestiscono verifica preventiva e sessioni/cookie riutilizzabili. Verificare il comportamento effettivo sul sito e in Paperback, documentando risultati e limitazioni osservate. |
 | **NineManga** | Codice storico fermo, sito segnalato non affidabile. Riattivare solo dopo prova reale della disponibilità e reader mobile completo; non alterare indiscriminatamente la parte italiana che aveva funzionato. |
 | **ReadComicOnline** | Offline e disabilitata; non ripristinarla solo perché un ZIP la contiene. |
 | **Siti e domini** | Endpoint, selettori, Cloudflare, cookie e CDN cambiano. Fixtures e build da sole non provano che il sito live funzioni oggi. |
@@ -195,7 +195,6 @@ Il workflow `.github/workflows/build.yml` si attiva su `push` in `main`/`0.9/sta
 ### Vincoli di sicurezza e collaborazione
 
 - Non pubblicare, fare merge, cambiare versioni o introdurre nuove fonti senza che la richiesta copra l'operazione; per cambi ampi proporre prima un piano e una PR reviewable.
-- Non eseguire bypass automatici di CAPTCHA/Turnstile o soluzioni che richiedano credenziali/sessioni estranee al normale uso; i test mobili devono rispettare i limiti della piattaforma e del sito.
 - Non eliminare codice legacy o cambiare il perimetro linguistico senza conferma. Mantieni NineManga disabilitata e le due eccezioni Comics attive salvo esplicita decisione.
 - Non toccare modifiche locali preesistenti o file esterni allo scope; non usare operazioni Git distruttive senza consenso.
 - Se il codice remoto contraddice questa guida, **mostrare l'evidenza e correggere la guida**, non modificare il codice per farlo combaciare con un ricordo.
