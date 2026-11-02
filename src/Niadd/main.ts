@@ -44,6 +44,7 @@ import {
   encodeMangaId,
   isChallengePage,
   isNiaddLanguage,
+  isReaderRedirect,
   latestChapterLabel,
   parseChapters,
   parseMangaDetails,
@@ -357,7 +358,7 @@ class NiaddExtension
     const { language, slug } = decodeMangaId(mangaId);
     const { baseUrl } = NIADD_LANGUAGES[language];
     const firstUrl = readerUrl(baseUrl, slug, chapter.chapterId, 1);
-    const first = parseReaderPage(await this.fetchHtml(firstUrl), baseUrl);
+    const first = parseReaderPage(await this.fetchReaderHtml(firstUrl), baseUrl);
     const pages = [...first.images];
 
     // Sequential on purpose: image URLs are signed and short-lived, and the site rate-limits bursts.
@@ -365,7 +366,7 @@ class NiaddExtension
     for (const url of first.pageUrls
       .filter((pageUrl) => !pageUrl.endsWith("-10-1.html"))
       .slice(0, MAX_READER_PAGES)) {
-      pages.push(...parseReaderPage(await this.fetchHtml(url), baseUrl).images);
+      pages.push(...parseReaderPage(await this.fetchReaderHtml(url), baseUrl).images);
     }
 
     const images = dedupeImages(pages);
@@ -394,10 +395,35 @@ class NiaddExtension
   }
 
   private async fetchHtml(url: string): Promise<string> {
+    return (await this.fetchPage(url)).html;
+  }
+
+  /**
+   * A reader page, refusing the site's redirect to its home page: the home is a valid
+   * page without chapter images, which would otherwise read as "no pages" or, past the
+   * first page, as a silently incomplete chapter.
+   */
+  private async fetchReaderHtml(url: string): Promise<string> {
+    const { html, finalUrl, status } = await this.fetchPage(url);
+    if (isReaderRedirect(status, finalUrl)) {
+      throw new Error(
+        "Niadd: il sito ha rimandato il lettore alla sua home invece di aprire il capitolo.",
+      );
+    }
+    return html;
+  }
+
+  private async fetchPage(
+    url: string,
+  ): Promise<{ html: string; finalUrl: string; status: number }> {
     const [response, data] = await Application.scheduleRequest({ url, method: "GET" });
     if (response.status === 404) throw new Error("Niadd: contenuto non trovato.");
     if (response.status >= 400) throw new Error(`Niadd HTTP ${response.status}`);
-    return Application.arrayBufferToUTF8String(data);
+    return {
+      html: Application.arrayBufferToUTF8String(data),
+      finalUrl: response.url || url,
+      status: response.status,
+    };
   }
 }
 

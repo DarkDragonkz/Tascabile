@@ -10,7 +10,7 @@ import { BADGES } from "../common/badges";
 export const basePbConfig = {
   name: "",
   description: "",
-  version: "1.2.7",
+  version: "1.3.0",
   icon: "icon.png",
   language: "it",
   capabilities: [
@@ -18,6 +18,7 @@ export const basePbConfig = {
     SourceIntents.DISCOVER_SECTION_PROVIDING,
     SourceIntents.SEARCH_RESULT_PROVIDING,
     SourceIntents.SETTINGS_FORM_PROVIDING,
+    SourceIntents.CLOUDFLARE_BYPASS_PROVIDING,
   ],
   badges: [BADGES.fansub, BADGES.italian],
   developers: [

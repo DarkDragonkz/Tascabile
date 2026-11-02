@@ -444,37 +444,24 @@ await patchExact(
   '        title: "Recently Added",',
 );
 
-await patchExact(
-  "src/Batcave/main.ts",
-  "BatCave Latest Updates cover routing",
-  `        const img = el.find(".latest__img img").first();
-        const imageUrl = this.absoluteUrl(
-          img.attr("data-src") || img.attr("src") || "",
-        );`,
-  `        const img = el.find(".latest__img img").first();
-        const imageUrl = this.latestCoverUrl(
-          img.attr("data-src") || img.attr("src") || "",
-        );`,
-);
-
+// Covers and pages load straight from BatCave over HTTPS. Its hosts refuse image proxies:
+// on 2 November 2026 images.weserv.nl got 403 for a Latest cover (answered as 404) while
+// the same URL loaded directly (200), so the Latest proxy is gone. BatCave's own hosts
+// serve HTTPS, so their `http://` URLs are upgraded; only other hosts' `http://` images,
+// never seen on the site, keep the HTTPS proxy that iOS ATS requires.
 const BATCAVE_IMAGE_HELPERS = `  private absoluteUrl(src: string): string {
     const value = (src || "").trim();
     if (!value) return "";
     if (value.startsWith("data:") || value.startsWith("blob:")) return value;
     if (value.startsWith("http://")) {
-      const origin = value.replace(/^http:\/\//u, "");
-      return "https://wsrv.nl/?url=" + encodeURIComponent(origin) + "&q=100";
+      const rest = value.slice("http://".length);
+      const host = (rest.match(/^[^/?#:]+/u)?.[0] ?? "").toLowerCase();
+      if (host === "batcave.biz" || host.endsWith(".batcave.biz")) return "https://" + rest;
+      return "https://wsrv.nl/?url=" + encodeURIComponent(rest) + "&q=100";
     }
     if (value.startsWith("https://")) return value;
     if (value.startsWith("//")) return "https:" + value;
     return value.startsWith("/") ? BASE_URL + value : BASE_URL + "/" + value;
-  }
-
-  private latestCoverUrl(src: string): string {
-    const direct = this.absoluteUrl(src);
-    if (!direct || direct.startsWith("data:") || direct.startsWith("blob:")) return direct;
-    const origin = direct.replace(/^https?:\/\//u, "");
-    return "https://images.weserv.nl/?url=" + encodeURIComponent(origin) + "&q=100";
   }`;
 
 await patchRegex(
@@ -486,22 +473,72 @@ await patchRegex(
 
 await patchExact(
   "src/Batcave/pbconfig.ts",
-  "BatCave version 1.4.12.8",
+  "BatCave version 1.4.12.9",
   '  version: "1.4.12.5",',
-  '  version: "1.4.12.8",',
+  '  version: "1.4.12.9",',
 );
 await patchExact(
   "src/Batcave/pbconfig.ts",
   "BatCave English description",
   '  description:\n    "Comics in inglese da BatCave, con Home dedicata, ricerca avanzata, sessione Cloudflare persistente e protezione ATS delle immagini esterne.",',
-  '  description:\n    "English comics from BatCave with a dedicated Home, advanced search, persistent Cloudflare session and ATS-safe Latest Updates covers.",',
+  '  description:\n    "English comics from BatCave with a dedicated Home, advanced search, persistent Cloudflare session and direct HTTPS covers.",',
+);
+
+// Only 404 used to be an error: a 403 without a Cloudflare challenge, a 429 or a 5xx
+// page was parsed as a valid page, so search showed "0 results" and details a fake
+// series. Every status from 400 is an error now. Cloudflare challenges and BatCave's
+// DLE guard are still raised by the response interceptors before these helpers run.
+function patchAll(source, label, target, replacement, expected) {
+  const parts = source.split(target);
+  if (parts.length - 1 !== expected) {
+    throw new Error(`${label} changed; review generated source before building.`);
+  }
+  return parts.join(replacement);
+}
+
+const BATCAVE_NOT_FOUND = [
+  "    if (response.status === 404) {",
+  "      throw new Error(`Content not found: ${request.url}`);",
+  "    }",
+].join("\n");
+await writeFile(
+  "src/Batcave/main.ts",
+  patchAll(
+    await readFile("src/Batcave/main.ts", "utf8"),
+    "BatCave HTTP errors",
+    BATCAVE_NOT_FOUND,
+    BATCAVE_NOT_FOUND +
+      "\n    if (response.status >= 400) {\n" +
+      "      throw new Error(`BatCave HTTP ${response.status}: ${request.url}`);\n" +
+      "    }",
+    2,
+  ),
+);
+
+const MMRCMS_NOT_FOUND = [
+  "    if (response.status === 404) {",
+  '      throw new Error("Content not found");',
+  "    }",
+].join("\n");
+await writeFile(
+  "src/utils/mmrcms/template.ts",
+  patchAll(
+    await readFile("src/utils/mmrcms/template.ts", "utf8"),
+    "MMRCMS HTTP errors",
+    MMRCMS_NOT_FOUND,
+    MMRCMS_NOT_FOUND +
+      "\n    if (response.status >= 400) {\n" +
+      "      throw new Error(`${this.sourceName} HTTP ${response.status}`);\n" +
+      "    }",
+    2,
+  ),
 );
 
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
-  "Read Comics Online version 1.4.15.8",
+  "Read Comics Online version 1.4.15.9",
   '  version: "1.4.15.5",',
-  '  version: "1.4.15.8",',
+  '  version: "1.4.15.9",',
 );
 await patchExact(
   "src/ReadComicsOnline/pbconfig.ts",
@@ -814,8 +851,14 @@ await patchRegex(
 );
 
 const batcave = await readFile("src/Batcave/main.ts", "utf8");
-if (!batcave.includes("latestCoverUrl")) {
-  throw new Error("BatCave Latest Updates cover protection was not installed.");
+if (batcave.includes("images.weserv.nl")) {
+  throw new Error("BatCave covers still go through images.weserv.nl, which BatCave refuses.");
+}
+if (!batcave.includes('host.endsWith(".batcave.biz")')) {
+  throw new Error("BatCave direct HTTPS image routing was not installed.");
+}
+if (batcave.split("response.status >= 400").length - 1 !== 2) {
+  throw new Error("BatCave HTTP error handling was not installed.");
 }
 if (!batcave.includes("pages.push(this.absoluteUrl(trimmed));")) {
   throw new Error("BatCave chapter pages are no longer using direct image routing.");
@@ -827,4 +870,4 @@ if (batcave.includes('title: "Ultime uscite"')) {
 // Upstream ships the generic MMRCMS "CMS" icon; use the site's own logo instead.
 await copyFile("scripts/icons/ReadComicsOnline.png", "src/ReadComicsOnline/static/icon.png");
 
-console.log("Finalized English Comics UI and split BatCave cover/chapter image routing.");
+console.log("Finalized English Comics UI, direct BatCave images and HTTP error handling.");

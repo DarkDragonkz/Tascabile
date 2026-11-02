@@ -20,7 +20,8 @@ import {
 import FansubGeneral, { type CatalogSort } from "../FansubGeneric/main";
 import pbconfig from "./pbconfig";
 
-const DOMAIN = "https://phoenixscans.com/api";
+// Canonical host: phoenixscans.com answers every API call with a 301 to www.
+const DOMAIN = "https://www.phoenixscans.com/api";
 const SHOW_FRESH_KEY = "phoenix.ui.showFresh";
 const SHOW_CATALOG_KEY = "phoenix.ui.showCatalog";
 const SHOW_ADULT_SECTION_KEY = "phoenix.ui.showAdultSection";

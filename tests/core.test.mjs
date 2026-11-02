@@ -121,10 +121,15 @@ for (const kind of ["MangaWorld", "fansub"]) {
   await test(`${kind} network coalesces requests and invalidates safely`, async () => {
     const requests =
       kind === "MangaWorld" ? new Requests() : new APIRequests("https://example.test/api");
-    const fetch = () =>
+    // MangaWorld caches pages; the fansub API caches series JSON, read back by title.
+    const fetch = async () =>
       kind === "MangaWorld"
         ? requests.fetchText("https://example.test", 60)
-        : requests.apiMangaDetails("series");
+        : (await requests.comic("series")).title;
+    const body = (title) =>
+      Buffer.from(
+        kind === "MangaWorld" ? title : JSON.stringify({ comic: { title, chapters: [] } }),
+      );
     const pending = [];
     Application.scheduleRequest = () => {
       const value = deferred();
@@ -139,9 +144,9 @@ for (const kind of ["MangaWorld", "fansub"]) {
     const c = fetch();
     await Promise.resolve();
     assert.equal(pending.length, 2);
-    pending[1].resolve([{ status: 200 }, Buffer.from("fresh")]);
+    pending[1].resolve([{ status: 200 }, body("fresh")]);
     assert.equal(await c, "fresh");
-    pending[0].resolve([{ status: 200 }, Buffer.from("old")]);
+    pending[0].resolve([{ status: 200 }, body("old")]);
     assert.deepEqual(await Promise.all([a, b]), ["old", "old"]);
     assert.equal(await fetch(), "fresh");
   });

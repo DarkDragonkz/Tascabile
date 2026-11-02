@@ -1,6 +1,10 @@
 // Chapter numbering and labels shared by the six fansub readers. The API splits a
-// chapter number into `chapter` and `subchapter` (24/6 is 24.6), volumes-only releases
-// use chapter 0, and extras have no number at all.
+// chapter number into `chapter` and `subchapter` (24/6 is part 6 of chapter 24),
+// volumes-only releases use chapter 0, and extras have no number at all.
+//
+// Parts 1-9 read as decimals (24/6 → 24.6). From part 10 a decimal would be ambiguous
+// (24/10 and 24/1 are both 24.1), so the number stays 24 and the title says "Parte 10";
+// the chapter list order comes from `sortingIndex`, i.e. the API's own order.
 
 export interface ChapterNumbering {
   chapter: number | null;
@@ -10,19 +14,39 @@ export interface ChapterNumbering {
   full_title: string;
 }
 
-/** 24 + 6 → 24.6; a part without a chapter (`.3`) → 0.3; undefined for extras. */
-export function chapterNumber(chapter: ChapterNumbering): number | undefined {
+const MAX_DECIMAL_PART = 9;
+
+function partOf(chapter: ChapterNumbering): number {
   const sub = chapter.subchapter ?? 0;
-  if (chapter.chapter === null && sub <= 0) return undefined;
-  const value = Number(sub > 0 ? `${chapter.chapter ?? 0}.${sub}` : chapter.chapter);
+  return sub > 0 ? sub : 0;
+}
+
+/** 24 + 6 → 24.6; 24 + 10 → 24; a part without a chapter (`.3`) → 0.3; undefined for extras. */
+export function chapterNumber(chapter: ChapterNumbering): number | undefined {
+  const part = partOf(chapter);
+  if (chapter.chapter === null && part === 0) return undefined;
+  const base = chapter.chapter ?? 0;
+  const value = part > 0 && part <= MAX_DECIMAL_PART ? Number(`${base}.${part}`) : base;
   return Number.isFinite(value) ? value : undefined;
 }
 
-/** Title for the chapter list: the team's title, or the full title for unnumbered extras. */
+/** "24.6", "24.10": the number as the team writes it, for labels only (never sorted). */
+function displayNumber(chapter: ChapterNumbering): string | undefined {
+  const part = partOf(chapter);
+  if (chapter.chapter === null && part === 0) return undefined;
+  return part > 0 ? `${chapter.chapter ?? 0}.${part}` : String(chapter.chapter);
+}
+
+/**
+ * Title for the chapter list: the team's title, or the full title for unnumbered extras.
+ * Parts from 10 up carry "Parte N", which their chapter number cannot show.
+ */
 export function chapterTitle(chapter: ChapterNumbering): string {
-  const title = chapter.title?.trim();
-  if (title) return title;
-  return chapter.chapter === null ? chapter.full_title.trim() : "";
+  const title =
+    chapter.title?.trim() || (chapter.chapter === null ? chapter.full_title.trim() : "");
+  const part = partOf(chapter);
+  if (part <= MAX_DECIMAL_PART) return title;
+  return title ? `Parte ${part} · ${title}` : `Parte ${part}`;
 }
 
 /**
@@ -36,7 +60,7 @@ export function chapterLabel(chapter: ChapterNumbering): string {
   const base = volumeOnly
     ? `Volume ${chapter.volume}`
     : number !== undefined
-      ? `Capitolo ${number}`
+      ? `Capitolo ${displayNumber(chapter)}`
       : "";
   if (!base) return title || chapter.full_title.trim();
   return title && !/^(?:vol\.?\s*)?\d+$/iu.test(title) ? `${base} · ${title}` : base;

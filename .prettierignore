@@ -4,3 +4,5 @@ src/NineManga/
 package-lock.json
 *.md
 LICENSE
+# Third-party agent skills, installed from skills-lock.json: not our code to reformat.
+.claude/skills/

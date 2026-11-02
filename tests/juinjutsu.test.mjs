@@ -72,6 +72,39 @@ await test("series details sort chapters newest first and read FoOlSlide subchap
   assert.ok(chapters.every((chapter) => chapter.volume === undefined));
 });
 
+await test("parts from 10 keep the chapter number and sort after part 9", () => {
+  const chapter = (id, number, sub, name = "") => ({
+    chapter: { id, chapter: String(number), subchapter: String(sub), volume: "0", name },
+  });
+  // The API lists chapters oldest first.
+  const { chapters } = juin.parseComicDetails(
+    JSON.stringify({
+      comic: { id: 1, name: "Serie", stub: "serie" },
+      chapters: [
+        chapter(1, 26, 0),
+        chapter(2, 26, 1),
+        chapter(3, 26, 2),
+        chapter(4, 26, 10, "Fine"),
+        chapter(5, 27, 0),
+      ],
+    }),
+  );
+  assert.deepEqual(
+    chapters.map((item) => [item.chapterId, item.chapNum]),
+    [
+      ["5", 27],
+      ["4", 26],
+      ["3", 26.2],
+      ["2", 26.1],
+      ["1", 26],
+    ],
+  );
+  // 26/10 must not read as 26.1, which is part 1.
+  assert.equal(chapters[1].title, "Parte 10 · Fine");
+  assert.equal(chapters[1].label, "Capitolo 26.10: Fine");
+  assert.equal(chapters[2].title, "");
+});
+
 await test("chapter pages follow filename order, including double pages", async () => {
   const pages = juin.parseChapterPages(await fixture("chapter-pages"));
   assert.equal(pages.length, 21);

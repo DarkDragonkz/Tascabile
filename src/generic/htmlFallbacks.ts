@@ -18,6 +18,8 @@ import type { MangaMetadata } from "./models";
 import { isMigratedAdultGenreHidden, normalizeFilterValue } from "./preferences";
 import { tags, types } from "./utils";
 
+type Selection = ReturnType<cheerio.CheerioAPI>;
+
 type HtmlCard = {
   id: string;
   title: string;
@@ -203,8 +205,24 @@ export function parseHeroDiscoverHtml(
   };
 }
 
-function collectLinkText($: cheerio.CheerioAPI, hrefParts: string[]): string {
-  return $("a")
+/**
+ * The details box of a manga page. The site menu repeats every genre, type and status
+ * link (72 of the 78 `genre=` links on a live page, "Adulti" included), so links are only
+ * read inside this box; without it nothing is read rather than the whole menu.
+ */
+function infoScope($: cheerio.CheerioAPI): Selection | undefined {
+  const box = $(".comic-info .info, .info").first();
+  return box.length > 0 ? box : undefined;
+}
+
+function collectLinkText(
+  $: cheerio.CheerioAPI,
+  scope: Selection | undefined,
+  hrefParts: string[],
+): string {
+  if (!scope) return "";
+  return scope
+    .find("a")
     .filter((_, element) => {
       const href = $(element).attr("href") ?? "";
       return hrefParts.some((part) => href.includes(part));
@@ -238,8 +256,9 @@ export function parseMangaDetailsHtml(
     $("meta[name='description']").attr("content")?.trim() ||
     "";
 
+  const info = infoScope($);
   const genreMap = new Map<string, string>();
-  $("a[href*='genre='], a[href*='/genre/'], a[href*='/generi/']").each((_, element) => {
+  info?.find("a[href*='genre='], a[href*='/genre/'], a[href*='/generi/']").each((_, element) => {
     const title = $(element).text().trim();
     if (title) genreMap.set(normalizeFilterValue(title), title);
   });
@@ -251,7 +270,7 @@ export function parseMangaDetailsHtml(
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-  const type = collectLinkText($, ["type=", "/type/"]);
+  const type = collectLinkText($, info, ["type=", "/type/"]);
 
   return {
     mangaId,
@@ -260,9 +279,9 @@ export function parseMangaDetailsHtml(
       secondaryTitles,
       thumbnailUrl,
       synopsis,
-      author: collectLinkText($, ["author=", "/author/"]),
-      artist: collectLinkText($, ["artist=", "/artist/"]),
-      status: collectLinkText($, ["status=", "/status/"]),
+      author: collectLinkText($, info, ["author=", "/author/"]),
+      artist: collectLinkText($, info, ["artist=", "/artist/"]),
+      status: collectLinkText($, info, ["status=", "/status/"]),
       contentRating:
         source.defaultContentRating === ContentRating.ADULT
           ? ContentRating.ADULT
@@ -358,12 +377,11 @@ export function parseChapterDetailsHtml(
     const matches = script.match(/https?:\\?\/\\?\/cdn\.mangaworld\.(?:mx|in)[^"'\s<]+/gu) ?? [];
     for (const match of matches) candidates.push(normalizeUrl(source, match));
   });
-  const unique = [...new Set(candidates.filter(Boolean))];
-  const chapterPages = unique.filter((url) => url.includes("/chapters/"));
-  const pages =
-    chapterPages.length > 0
-      ? chapterPages
-      : unique.filter((url) => /cdn\.mangaworld\.(?:mx|in)/u.test(url));
+  // Only chapter scans: covers, logos and banners on the same CDN are not pages, and no
+  // pages at all is reported as such by the caller instead of a reader full of covers.
+  const pages = [...new Set(candidates)].filter(
+    (url) => /cdn\.mangaworld\.(?:mx|in)\//u.test(url) && url.includes("/chapters/"),
+  );
   return {
     id: chapter.chapterId,
     mangaId: chapter.sourceManga.mangaId,

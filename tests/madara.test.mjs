@@ -64,6 +64,30 @@ await test("search results use the same card parser on both sites", async () => 
   assert.ok(shinigami.every((card) => card.imageUrl.startsWith("https://www.animeshinigami.com/")));
 });
 
+await test("cards are 18+ with the details page's rule: adult badge or adult genre", async () => {
+  // Neither site has adult genres (checked on their search forms), so live cards are not.
+  const live = madara.parseMangaList(await fixture("animeshinigami", "search-the"), NOW);
+  assert.ok(live.length > 0 && live.every((card) => card.adult === false));
+  const card = (inner) => `
+    <div class="c-tabs-item__content">
+      <div class="post-title"><h3><a href="https://example.test/manga/serie/">Serie</a></h3></div>
+      ${inner}
+    </div>`;
+  const [badge] = madara.parseMangaList(
+    card('<span class="manga-title-badges adult">18+</span>'),
+    NOW,
+  );
+  const [genre] = madara.parseMangaList(
+    card(
+      '<div class="post-content_item mg_genres"><div class="summary-content">' +
+        '<a href="https://example.test/manga-genre/adulti/">Adulti</a></div></div>',
+    ),
+    NOW,
+  );
+  const [plain] = madara.parseMangaList(card(""), NOW);
+  assert.deepEqual([badge.adult, genre.adult, plain.adult], [true, true, false]);
+});
+
 await test("Shinobi details: title, original cover, people, genres, status and year", async () => {
   const details = madara.parseMangaDetails(await fixture("shinobiscans", "manga"));
   assert.equal(details.title, "The Return of the Disaster-Class Hero");

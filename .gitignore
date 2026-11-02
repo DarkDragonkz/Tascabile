@@ -1,7 +1,6 @@
 node_modules/
 bundles/
 dist/
-.env
 .DS_Store
 npm-debug.log*
 yarn-debug.log*
@@ -9,6 +8,20 @@ yarn-error.log*
 .pnpm-debug.log*
 *.tsbuildinfo
 node_modules/.cache/
+
+# Segreti e catture locali: token, cookie e sessioni non vanno mai versionati.
+.env
+.env.*
+!.env.example
+*.har
+
+# Claude Code: `.claude/settings.json` e `skills-lock.json` sono condivisi; le
+# impostazioni personali e le cache restano locali. Le skill in `.claude/skills/` si
+# reinstallano da `skills-lock.json` e non vengono formattate (vedi .prettierignore).
+.claude/settings.local.json
+.claude/**/*.local.*
+.claude/cache/
+.scrapling_cache/
 
 # Comics generati da `npm run sync:comics` (non versionare: vedi scripts/)
 src/Batcave/

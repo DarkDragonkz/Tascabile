@@ -5,6 +5,9 @@
 export const BASE_URL = "https://www.juinjutsureader.ovh";
 export const API_URL = `${BASE_URL}/api/reader`;
 
+/** Parts 1-9 read as decimals (26.1); from 10 up a decimal would be ambiguous. */
+const MAX_DECIMAL_PART = 9;
+
 interface ApiComic {
   id: number;
   name: string;
@@ -54,6 +57,9 @@ export interface JuinChapter {
   /** "Capitolo 59: Futuri mutevoli", for Home carousels. */
   label: string;
   chapNum: number;
+  /** Chapter and part as FoOlSlide stores them (26/10), used for ordering. */
+  chapter: number;
+  part: number;
   volume?: number;
   publishDate?: Date;
 }
@@ -98,7 +104,8 @@ export function parseComicDetails(raw: string): { comic: JuinComic; chapters: Ju
     .map((entry) => entry.chapter)
     .filter((chapter) => chapter.hidden !== "1")
     .map(toChapter)
-    .sort((a, b) => b.chapNum - a.chapNum || (b.volume ?? 0) - (a.volume ?? 0));
+    // By chapter, then part (26/10 after 26/2), never by the decimal alone.
+    .sort((a, b) => b.chapter - a.chapter || b.part - a.part || (b.volume ?? 0) - (a.volume ?? 0));
   return { comic: toComic(data.comic), chapters };
 }
 
@@ -143,15 +150,22 @@ function toComic(comic: ApiComic): JuinComic {
 function toChapter(chapter: ApiChapter): JuinChapter {
   const main = Number(chapter.chapter) || 0;
   const sub = Number(chapter.subchapter) || 0;
-  // FoOlSlide stores 26.1 as chapter 26, subchapter 1 (and 166.5 as 166/5).
-  const chapNum = sub > 0 ? Number(`${main}.${sub}`) : main;
+  // FoOlSlide stores 26.1 as chapter 26, subchapter 1 (and 166.5 as 166/5). From part 10
+  // a decimal would collide (26/10 and 26/1 are both 26.1): the number stays 26 and the
+  // title says "Parte 10", while the order uses chapter and part.
+  const decimal = sub > 0 && sub <= MAX_DECIMAL_PART;
+  const chapNum = decimal ? Number(`${main}.${sub}`) : main;
+  const number = sub > 0 ? `${main}.${sub}` : String(main);
   const volume = Number(chapter.volume) || undefined;
   const name = decodeEntities(chapter.name ?? "").trim();
+  const title = decimal || sub === 0 ? name : name ? `Parte ${sub} · ${name}` : `Parte ${sub}`;
   return {
     chapterId: String(chapter.id),
-    title: name,
-    label: name ? `Capitolo ${chapNum}: ${name}` : `Capitolo ${chapNum}`,
+    title,
+    label: name ? `Capitolo ${number}: ${name}` : `Capitolo ${number}`,
     chapNum,
+    chapter: main,
+    part: sub,
     volume,
     publishDate: parseDate(chapter.created),
   };

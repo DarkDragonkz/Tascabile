@@ -13,6 +13,11 @@ export interface MadaraCard {
   latestChapterId?: string;
   latestChapterTitle?: string;
   updatedAt?: Date;
+  /**
+   * Same rule as the details page: the theme's `adult` badge or an adult genre. Catalogue
+   * cards carry no genres (only search results do), so there only the badge counts.
+   */
+  adult: boolean;
 }
 
 export interface MadaraDetails {
@@ -119,7 +124,13 @@ export function parseMangaList(html: string, now = Date.now()): MadaraCard[] {
     const latestChapterId = chapterIdFromUrl(chapterLink.attr("href"));
     const hasChapter = latestChapterId !== undefined && latestChapterId !== "n-a";
     // "NEW"/"HOT" are promotional badges, not the series type.
-    const type = cleanText(item.find(".manga-title-badges").first().text());
+    const badges = item.find(".manga-title-badges");
+    const type = cleanText(badges.first().text());
+    const genreIds = item
+      .find(".mg_genres a, .genres-content a")
+      .map((_, a) => genreIdFromUrl($(a).attr("href")))
+      .get()
+      .filter(Boolean);
     cards.set(mangaId, {
       mangaId,
       title: cleanText(link.text()),
@@ -128,9 +139,19 @@ export function parseMangaList(html: string, now = Date.now()): MadaraCard[] {
       latestChapterId: hasChapter ? latestChapterId : undefined,
       latestChapterTitle: hasChapter ? chapterLabel(cleanText(chapterLink.text())) : undefined,
       updatedAt: parseDate(dateText($, chapter.find(".post-on").first()), now),
+      adult: badges.hasClass("adult") || genreIds.some(isAdultGenre),
     });
   });
   return [...cards.values()];
+}
+
+/** `/manga-genre/<slug>/` → `<slug>`; "" for other links. */
+function genreIdFromUrl(url: string | undefined): string {
+  return url?.match(/\/manga-genre\/([^/?#]+)/u)?.[1] ?? "";
+}
+
+function isAdultGenre(id: string): boolean {
+  return /^(adult|adulti|18)/iu.test(id);
 }
 
 /** Whether the theme's pagination links to the following page. */
@@ -159,10 +180,7 @@ export function parseMangaDetails(html: string): MadaraDetails {
 
   const genres = $(".genres-content a")
     .map((_, a) => ({
-      id:
-        $(a)
-          .attr("href")
-          ?.match(/\/manga-genre\/([^/?#]+)/u)?.[1] ?? "",
+      id: genreIdFromUrl($(a).attr("href")),
       title: cleanText($(a).text()),
     }))
     .get()
@@ -189,7 +207,7 @@ export function parseMangaDetails(html: string): MadaraDetails {
     status: STATUS[statusText] ?? (statusText ? capitalize(statusText) : undefined),
     released: cleanText(row("release", "anno", "rilascio")?.text() ?? "") || undefined,
     type: cleanText(row("type", "tipo")?.text() ?? "") || cleanText(badge.text()) || undefined,
-    adult: badge.hasClass("adult") || genres.some((genre) => /^(adult|adulti|18)/iu.test(genre.id)),
+    adult: badge.hasClass("adult") || genres.some((genre) => isAdultGenre(genre.id)),
   };
 }
 
@@ -237,11 +255,6 @@ export function parseGenreOptions(html: string): MadaraOption[] {
     options.set(id, cleanText(label).replace(/\s*\(\d+\)$/u, "") || capitalize(id));
   });
   return [...options].map(([id, title]) => ({ id, title }));
-}
-
-/** True when the page is a theme 404 or not a manga page at all. */
-export function isMissingPage(html: string): boolean {
-  return !/class="[^"]*(?:post-title|reading-content)/u.test(html);
 }
 
 /**

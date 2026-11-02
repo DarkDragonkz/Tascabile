@@ -14,19 +14,6 @@ await replaceLine(
   /    const normalized = .*;\n/u,
   '    const normalized = value.trim().replace(/\\/+$/, "").replace(/^http:\\/\\//u, "https://");\n',
 );
-
-await replaceLine(
-  "src/Batcave/main.ts",
-  "BatCave HTTP page URL normalization",
-  /      const origin = value\.replace\(.*\);\n/u,
-  '      const origin = value.replace(/^http:\\/\\//u, "");\n',
-);
-
-await replaceLine(
-  "src/Batcave/main.ts",
-  "BatCave Latest cover URL normalization",
-  /    const origin = direct\.replace\(.*\);\n/u,
-  '    const origin = direct.replace(/^https?:\\/\\//u, "");\n',
-);
+// BatCave's image helpers (finalize-comic-readers.mjs) no longer contain escaped regexes.
 
 console.log("Repaired generated Comics regex escaping.");

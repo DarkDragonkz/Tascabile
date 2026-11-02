@@ -46,8 +46,10 @@ I reader Comics vengono sincronizzati durante la build da [`Nicartjay/PaperbackE
 
 ## Limiti noti
 
-- **Cloudflare (BatCave, Read Comics Online, Niadd):** quando il sito richiede una verifica, Paperback mostra il banner per consentire all'utente di completarla. Le richieste vengono messe in pausa per evitare verifiche simultanee e i cookie ottenuti vengono riutilizzati per ridurre le verifiche ripetute.
+- **Cloudflare (BatCave, Read Comics Online, Niadd e le sei fansub storiche):** quando il sito richiede una verifica, Paperback mostra il banner per consentire all'utente di completarla. Le richieste vengono messe in pausa per evitare verifiche simultanee e i cookie ottenuti vengono riutilizzati per ridurre le verifiche ripetute. A novembre 2026 la verifica è attiva su Hasta Team e Hasta Team DDT.
 - **Niadd in inglese, spagnolo e tedesco non è disponibile:** le versioni inglese e spagnola instradano i capitoli verso siti pubblicitari esterni; quella tedesca ha le immagini non più raggiungibili sul sito stesso.
+- **Lettore Niadd (novembre 2026):** dal PC il sito rimanda alla propria home anche i link dei capitoli italiani e brasiliani; in quel caso l'estensione lo segnala invece di mostrare un capitolo vuoto. La prova nell'app è in corso.
+- **Contenuti 18+ nelle liste:** Niadd e il catalogo di Shinobi Scans/AnimeShinigami non indicano nelle liste se una serie è per adulti; la classificazione è affidabile solo nella scheda (e nei risultati di ricerca Madara, che riportano i generi).
 - **NineManga** e **ReadComicOnline** sono disabilitate: i siti sono offline o instabili. Il codice di NineManga resta nel repository come riferimento storico.
 - La velocità delle immagini dipende anche dai server delle singole fonti: le estensioni evitano redirect e richieste inutili ma non riducono la qualità delle tavole.
 
@@ -57,15 +59,19 @@ Requisiti: **Node.js 24** e npm.
 
 ```bash
 npm install          # dipendenze (installa anche l'hook di pre-push)
-npm run test         # pipeline completa: test offline, sync Comics, TypeScript, lint, formato, bundle
+npm run sync:comics  # una volta, e dopo ogni modifica agli script: genera i reader Comics
+npm run test         # pipeline completa: sync Comics, test offline, TypeScript, lint, formato, bundle
 npm run dev          # server locale con ricaricamento, da aggiungere in Paperback per le prove
 ```
+
+L'hook di pre-push esegue `npm run check` (test offline, TypeScript, lint e formato) senza riscrivere nulla: non rigenera i Comics e non crea il bundle, che restano compito della CI e di `npm run test`.
 
 Comandi singoli:
 
 | Comando | Cosa fa |
 | --- | --- |
-| `npm run test:core` | test offline su fixture reali (`tests/`, `fixtures/`) |
+| `npm run check` | controlli in sola lettura del pre-push: `test:core`, `tsc`, `lint:check`, `format:check` |
+| `npm run test:core` | test offline su fixture reali e nel runtime Node ufficiale di Paperback (`tests/`, `fixtures/`) |
 | `npm run sync:comics` | scarica e adatta i reader Comics dall'upstream fissato |
 | `npm run tsc` | controllo dei tipi |
 | `npm run lint:check` / `npm run lint` | lint (il secondo corregge automaticamente) |

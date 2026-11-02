@@ -1,11 +1,14 @@
 import {
   BasicRateLimiter,
   ContentRating,
+  CookieStorageInterceptor,
   Form,
   type AdvancedSearchForm,
   type Chapter,
   type ChapterDetails,
   type ChapterProviding,
+  type CloudflareBypassRequestProviding,
+  type Cookie,
   type DiscoverSection,
   type DiscoverSectionItem,
   type DiscoverSectionProviding,
@@ -13,6 +16,7 @@ import {
   type MangaProviding,
   type Metadata,
   type PagedResults,
+  type Request,
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
@@ -23,9 +27,12 @@ import {
 
 import { INFO_SYMBOLS, infoItems, relativeDateIt } from "../common/discover";
 import { chapterLabel, matchesQuery } from "./chapters";
-import type { ComicListItem, ComicsListResponse } from "./models";
-import { APIRequests, MainInterceptor } from "./network";
+import type { ComicListItem } from "./models";
+import { APIRequests, MainInterceptor, searchSegment } from "./network";
 import { FansubGeneralParsers } from "./parsers";
+
+// Cookies from the Cloudflare check without an expiry would otherwise be dropped at once.
+const BYPASS_COOKIE_FALLBACK_MS = 12 * 60 * 60 * 1000;
 
 export interface FansubGenericParams {
   name: string;
@@ -42,7 +49,8 @@ abstract class FansubGeneral
     SearchResultsProviding,
     MangaProviding,
     ChapterProviding,
-    DiscoverSectionProviding
+    DiscoverSectionProviding,
+    CloudflareBypassRequestProviding
 {
   readonly name: string;
   public base_url = "";
@@ -52,6 +60,7 @@ abstract class FansubGeneral
   requestManager: APIRequests;
   mainRateLimiter: BasicRateLimiter;
   mainInterceptor: MainInterceptor;
+  cookieStorageInterceptor: CookieStorageInterceptor;
 
   protected constructor(params: FansubGenericParams) {
     this.name = params.name;
@@ -61,18 +70,38 @@ abstract class FansubGeneral
     this.parser = new FansubGeneralParsers();
     this.requestManager = new APIRequests(this.base_url);
     // Display names contain spaces ("Phoenix Scans"); keep interceptor IDs space-free.
+    // Paperback keeps one interceptor per ID: the limiter needs an ID of its own, or
+    // registering the main interceptor replaces it and requests are never throttled.
     const interceptorId = `fansub-${params.name.replace(/\s+/gu, "")}`;
-    this.mainRateLimiter = new BasicRateLimiter(interceptorId, {
+    this.mainRateLimiter = new BasicRateLimiter(`${interceptorId}-rate`, {
       numberOfRequests: 4,
       bufferInterval: 1,
       ignoreImages: true,
     });
     this.mainInterceptor = new MainInterceptor(interceptorId, this.siteRoot);
+    // Keeps the Cloudflare clearance (`cf_clearance`) after the in-app check.
+    this.cookieStorageInterceptor = new CookieStorageInterceptor({ storage: "stateManager" });
   }
 
   async initialise(): Promise<void> {
-    this.mainRateLimiter.registerInterceptor();
     this.mainInterceptor.registerInterceptor();
+    this.cookieStorageInterceptor.registerInterceptor();
+    this.mainRateLimiter.registerInterceptor();
+  }
+
+  async cloudflareBypassCompleted(
+    _request: Request,
+    cookies: Cookie[],
+    _localStorage: Record<string, string>,
+  ): Promise<void> {
+    const fallbackExpiry = new Date(Date.now() + BYPASS_COOKIE_FALLBACK_MS);
+    for (const cookie of cookies) {
+      if (cookie.expires && cookie.expires.getTime() <= Date.now()) continue;
+      this.cookieStorageInterceptor.setCookie(
+        cookie.expires ? cookie : { ...cookie, expires: fallbackExpiry },
+      );
+    }
+    this.mainInterceptor.markBypassCompleted();
   }
 
   abstract getSettingsForm(): Promise<Form>;
@@ -113,20 +142,21 @@ abstract class FansubGeneral
   }
 
   protected async loadCatalog(): Promise<ComicListItem[]> {
-    const raw = await this.requestManager.apiMangaDetails("", true);
-    const parsed = JSON.parse(raw) as ComicsListResponse;
-    return parsed.comics.filter((comic) => !this.shouldHideAdult(comic.adult));
+    return (await this.requestManager.catalog()).filter(
+      (comic) => !this.shouldHideAdult(comic.adult),
+    );
   }
 
   protected async loadSearchComics(query: SearchQuery<Metadata>): Promise<ComicListItem[]> {
-    // The readers' search endpoint returns nothing below three letters: filter locally.
     const title = query.title.trim();
-    if (title.length > 0 && title.length < 3) {
-      return (await this.loadCatalog()).filter((comic) => matchesQuery(comic, title));
-    }
-    const raw = await this.requestManager.apiSearchResult(query);
-    const parsed = JSON.parse(raw) as ComicsListResponse;
-    return parsed.comics.filter((comic) => !this.shouldHideAdult(comic.adult));
+    if (!title) return this.loadCatalog();
+    // Titles the search endpoint cannot answer (short, or with a slash such as
+    // "1/2 Principe") are matched locally on the catalogue; network errors still surface.
+    const segment = searchSegment(title);
+    const comics = segment
+      ? await this.requestManager.search(segment)
+      : (await this.requestManager.catalog()).filter((comic) => matchesQuery(comic, title));
+    return comics.filter((comic) => !this.shouldHideAdult(comic.adult));
   }
 
   protected comicTimestamp(comic: ComicListItem): number {
@@ -224,9 +254,8 @@ abstract class FansubGeneral
   async checkApi(): Promise<boolean> {
     try {
       this.requestManager.clearCache();
-      const raw = await this.requestManager.apiMangaDetails("", true);
-      const parsed = JSON.parse(raw) as ComicsListResponse;
-      return Array.isArray(parsed.comics);
+      await this.requestManager.catalog();
+      return true;
     } catch {
       return false;
     }

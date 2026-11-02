@@ -324,6 +324,16 @@ export function isChallengePage(html: string): boolean {
   return /<title>\s*(?:Just a moment|Attention Required)/iu.test(html) || html.includes("cf-chl-");
 }
 
+/**
+ * Whether a reader request ended anywhere but a chapter page. Since November 2026 the
+ * site has been seen answering reader URLs with a 302 to its home page (its own chapter
+ * links included); an unfollowed redirect counts as well.
+ */
+export function isReaderRedirect(status: number, finalUrl: string): boolean {
+  if (status >= 300 && status < 400) return true;
+  return !/^https?:\/\/[^/]+\/chapter\//u.test(finalUrl);
+}
+
 function getImageUrl($: CheerioAPI, element: Parameters<CheerioAPI>[0]): string {
   const image = $(element);
   return image.attr("data-original") || image.attr("data-src") || image.attr("src") || "";

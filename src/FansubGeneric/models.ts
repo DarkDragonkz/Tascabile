@@ -1,6 +1,4 @@
-export interface ComicsListResponse {
-  comics: ComicListItem[];
-}
+// Shapes after validation (see validation.ts): the API's raw JSON is never cast to these.
 
 export interface ComicListItem {
   title: string;
@@ -8,7 +6,7 @@ export interface ComicListItem {
   thumbnail_small?: string;
   adult: number;
   slug: string;
-  author: string;
+  author: string | null;
   alt_titles?: string[] | null;
   last_chapter?: ComicDetailChapter | null;
 }
@@ -21,10 +19,6 @@ export interface Genre {
 export interface Team {
   name: string;
   url: string;
-}
-
-export interface ComicDetailResponse {
-  comic: ComicDetail;
 }
 
 export interface ComicDetail {
@@ -55,18 +49,10 @@ export interface ComicDetailChapter {
   volume: number | null;
   /** Null for extras such as "Oneshot" or "Artbook". */
   chapter: number | null;
-  /** 24/6 is chapter 24.6; null or 0 when the chapter has no part number. */
+  /** 24/6 is part 6 of chapter 24; null or 0 when the chapter has no part number. */
   subchapter?: number | null;
   language: string;
   teams: (Team | null)[];
   published_on: string;
   url: string;
-}
-
-export interface ReadChapterResponse {
-  chapter: ComicReadDetailChapter;
-}
-
-export interface ComicReadDetailChapter {
-  pages: string[];
 }

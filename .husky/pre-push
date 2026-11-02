@@ -1,1 +1,3 @@
-npm test
+# Read-only checks: no Comics re-sync (it rewrites src/) and no bundle.
+# The full pipeline (sync, tests, checks, bundle) runs in CI on every push and PR.
+npm run check

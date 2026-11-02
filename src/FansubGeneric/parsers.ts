@@ -11,7 +11,11 @@ import {
 import { detailInfo, formatCountIt, formatDateIt } from "../common/discover";
 import { chapterNumber, chapterTitle } from "./chapters";
 import FansubGeneral from "./main";
-import type { ComicDetailResponse } from "./models";
+
+function validDate(value: string): Date | undefined {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
 
 export class FansubGeneralParsers {
   private rating(adult: number): ContentRating {
@@ -19,9 +23,7 @@ export class FansubGeneralParsers {
   }
 
   async parseMangaDetails(mangaId: string, source: FansubGeneral): Promise<SourceManga> {
-    const jsonRequest = await source.requestManager.apiMangaDetails(mangaId);
-    const json = JSON.parse(jsonRequest) as ComicDetailResponse;
-    const comic = json.comic;
+    const comic = await source.requestManager.comic(mangaId);
     const genres: Tag[] = comic.genres.map((tag) => ({ id: tag.slug, title: tag.name }));
     const tagSections: TagSection[] = [{ id: "genres", title: "Generi", tags: genres }];
     const info: MangaInfo = {
@@ -43,16 +45,15 @@ export class FansubGeneralParsers {
         Target: comic.target ?? undefined,
         Capitoli: comic.chapters.length > 0 ? String(comic.chapters.length) : undefined,
         Visualizzazioni: typeof comic.views === "number" ? formatCountIt(comic.views) : undefined,
-        "Ultimo aggiornamento": formatDateIt(new Date(comic.updated_at)),
+        "Ultimo aggiornamento": formatDateIt(validDate(comic.updated_at)),
       }),
     };
     return { mangaId, mangaInfo: info };
   }
 
   async parseChapters(sourceManga: SourceManga, source: FansubGeneral): Promise<Chapter[]> {
-    const jsonRequest = await source.requestManager.apiMangaDetails(sourceManga.mangaId);
-    const json = JSON.parse(jsonRequest) as ComicDetailResponse;
-    return json.comic.chapters.map((chapter) => ({
+    const { chapters } = await source.requestManager.comic(sourceManga.mangaId);
+    return chapters.map((chapter, index) => ({
       chapterId: chapter.url,
       sourceManga,
       langCode: chapter.language || "it",
@@ -61,7 +62,10 @@ export class FansubGeneralParsers {
       version: chapter.teams[0]?.name ?? source.name,
       // No volume rather than "Vol. 0" when the reader does not group chapters.
       volume: chapter.volume || undefined,
-      publishDate: new Date(chapter.published_on),
+      publishDate: validDate(chapter.published_on),
+      // The API lists chapters newest first, by chapter and part (24/10, 24/2, 24/1, 24):
+      // keep that order, which chapter numbers alone cannot express from part 10 up.
+      sortingIndex: chapters.length - index,
     }));
   }
 

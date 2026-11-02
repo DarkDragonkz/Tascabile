@@ -15,6 +15,8 @@ const CDN = "https://cdn.readcomicsonline.ru/uploads/manga";
 const fixture = (name) => readFile(`fixtures/readcomicsonline/${name}-2026-10.html`);
 
 const requests = [];
+// When set, every request answers with this status and an error page.
+let failWith;
 let source;
 if (synced) {
   await mkdir("node_modules/.cache", { recursive: true });
@@ -44,6 +46,15 @@ if (synced) {
     Selector: (target, method) => ({ target, method }),
     async scheduleRequest(request) {
       requests.push(request);
+      if (failWith) {
+        const page = new TextEncoder().encode(
+          "<html><title>Error</title><body>Too many requests</body></html>",
+        );
+        return [
+          { status: failWith, headers: { "content-type": "text/html" }, url: request.url },
+          page.buffer,
+        ];
+      }
       const name = request.method === "GET" ? routes[request.url] : undefined;
       if (!name) return [{ status: 404, headers: {}, url: request.url }, new ArrayBuffer(0)];
       const body = await fixture(name);
@@ -142,6 +153,22 @@ await rcoTest("chapters: issue numbers from the slug, annuals and specials at 0"
   const annuals = batman.filter((chapter) => chapter.chapNum === 0).map((chapter) => chapter.title);
   assert.ok(annuals.includes("Annual 5") && annuals.includes("Annual 2022"));
 });
+
+for (const status of [403, 429, 503]) {
+  await rcoTest(`HTTP ${status} is an error, not an empty list or a blank series`, async () => {
+    failWith = status;
+    try {
+      await assert.rejects(source.getSearchResults({ title: "batman" }, undefined), {
+        message: new RegExp(`HTTP ${status}`, "u"),
+      });
+      await assert.rejects(source.getMangaDetails("/comic/batman-2016"), {
+        message: new RegExp(`HTTP ${status}`, "u"),
+      });
+    } finally {
+      failWith = undefined;
+    }
+  });
+}
 
 await rcoTest("reader lists every page in order from the CDN", async () => {
   const details = await source.getChapterDetails({

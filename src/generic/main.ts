@@ -81,7 +81,9 @@ export abstract class MangaWorldGeneric
     this.defaultContentRating = params.contentRating ?? ContentRating.EVERYONE;
     this.parser = params.parser ?? new Parsers();
     this.requestManager = params.requestManager ?? new Requests();
-    this.mainRateLimiter = new BasicRateLimiter("main", {
+    // Paperback keeps one interceptor per ID: sharing "main" with the interceptor below
+    // would replace the limiter, leaving every request unthrottled.
+    this.mainRateLimiter = new BasicRateLimiter("rateLimiter", {
       numberOfRequests: 5,
       bufferInterval: 1,
       ignoreImages: true,
@@ -184,7 +186,8 @@ export abstract class MangaWorldGeneric
       // Fall through to the actual reader page.
     }
 
-    const readerUrl = `${mangaUrl}/read/${chapter.chapterId}`;
+    // The default reader shows one page per request; `style=list` has every page.
+    const readerUrl = `${mangaUrl}/read/${chapter.chapterId}?style=list`;
     const readerHtml = await this.requestManager.fetchText(readerUrl, READER_CACHE_SECONDS);
     return parseChapterDetailsHtml(readerHtml, chapter, this);
   }

@@ -15,6 +15,8 @@ const BASE = "https://batcave.biz";
 const fixture = (name) => readFile(`fixtures/batcave/${name}`);
 
 const requests = [];
+// When set, every page except the site root answers with this status and an error page.
+let failWith;
 let source;
 if (synced) {
   await mkdir("node_modules/.cache", { recursive: true });
@@ -44,6 +46,15 @@ if (synced) {
     Selector: (target, method) => ({ target, method }),
     async scheduleRequest(request) {
       requests.push(request);
+      if (failWith && request.url !== BASE) {
+        const page = new TextEncoder().encode(
+          "<html><title>Error</title><body>Too many requests</body></html>",
+        );
+        return [
+          { status: failWith, headers: { "content-type": "text/html" }, url: request.url },
+          page.buffer,
+        ];
+      }
       const route = routes[`${request.method} ${request.url}`];
       if (!route) return [{ status: 404, headers: {}, url: request.url }, new ArrayBuffer(0)];
       const body = await route();
@@ -67,9 +78,36 @@ await batcaveTest("Latest Updates reads the front page cards", async () => {
       title: "Star Wars: The Mandalorian and Grogu – Nightmare on Nevarro (2026-)",
     },
   );
-  assert.ok(items.every((item) => item.imageUrl.startsWith("https://images.weserv.nl/?url=")));
+  // Direct from BatCave: images.weserv.nl was refused by the site (403) in November 2026.
+  assert.ok(items.every((item) => item.imageUrl.startsWith(`${BASE}/uploads/mini/`)));
   assert.deepEqual(metadata, { page: 2 });
 });
+
+await batcaveTest("image URLs: BatCave hosts go HTTPS directly, other HTTP hosts via proxy", () => {
+  const absolute = (url) => source.absoluteUrl(url);
+  assert.equal(absolute("/uploads/a.webp"), `${BASE}/uploads/a.webp`);
+  assert.equal(absolute("http://img.batcave.biz/img/1.jpg"), "https://img.batcave.biz/img/1.jpg");
+  assert.equal(absolute("http://batcave.biz/uploads/a.webp"), `${BASE}/uploads/a.webp`);
+  // A look-alike host is not BatCave.
+  assert.match(absolute("http://batcave.biz.example/a.jpg"), /^https:\/\/wsrv\.nl\/\?url=/u);
+  assert.equal(absolute("//img.batcave.biz/a.jpg"), "https://img.batcave.biz/a.jpg");
+});
+
+for (const status of [403, 429, 503]) {
+  await batcaveTest(`HTTP ${status} is an error, not an empty list or a blank series`, async () => {
+    failWith = status;
+    try {
+      await assert.rejects(source.getSearchResults({ title: "batman" }, undefined), {
+        message: new RegExp(`BatCave HTTP ${status}`, "u"),
+      });
+      await assert.rejects(source.getMangaDetails("33758-batman-2025.html"), {
+        message: new RegExp(`BatCave HTTP ${status}`, "u"),
+      });
+    } finally {
+      failWith = undefined;
+    }
+  });
+}
 
 await batcaveTest("Top Rated banners carry synopsis, publisher and year", async () => {
   const { items, metadata } = await source.getDiscoverSectionItems({ id: "top_rated" }, undefined);

@@ -249,3 +249,14 @@ await test("IDs, reader URLs and challenge pages", () => {
   assert.equal(niadd.isChallengePage("<title>Just a moment...</title>"), true);
   assert.equal(niadd.isChallengePage("<title>Niadd</title>"), false);
 });
+
+await test("reader redirects away from the chapter are recognised", () => {
+  const reader = "https://it.niadd.com/chapter/Insomnia/986094-10-1.html";
+  assert.equal(niadd.isReaderRedirect(200, reader), false);
+  // Seen on 2 November 2026 for it/br reader URLs, the site's own links included.
+  assert.equal(niadd.isReaderRedirect(200, "https://it.niadd.com/"), true);
+  assert.equal(niadd.isReaderRedirect(200, "https://it.niadd.com"), true);
+  assert.equal(niadd.isReaderRedirect(200, "https://br.niadd.com/list/New-Update/"), true);
+  // A redirect the client did not follow.
+  assert.equal(niadd.isReaderRedirect(302, reader), true);
+});

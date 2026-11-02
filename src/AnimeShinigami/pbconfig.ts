@@ -11,7 +11,7 @@ export default {
   name: "AnimeShinigami",
   description:
     "Scanlation italiane di AnimeShinigami, manhwa d'azione e arti marziali (Nano Machine e altri): ultimi capitoli, più letti, nuove serie e ricerca per genere.",
-  version: "1.0.1",
+  version: "1.0.2",
   icon: "icon.png",
   language: "it",
   contentRating: ContentRating.EVERYONE as ContentRating,

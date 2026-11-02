@@ -61,6 +61,10 @@ const LISTS = {
   new: "new-manga",
 } as const;
 
+function rating(card: MadaraCard): ContentRating {
+  return card.adult ? ContentRating.ADULT : ContentRating.EVERYONE;
+}
+
 class MadaraSearchForm extends AdvancedSearchForm {
   private genres: string[];
   private status: string[];
@@ -235,7 +239,7 @@ export class MadaraExtension
             title: card.title,
             subtitle: card.latestChapterTitle,
             publishDate: card.updatedAt,
-            contentRating: ContentRating.EVERYONE,
+            contentRating: rating(card),
           },
         ];
       }
@@ -251,7 +255,7 @@ export class MadaraExtension
               { symbol: INFO_SYMBOLS.date, text: relativeDateIt(card.updatedAt) },
               { symbol: INFO_SYMBOLS.type, text: card.type },
             ),
-            contentRating: ContentRating.EVERYONE,
+            contentRating: rating(card),
           },
         ];
       }
@@ -262,7 +266,7 @@ export class MadaraExtension
           imageUrl: card.imageUrl,
           title: card.title,
           subtitle: card.latestChapterTitle,
-          contentRating: ContentRating.EVERYONE,
+          contentRating: rating(card),
         },
       ];
     });
@@ -375,7 +379,7 @@ export class MadaraExtension
       title: card.title,
       imageUrl: card.imageUrl,
       subtitle: card.latestChapterTitle,
-      contentRating: ContentRating.EVERYONE,
+      contentRating: rating(card),
     };
   }
 
